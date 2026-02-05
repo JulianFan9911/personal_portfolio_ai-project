@@ -1,699 +1,501 @@
-# Setting Up Node Development Environment
+# Setting Up Next.js + Python FastAPI Development Environment
 
-## Your Project Has Changed!
+## Your Project Has Evolved!
 
-Remember when you were working on a simple Python project? Well, things are about to get more exciting—**your project now has a multi-language codebase** with both Python and Node.js code.
+Remember when you were working on a simple backend? Things are now more exciting—**your project now has both frontend and backend code**—a full-stack application!
 
-Here's why this matters: Real-world companies don't stick to one programming language. They might use Python for the backend, Node.js for certain services, and JavaScript for the web frontend. Learning to navigate a multi-language project is a critical professional skill.
+Here's why this matters: Real-world companies don't separate frontend and backend teams arbitrarily. They build integrated applications where frontend (what users see) and backend (the server logic) work together seamlessly. Learning to develop in this full-stack environment is a critical professional skill.
 
-This tutorial will guide you through setting up your Node.js development environment and understanding how the project structure has evolved.
+This tutorial will guide you through setting up your Next.js frontend and FastAPI backend development environment, and getting a complete web application running locally.
 
 ---
 
 ## What You Should Already Know
 
-You've completed the Python TDD (Test-Driven Development) course, so you understand:
-- How to **write tests first** (RED phase) - tests describe what you want
-- How to **write code to pass tests** (GREEN phase) - code satisfies the test requirements
-- How to **verify nothing broke** (VERIFY phase) - run all tests to ensure everything works
+You've completed the Python fundamentals course, so you understand:
+- How to write Python code
+- How to manage dependencies
+- How to work with project configuration files
 
-Now the question is: **How does TDD work in Node.js?**
+Now the question is: **How does a web application actually work?**
 
-The simple answer: **Exactly the same!** You're just using a different language (JavaScript), but the thinking is identical.
+The simple answer: **A frontend (what you see) talks to a backend (what processes data), and they communicate through APIs.**
 
 ---
 
-## Step 1: Understanding What Changed
+## Step 1: Understanding Your New Project Structure
 
-### Before: Single Language (Python Only)
-
-```
-project/
-├── learn_personal_portfolio_ai/     ← Python source code
-├── tests/                           ← All tests go here
-├── pyproject.toml                   ← Python config
-└── mise.toml                        ← Task config
-```
-
-Simple—one language, one test folder.
-
-### Now: Multi-Language (Python + Node.js)
+### Before: Backend Only
 
 ```
 project/
-├── learn_personal_portfolio_ai/     ← Python source code
-├── tests_python/                    ← Python tests (renamed!)
-│   └── test_source_code.py
+├── api/                         ← Python FastAPI backend
+├── tests_python/                ← Python tests
+├── pyproject.toml               ← Python config
+└── mise.toml                    ← Task config
+```
+
+Simple—just backend logic.
+
+### Now: Full-Stack (Frontend + Backend)
+
+```
+project/
+├── app/                         ← NEW: Next.js frontend code
+│   ├── (marketing)/               (pages and layouts)
+│   ├── _components/               (reusable UI components)
+│   ├── layout.tsx                 (main page structure)
+│   └── globals.css                (styling)
 │
-├── src/                             ← NEW: Node.js source code
-│   └── math.js
+├── components/                  ← Additional UI component library
+├── lib/                         ← Utility functions
+├── public/                      ← Static files (images, icons)
+├── styles/                      ← Additional styling
+├── types/                       ← TypeScript type definitions
 │
-├── tests_node/                      ← NEW: Node.js tests
-│   └── math.test.js
+├── api/                         ← Python FastAPI backend (unchanged)
+│   └── index.py                   (main backend code)
 │
-├── pyproject.toml                   ← Python config (unchanged)
-├── package.json                     ← NEW: Node.js config
-└── mise.toml                        ← Updated: supports both languages
+├── tests_python/                ← Python tests
+│
+├── package.json                 ← NEW: Frontend dependencies
+├── next.config.js               ← Next.js configuration
+├── tsconfig.json                ← TypeScript configuration
+├── tailwind.config.ts           ← CSS framework configuration
+├── postcss.config.mjs           ← CSS processor configuration
+│
+├── pyproject.toml               ← Python config
+├── mise.toml                    ← Updated: runs frontend + backend
+│
+└── requirements.txt             ← Python dependencies (auto-generated)
 ```
 
 **What's different:**
 
-1. **Test folders are separated** - Previously one `tests/` folder, now split into `tests_python/` and `tests_node/`. Why? Because Python and JavaScript tests are written differently, and separation keeps things clear.
+1. **New `app/` directory** - This is the Next.js frontend code. Every page, component, and style for the user-facing website lives here.
 
-2. **New `src/` folder** - This is the Node.js convention. In Python, we put code in `learn_personal_portfolio_ai/`; in JavaScript, the standard is `src/`. Different languages, different traditions.
+2. **Configuration files for frontend** - `package.json`, `tsconfig.json`, `tailwind.config.ts`, etc. These help the frontend build and style correctly.
 
-3. **New `package.json` file** - Just as Python has `pyproject.toml`, Node.js has `package.json`. It describes your project and its dependencies.
+3. **Static files in `public/`** - Images, icons, and other files the frontend needs to display.
 
-4. **Updated `mise.toml`** - Now it has more commands to run Python tests, Node.js tests, or both.
+4. **Backend stays in `api/`** - Your Python FastAPI code is here, unchanged.
 
 ---
 
-## Step 2: What Are Node.js and pnpm?
+## Step 2: What Are Next.js and FastAPI?
 
-You might be thinking: "Do I really need to learn Node.js?" Don't worry—we're keeping it simple: **understand the basics and get it working**.
+### Next.js: Modern Frontend Framework
 
-### Node.js: Running JavaScript on Your Computer
+Next.js is a framework for building web pages using React and JavaScript. Think of it as:
+- **Frontend = what users see in their browser**
+- **Next.js = tools to build that frontend quickly**
 
-Where does JavaScript normally run? **In web browsers!** When you visit a website, the browser runs JavaScript to make the page interactive (buttons, forms, etc.).
+**What Next.js does:**
+- Lets you create web pages with modern JavaScript/React
+- Handles routing (which page shows at which URL)
+- Manages styling (makes your website look good)
+- Connects to backend APIs (gets data from your server)
 
-But here's the problem: JavaScript only runs in browsers. You can't directly run JavaScript on your computer like you would Python.
+### FastAPI: Python Backend Framework
 
-**Enter Node.js!** It lets you run JavaScript on your computer directly, just like Python.
+FastAPI is a framework for building server applications with Python. Think of it as:
+- **Backend = logic that processes requests and returns data**
+- **FastAPI = tools to build that backend quickly**
+
+**What FastAPI does:**
+- Receives requests from your frontend
+- Processes the request (finds data, does calculations, etc.)
+- Sends back responses (usually as JSON data)
+- Automatically documents your API endpoints
+
+### How They Work Together
 
 ```
-Python:   python script.py           (run Python code on your computer)
-Node.js:  node script.js             (run JavaScript code on your computer)
+User opens browser (localhost:3000)
+          ↓
+Next.js frontend loads and displays a page
+          ↓
+User clicks a button or submits a form
+          ↓
+Frontend sends a request to backend (http://localhost:8000/api/hello)
+          ↓
+FastAPI backend receives and processes the request
+          ↓
+Backend sends back response: {"message": "Hello!", "status": "success"}
+          ↓
+Frontend receives data and updates what's shown on the page
 ```
 
-Simply put: **Node.js = a JavaScript runtime for your computer**. Think of it like a Python interpreter, but designed for JavaScript.
-
-### pnpm: Node.js Package Manager
-
-Remember Python's `uv`? Here's what it does:
-
-- Downloads packages you need (like numpy, pytest)
-- Manages package versions
-- Creates virtual environments (`.venv/`)
-
-**`pnpm` does the exact same things for Node.js!**
-
-```
-Python:    uv is a package manager       → creates .venv/
-Node.js:   pnpm is a package manager     → creates node_modules/
-```
-
-Think of pnpm as "the uv of Node.js." You won't need to learn all pnpm commands—`mise` handles everything for you.
+This request-response cycle is how modern web applications work.
 
 ---
 
 ## Step 3: Your New Commands
 
-Because you now have two languages, you have more commands. But don't worry—`mise` coordinates everything.
+You now have both frontend and backend servers running. `mise` helps you manage both.
 
-### Installing Dependencies
+### Important New Commands
 
-```bash
-# Install only Python dependencies
-mise run inst-python-deps
+#### 🚀 `mise run dev` - Start Everything
 
-# Install only Node.js dependencies
-mise run inst-node-deps
-
-# Install both (recommended!)
-mise run inst
+```toml
+[tasks.dev]
+description = "🚀 Start all development servers (Next.js + FastAPI)"
+depends = ["kill"]
+run = "pnpm exec concurrently 'mise run next-dev' 'mise run fastapi-dev'"
 ```
 
-**What these mean:**
-- `inst` is short for "install"
-- `inst-python-deps` means "install Python dependencies"
-- `inst-node-deps` means "install Node.js dependencies"
-- The last command automatically runs both (mise orchestrates them)
+This command:
+1. Stops any old servers (the `kill` task)
+2. Starts Next.js frontend on `localhost:3000`
+3. Starts FastAPI backend on `localhost:8000`
+4. Runs both simultaneously
 
-### Running Tests
+#### 🛑 `mise run kill` - Stop All Servers
 
-```bash
-# Run only Python tests
-mise run test-python
-
-# Run only Node.js tests
-mise run test-node
-
-# Run both
-mise run test
+```toml
+[tasks.kill]
+description = "🛑 Kill all development servers (Next.js + FastAPI)"
+run = "uv run -- python kill-dev-servers.py"
 ```
 
-**Why separate?** Sometimes you want to quickly test Python code without waiting for Node tests. Sometimes you want to check just one language. Flexibility matters.
+Sometimes a server "hangs" in the background. This cleanly stops everything so you can restart fresh.
 
 ---
 
-## Step 4: Setting Up Your Environment
+## Step 4: Understanding `package.json` Dependencies
 
-Let's get everything running. Follow these steps in order:
+Open `package.json` and you'll see many dependencies:
 
-### 1. Create Python Virtual Environment
+```json
+{
+  "dependencies": {
+    "next": "16.1.6",
+    "react": "^18",
+    "react-dom": "^18",
+    "@radix-ui/react-*": "...",
+    "tailwindcss": "^3.4.17",
+    "ai": "^6.0.72",
+    ...more...
+  }
+}
+```
+
+**What these packages do:**
+- `next` - The Next.js framework itself
+- `react` and `react-dom` - Library for building interactive UIs
+- `@radix-ui/*` - Pre-built, accessible UI components
+- `tailwindcss` - Utility-first CSS framework for styling
+- `ai` - Vercel AI SDK for AI integrations
+- Many others...
+
+**Do you need to understand each one?** Not yet! These are dependencies—your application uses them, but you don't need to master each one immediately.
+
+> 💡 **Want to understand each dependency?**
+>
+> See `package.json.md` for detailed explanations of what each package does. If something is confusing, you can ask AI to help explain it!
+
+---
+
+## Step 5: Setting Up Your Development Environment
+
+Follow these steps in order:
+
+### 1️⃣ Create Python Virtual Environment
 
 ```bash
 mise run venv-create
 ```
 
-**What happens:** This creates a `.venv/` folder. Think of it as an "isolated room" where Python installs everything it needs. This doesn't affect other Python projects on your computer.
+This creates a `.venv/` folder—an isolated environment where Python installs packages without affecting other projects on your computer.
 
-### 2. Install All Dependencies
-
-```bash
-mise run inst
-```
-
-**What happens:** This installs:
-- All Python packages (using `uv`, goes into `.venv/`)
-- All Node.js packages (using `pnpm`, goes into `node_modules/`)
-
-Both language ecosystems are now ready.
-
-### 3. Activate Python Environment
+### 2️⃣ Activate Python Virtual Environment
 
 ```bash
 source .venv/bin/activate
 ```
 
-**Why do this?** Your `.venv/` folder exists, but your terminal doesn't know to use it yet. This command says: "From now on, use the Python from `.venv/`."
+This tells your terminal: "Use the Python from `.venv/` from now on."
 
-**How do you know it worked?** Your terminal prompt changes to show `(.venv)` at the beginning:
+You'll see `(.venv)` appear in your terminal prompt:
 
 ```
 (.venv) your-computer:project $
 ```
 
-That `(.venv)` marker means the virtual environment is active.
-
-### 4. Verify Everything Works
+### 3️⃣ Install All Dependencies
 
 ```bash
-mise run test
+mise run inst
 ```
 
-**You should see output from both Python and Node.js tests:**
+This installs:
+- All Python packages (FastAPI, uvicorn, etc.) into `.venv/`
+- All JavaScript/Node.js packages (Next.js, React, etc.) into `node_modules/`
 
-```
-======================== Python Tests ========================
-tests_python/test_source_code.py::test_add_two PASSED          [50%]
-======================== 1 passed in 0.02s ========================
+This may take 1-2 minutes. Be patient!
 
-======================== Node.js Tests ========================
-✔ add(2, 3) should equal 5 (1.234ms)
-✔ add(0, 0) should equal 0 (0.567ms)
-
-───────────────────────────────────────
-tests 2 passed (1.801ms)
-```
-
-**What this means:**
-- Python's `test_add_two()` passed
-- Node.js's `add` tests passed
-- Nothing is broken
-
-**Congratulations!** Your Node development environment is now set up.
-
----
-
-## Step 5: Understanding the Configuration
-
-Ever wonder how running one command (`mise run test`) executes tests in two different languages? The secret is in `mise.toml`.
-
-### Python Tasks
-
-```toml
-[tasks.inst-python-deps]
-description = "💾 Install Python dependencies via uv"
-run = "uv sync --all-extras"
-
-[tasks.test-python]
-description = "🧪 Run Python tests with pytest"
-run = ".venv/bin/pytest tests_python"
-```
-
-These look familiar. Notice that tests now run against `tests_python/` instead of the old `tests/`.
-
-### Node.js Tasks (New)
-
-```toml
-[tasks.inst-node-deps]
-description = "📦 Install Node.js dependencies via pnpm"
-run = "pnpm install"
-
-[tasks.test-node]
-description = "🧪 Run Node.js tests"
-run = "node --test tests_node/*.test.js"
-```
-
-These are new. Notice the pattern mirrors the Python tasks:
-- `inst-node-deps` mirrors `inst-python-deps`
-- `test-node` mirrors `test-python`
-
-### Orchestration (The Magic)
-
-```toml
-[tasks.inst]
-description = "💾 Install all dependencies (Python + Node.js)"
-depends = ["inst-python-deps", "inst-node-deps"]
-
-[tasks.test]
-description = "🧪 Run all tests (Python + Node.js)"
-depends = ["test-python", "test-node"]
-```
-
-The `depends` field is what makes this work. It says: "When someone runs this task, run these tasks first."
-
-So:
-- `mise run inst` automatically runs both `inst-python-deps` and `inst-node-deps`
-- `mise run test` automatically runs both `test-python` and `test-node`
-
----
-
-## Step 6: Meet the New Files
-
-### `package.json` - Node.js Project File
-
-```json
-{
-  "name": "learn-personal-portfolio-ai",
-  "version": "0.1.1",
-  "private": true,
-  "scripts": {},
-  "dependencies": {},
-  "devDependencies": {}
-}
-```
-
-This is Node.js's version of `pyproject.toml`. It tells Node.js:
-
-- **name** - Your project name
-- **version** - Current version
-- **private** - This project is private (won't be published online)
-- **dependencies** - Packages your project needs to run
-- **devDependencies** - Packages needed only for development/testing
-
-Currently it's minimal because our project is simple. But as it grows, this file becomes important.
-
-### `src/math.js` - Node.js Code
-
-```javascript
-export function add(a, b) {
-  return a + b;
-}
-```
-
-This is a JavaScript function. Let me break it down:
-
-- `export` - This makes the function available for import (like Python's `from xxx import add`)
-- `function add(a, b)` - Define a function named `add` that takes two parameters
-- `return a + b` - Return the sum
-- `;` - JavaScript convention to end the statement
-
-**Compare to Python:**
-
-Python:
-```python
-def add_two(a: int, b: int) -> int:
-    return a + b
-```
-
-JavaScript:
-```javascript
-export function add(a, b) {
-  return a + b;
-}
-```
-
-The logic is identical (both add two numbers). Only the syntax differs.
-
-### `tests_node/math.test.js` - Node.js Tests
-
-```javascript
-import { test } from 'node:test';
-import assert from 'node:assert';
-import { add } from '../src/math.js';
-
-test('add(2, 3) should equal 5', () => {
-  assert.strictEqual(add(2, 3), 5);
-});
-```
-
-This is a Node.js test. Let me explain each line:
-
-- `import { test } from 'node:test';` - Import Node's test tool
-- `import assert from 'node:assert';` - Import Node's assertion tool (checks equality)
-- `import { add } from '../src/math.js';` - Import the function to test
-
-Then:
-- `test('add(2, 3) should equal 5', () => { ... })` - Define a test. First parameter describes what you're testing, second parameter is the test code
-- `assert.strictEqual(add(2, 3), 5);` - Check if `add(2, 3)` equals `5`. If yes, test passes; if no, test fails
-
-**Compare to Python:**
-
-Python:
-```python
-def test_add_two():
-    assert add_two(3, 4) == 12
-```
-
-JavaScript:
-```javascript
-test('add(2, 3) should equal 5', () => {
-  assert.strictEqual(add(2, 3), 5);
-});
-```
-
-Concept is the same (both test a function). Only syntax differs.
-
----
-
-## Step 7: Your First Node.js Function
-
-Now that you understand the setup, let's use the TDD workflow you already know to write a Node.js function.
-
-### RED Phase: Write the Test First
-
-**File:** `tests_node/math.test.js`
-
-Add this test after the existing `add` tests:
-
-```javascript
-test('multiply(3, 4) should equal 12', () => {
-  const multiply = require('../src/math.js').multiply;
-  assert.strictEqual(multiply(3, 4), 12);
-});
-
-test('multiply(5, 0) should equal 0', () => {
-  const multiply = require('../src/math.js').multiply;
-  assert.strictEqual(multiply(5, 0), 0);
-});
-
-test('multiply(-2, 3) should equal -6', () => {
-  const multiply = require('../src/math.js').multiply;
-  assert.strictEqual(multiply(-2, 3), -6);
-});
-```
-
-**What you're doing:** Writing a test that says "I want a `multiply` function that:
-- Multiplies 3 and 4 to get 12
-- Multiplies 5 and 0 to get 0
-- Multiplies -2 and 3 to get -6"
-
-### Run the Test (Watch It Fail)
+### 4️⃣ Start the Development Servers
 
 ```bash
-mise run test-node
+mise run dev
 ```
 
-**You'll see an error:**
+You'll see output like:
 
 ```
-TypeError: multiply is not a function
+> next dev
+
+  ▲ Next.js 16.1.6
+  - Local:        http://localhost:3000
+
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 ```
 
-or
+Both servers are now running! 🎉
+
+### 5️⃣ Open Your Browser
+
+Open your browser and go to:
 
 ```
-Cannot find property 'multiply'
+http://localhost:3000
 ```
 
-**This is perfect!** This is exactly what RED phase looks like. The test is telling you: "This function doesn't exist yet—go build it."
+You should see your web application running!
 
-### GREEN Phase: Write Code to Pass
+See the example screenshot:
 
-**File:** `src/math.js`
-
-Add this function (keep the `add` function):
-
-```javascript
-export function multiply(a, b) {
-  return a * b;
-}
-```
-
-**What you're doing:** Implementing what the test requires. The function takes two numbers, multiplies them, and returns the result.
-
-### Run the Test (Watch It Pass)
-
-```bash
-mise run test-node
-```
-
-**You should see:**
-
-```
-✔ add(2, 3) should equal 5
-✔ add(0, 0) should equal 0
-✔ multiply(3, 4) should equal 12 (0.456ms)
-✔ multiply(5, 0) should equal 0 (0.389ms)
-✔ multiply(-2, 3) should equal -6 (0.512ms)
-
-───────────────────────────────────────
-tests 5 passed (1.801ms)
-```
-
-**Excellent!** All tests pass. The new code works, and the old `add` tests still pass—nothing broke.
-
-### VERIFY Phase: Check Everything
-
-Now run all tests (Python + Node.js):
-
-```bash
-mise run test
-```
-
-**You should see:**
-
-```
-======================== Python Tests ========================
-tests_python/test_source_code.py::test_add_two PASSED          [50%]
-======================== 1 passed in 0.02s ========================
-
-======================== Node.js Tests ========================
-✔ add(2, 3) should equal 5
-✔ add(0, 0) should equal 0
-✔ multiply(3, 4) should equal 12
-✔ multiply(5, 0) should equal 0
-✔ multiply(-2, 3) should equal -6
-
-───────────────────────────────────────
-tests 5 passed (1.801ms)
-```
-
-**Checklist:**
-- ✅ Python tests still pass (nothing broke)
-- ✅ Node.js `add` tests still pass
-- ✅ Node.js `multiply` tests all pass
-
-Perfect! You just completed the entire TDD cycle in two different languages.
+![Example Web App](img/01-example-hello-world-web-app.png)
 
 ---
 
-## Step 8: Comparing Python and JavaScript
+## Step 6: How Frontend and Backend Communicate
 
-Now that you've written the same logic in both languages, let's see how similar they really are.
+Now that both are running, let's understand how they talk to each other.
 
-### Same Logic, Two Languages
+### Backend: FastAPI API Endpoint
 
-**Python:**
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a * b
-```
-
-**JavaScript:**
-```javascript
-export function multiply(a, b) {
-  return a * b;
-}
-```
-
-### What's the Same
-
-- Both take two parameters (a and b)
-- Both multiply them together (a * b)
-- Both return the result
-- **The logic is identical**
-
-### What's Different
-
-| Python | JavaScript |
-|--------|-----------|
-| Uses `def` to define functions | Uses `function` to define functions |
-| Has type hints: `: int`, `-> int` | No type hints (though JSDoc can add them) |
-| Uses indentation for code blocks | Uses curly braces `{}` for code blocks |
-| Doesn't require semicolons at line end | Usually has semicolons `;` at line end |
-| Uses `from ... import` for imports | Uses `export` to export, `import` to import |
-
-**Key insight:** The syntax is different, but **the thinking is the same**. Once you understand one, the other is just syntax.
-
----
-
-## Step 9: Your Challenge
-
-Now you've seen the full workflow. Time to practice on your own. Follow these steps, but this time YOU do the work (not just following along):
-
-### Challenge 1: Python - Add `divide_two()` Function
-
-**Step 1: Write the test (RED phase)**
-
-Add this to `tests_python/test_source_code.py`:
+In `api/index.py`:
 
 ```python
-def test_divide_two():
-    assert divide_two(10, 2) == 5
-    assert divide_two(9, 3) == 3
-    assert divide_two(-6, 2) == -3
+@app.get("/api/hello")
+async def hello_world():
+    """
+    Hello World API endpoint for testing FastAPI integration
+    """
+    return JSONResponse(
+        content={
+            "message": "Hello from FastAPI!",
+            "status": "success"
+        }
+    )
 ```
 
-**Step 2: Run the test and watch it fail**
+This creates an API endpoint:
+- **URL:** `http://localhost:8000/api/hello`
+- **What it does:** Returns a JSON response with a message
 
-```bash
-mise run test-python
-```
+### Frontend: Calling the API
 
-You'll see `cannot import name 'divide_two'`. Good—that's RED phase.
-
-**Step 3: Implement the function (GREEN phase)**
-
-Add this to `learn_personal_portfolio_ai/source_code.py`:
-
-```python
-def divide_two(a: int, b: int) -> float:
-    return a / b
-```
-
-Why `float` instead of `int`? Because division produces decimals. (E.g., `5 / 2 = 2.5`)
-
-**Step 4: Run the test and watch it pass**
-
-```bash
-mise run test-python
-```
-
-You should see "3 passed" (or more if you had `test_multiply_two` too).
-
-### Challenge 2: Node.js - Add `divide()` Function
-
-**Step 1: Write the test (RED phase)**
-
-Add this to `tests_node/math.test.js`:
+In your Next.js frontend code, you might see something like:
 
 ```javascript
-test('divide(10, 2) should equal 5', () => {
-  const divide = require('../src/math.js').divide;
-  assert.strictEqual(divide(10, 2), 5);
-});
-
-test('divide(9, 3) should equal 3', () => {
-  const divide = require('../src/math.js').divide;
-  assert.strictEqual(divide(9, 3), 3);
-});
-
-test('divide(-6, 2) should equal -3', () => {
-  const divide = require('../src/math.js').divide;
-  assert.strictEqual(divide(-6, 2), -3);
-});
+// Call the backend API
+const response = await fetch('http://localhost:8000/api/hello')
+const data = await response.json()
+console.log(data.message)  // Output: "Hello from FastAPI!"
 ```
 
-**Step 2: Run the test and watch it fail**
+**The flow:**
+1. Frontend makes a request: "Give me data from `/api/hello`"
+2. Backend receives it, runs the function
+3. Backend sends back: `{"message": "Hello from FastAPI!", "status": "success"}`
+4. Frontend gets the data and can display it on the page
 
-```bash
-mise run test-node
-```
-
-Error message: `divide is not a function`. Perfect—RED phase.
-
-**Step 3: Implement the function (GREEN phase)**
-
-Add this to `src/math.js`:
-
-```javascript
-export function divide(a, b) {
-  return a / b;
-}
-```
-
-**Step 4: Run the test and watch it pass**
-
-```bash
-mise run test-node
-```
-
-### Challenge 3: Verify the Whole Project
-
-Finally, run all tests:
-
-```bash
-mise run test
-```
-
-**Success looks like:**
-- All Python tests pass (including your new `test_divide_two`)
-- All Node.js tests pass (including your new `divide` tests)
-- No failures or errors
+This is a **complete request-response cycle**—the foundation of web applications!
 
 ---
 
-## Key Takeaways
+## Step 7: Project Directory Explained
 
-✅ **Node.js runs JavaScript on your computer** - Like Python, but for JavaScript
+### `app/` - Frontend Pages and Components
 
-✅ **pnpm manages Node.js packages** - Same role as uv, but for Node.js
+```
+app/
+├── (marketing)/          ← Pages for the marketing site
+│   ├── page.tsx          ← Home page
+│   ├── layout.tsx        ← Layout for marketing pages
+│   └── ...
+├── _components/          ← Reusable components
+├── layout.tsx            ← Main page layout
+└── globals.css           ← Global styles
+```
 
-✅ **Project structure separates concerns** - Python code in `learn_personal_portfolio_ai/`, Node.js in `src/`. Tests separated too. Why? Clarity and maintainability.
+Every page users see comes from code in `app/`.
 
-✅ **Test folders are separated** - `tests_python/` for Python, `tests_node/` for Node.js. You can quickly test just one language.
+### `api/` - Backend Logic
 
-✅ **`mise` coordinates everything** - One command runs your entire multi-language project. `mise run test` runs Python and Node.js tests.
+```
+api/
+└── index.py              ← FastAPI main file
+```
 
-✅ **TDD is universal** - RED → GREEN → VERIFY works in Python, JavaScript, and beyond
+All your backend API endpoints are in `api/index.py`. When the frontend calls an API, it's calling functions here.
 
-✅ **Syntax changes, thinking stays the same** - `multiply` does the same thing in Python and JavaScript, just written differently
+### `components/` - UI Component Library
+
+Reusable UI components like buttons, dialogs, forms, etc. You use these in `app/` to build pages.
+
+### `lib/` - Utility Functions
+
+Helper functions that don't fit elsewhere. Examples:
+- Format dates
+- Generate SEO metadata
+- Common utilities
+
+### `public/` - Static Files
+
+Images, icons, fonts, and other files the frontend needs.
+
+### `types/` - TypeScript Types
+
+TypeScript definitions that describe data structure. Makes your code safer by catching errors.
+
+### Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `package.json` | Frontend dependencies and scripts (like Python's `pyproject.toml`) |
+| `tsconfig.json` | TypeScript configuration (ensures type safety) |
+| `tailwind.config.ts` | Tailwind CSS configuration (for styling) |
+| `next.config.js` | Next.js configuration |
+| `postcss.config.mjs` | CSS processing configuration |
+| `pnpm-lock.yaml` | Locks exact versions of dependencies (don't edit manually) |
 
 ---
 
-## What's Next?
+## Step 8: Troubleshooting
 
-Now that your Node development environment is set up:
+| Problem | Solution |
+|---------|----------|
+| `command not found: mise` | Install mise: `curl https://mise.jdx.dev \| sh` |
+| Browser shows "Connection refused" at localhost:3000 | Ensure `mise run dev` is still running. Check terminal for errors. |
+| Backend reports "Port already in use" | Run `mise run kill` to stop old servers, then `mise run dev` again |
+| Browser shows page but nothing loads | Check browser console (F12) for errors. Check terminal for backend errors. |
+| `Cannot find module` or import errors | Run `mise run inst` again to install missing dependencies |
+| `.venv` folder doesn't exist | Run `mise run venv-create` |
+| `node_modules` folder doesn't exist | Run `mise run inst` |
+| Changed code but changes don't appear | Refresh browser (Ctrl+R or Cmd+R). Check if dev server restarted. |
 
-1. **Practice TDD** - Complete all challenges above
-2. **Add more functions** - Implement `power()`, `absolute()`, etc. in both languages
-3. **Explore Node.js** - See what packages are available (though you won't need many for this course)
-4. **Get comfortable with JavaScript syntax** - It's different from Python, but you'll pick it up quickly
+---
+
+## Step 9: Next Steps
+
+Now that you have a running full-stack application:
+
+1. **Explore the Code**
+   - Look at `app/` to see how pages are built
+   - Look at `api/index.py` to see how backend works
+   - Try changing some text or colors and see the live update
+
+2. **Create New API Endpoints**
+   - Add new `@app.get()` or `@app.post()` functions in `api/index.py`
+   - Build new backend features
+
+3. **Create New Pages**
+   - Add new files to `app/`
+   - Call backend APIs to fetch data
+   - Display the data on your pages
+
+4. **Learn More**
+   - Deep-dive into React and Next.js concepts
+   - Learn advanced FastAPI features
+   - Connect to databases, add authentication, etc.
+
+---
+
+## Quick Reference: Common Commands
+
+```bash
+# Install dependencies (first time)
+mise run inst
+
+# Start frontend + backend
+mise run dev
+
+# Stop all servers
+mise run kill
+
+# Run only frontend
+mise run next-dev
+
+# Run only backend
+mise run fastapi-dev
+
+# Stop and start fresh
+mise run kill && mise run dev
+```
+
+---
+
+## Key Concepts
+
+- ✅ **Frontend** = What users see in their browser (Next.js)
+- ✅ **Backend** = Server logic that processes requests (FastAPI)
+- ✅ **API** = Contract between frontend and backend ("Here's what data I can give you")
+- ✅ **localhost:3000** = Your frontend server
+- ✅ **localhost:8000** = Your backend server
+- ✅ **Request-Response** = Frontend asks backend for data, backend sends it back
+- ✅ **Full-Stack** = Having both frontend and backend in one project
+
+---
+
+## Congratulations! 🎉
+
+You've now:
+
+- ✅ Understood full-stack web application architecture
+- ✅ Set up a Next.js frontend development environment
+- ✅ Set up a FastAPI backend development environment
+- ✅ Started both servers simultaneously
+- ✅ Seen a complete web application running locally
+- ✅ Learned how frontend and backend communicate
+
+You're now a **full-stack developer**! You can build complete web applications with frontend and backend code.
 
 ---
 
 ## Summary
 
-You've now:
+A modern web application has two parts:
+- **Frontend** (Next.js) - Shows the user interface
+- **Backend** (FastAPI) - Provides data and logic
 
-- ✅ Understood why the project structure changed
-- ✅ Learned what Node.js and pnpm are
-- ✅ Successfully set up your Node development environment
-- ✅ Learned the new command structure (separated and coordinated tasks)
-- ✅ Implemented functions in both Python and JavaScript
-- ✅ Proven that TDD works the same way in both languages
+They communicate through APIs:
+- Frontend makes requests: "I need this data"
+- Backend responds: "Here's the data"
 
-You now have a **real-world multi-language development environment**, just like professional software companies use. You're ready to build more complex applications across different platforms.
+`mise` coordinates running both so you can develop the entire application seamlessly. When you run `mise run dev`, both servers start, and you have a complete working application.
 
-Welcome to multi-language software development! 🚀
+This is how professional web applications are built.
 
----
-
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| `command not found: mise` | `mise` isn't installed. Run `curl https://mise.jdx.dev \| sh` |
-| `Cannot find module '~/src/math.js'` or `divide is not a function` | Make sure you used `export function` in `src/math.js` |
-| `.venv not found` | Run `mise run venv-create` to create the Python virtual environment |
-| `node_modules not found` | Run `mise run inst` to install dependencies |
-| Test fails with wrong number (like `12 != 11`) | Check your logic. `multiply` should use `*`, not `+` |
-| Only Python tests run, not Node.js | Make sure you ran `mise run inst-node-deps` |
-| Code changed but tests still fail | Read the error message carefully. Usually it tells you what's wrong. If confused, print the result and compare to expected |
+Welcome to full-stack development! 🚀
 
 ---
 
-Ready to master multi-language development? Let's go! 💪
+## Troubleshooting Guide
+
+**If something isn't working:**
+
+1. **Check the error message** - Read the terminal output carefully
+2. **Verify both servers are running** - Look for "localhost:3000" and "localhost:8000" messages
+3. **Restart everything** - Run `mise run kill` then `mise run dev`
+4. **Reinstall if needed** - Run `mise run inst` to ensure all packages are installed
+5. **Check the browser console** - Open Developer Tools (F12) and look at Console tab
+
+Most issues are solved by one of these steps!
+
+---
+
+Ready to build something amazing? Let's go! 💪

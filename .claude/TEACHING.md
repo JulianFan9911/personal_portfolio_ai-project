@@ -1,442 +1,589 @@
-# Teaching Guide - Setting Up Node Development Environment
+# Teaching Guide - Setting Up Next.js + FastAPI Full-Stack Development
 
 ## Course Overview
 
-This course teaches Test-Driven Development (TDD) in a **multi-language project** by having students implement `multiply_two()` in Python and `multiply()` in Node.js. The key insight: **TDD principles are universal across languages—only syntax differs.**
+This course teaches **full-stack web development** by having students set up and run a complete web application with:
+- **Frontend**: Next.js with React (JavaScript/TypeScript)
+- **Backend**: FastAPI with Python
+
+The key insight: **Professional web applications need both frontend (what users see) and backend (data processing). Learning to manage both together is essential.**
 
 Students learn that:
-- TDD guides development the same way in every language
-- Understanding one language's syntax doesn't mean understanding another's, but the testing principle stays identical
-- Professional projects often mix languages, and this course prepares them for that reality
+- Frontend and backend are separate but interdependent
+- They communicate through APIs (HTTP requests/responses)
+- Understanding both gives you power to build complete applications
+- Professional teams coordinate multiple languages and frameworks
 
 ## Target Audience
 
-- Students who completed the Python TDD fundamentals course
-- Learners ready to expand into multi-language development
-- Anyone wanting to understand how professional teams manage multiple codebases
-- Developers preparing to work with AI assistance across different languages
+- Students who completed Python fundamentals
+- Learners ready to understand how real web applications work
+- Anyone wanting to build full-stack projects
+- Developers preparing to work with modern frameworks
 
 ## Learning Objectives
 
 By the end of this course, students will:
 
-1. **Understand multi-language project structure** - Know why and how separate language ecosystems coexist
-2. **Apply TDD across different languages** - Write tests and code in both Python and JavaScript
-3. **Compare language syntax** - Recognize how the same logic looks different across languages
-4. **Use task coordination tools** - Understand how `mise` orchestrates multiple language test suites
-5. **Work confidently in multi-language environments** - Know how professional teams handle this complexity
+1. **Understand full-stack architecture** - Know what frontend and backend do and how they interact
+2. **Set up a development environment** - Manage multiple servers (Next.js + FastAPI) simultaneously
+3. **Use APIs for communication** - Understand HTTP requests/responses and JSON data
+4. **Read and explore code** - Navigate a real project structure with frontend and backend
+5. **Develop with modern tools** - Use `mise`, Next.js dev server, and FastAPI
+6. **Build complete applications** - Create both frontend pages and backend endpoints
+7. **Gain professional skills** - Work confidently in multi-language, full-stack environments
 
 ## Prerequisite Knowledge
 
 Students should already understand:
 - Basic Python syntax and functions
-- TDD workflow: RED (test fails) → GREEN (test passes) → VERIFY (nothing broke)
-- What pytest is and how to run `mise test`
-- Type hints in Python (`: int`, `-> int`)
+- How to use a terminal/command line
+- Basic understanding of the web (browsers, URLs, etc.)
+- How to read code in different languages (doesn't need to be fluent)
 
 ## Key Concepts to Teach
 
-### 1. Project Evolution: Single Language → Multi-Language
+### 1. Frontend vs. Backend: The Two Halves of a Web Application
 
-**Why this matters:** Real-world projects aren't monolithic. They combine languages strategically.
+**Frontend = User Interface**
+- What users see in their browser
+- Built with Next.js (React + JavaScript)
+- Lives in the `app/` directory
+- Examples: buttons, forms, text, images, animations
 
-**What changed:**
-- `tests/` → split into `tests_python/` and `tests_node/`
-- New `src/` folder (JavaScript convention)
-- New `package.json` (JavaScript configuration)
-- Updated `mise.toml` (task coordination)
+**Backend = Server Logic**
+- Code that runs on a server
+- Built with FastAPI (Python)
+- Lives in the `api/` directory
+- Examples: storing data, processing requests, validating information
 
-**Teaching tip:** Show the before/after directory structure side-by-side. Help students see this isn't random—it follows each language's conventions.
+**Why separate?**
+- Different purposes need different tools
+- Frontend needs to be fast in browsers (JavaScript)
+- Backend can do heavy processing (Python)
+- They can evolve independently
+- Scalability (run many frontend servers, fewer backend servers)
 
-### 2. Node.js: JavaScript Runtime
+**Teaching tip:** Use a restaurant analogy:
+- Frontend = What customers see (menu, waiter, dining room)
+- Backend = Kitchen (where food is prepared)
+- Customer doesn't see the kitchen but depends on it
+- Restaurant wouldn't work without either
 
-**Analogy:** Python is to Python files as Node.js is to JavaScript files.
+### 2. Communication: How Frontend and Backend Talk
 
-**What to emphasize:**
-- JavaScript normally runs in browsers
-- Node.js lets you run JavaScript anywhere (server-side)
-- It's just a different runtime—same language, different environment
-
-**Teaching tip:** Don't overwhelm students with JavaScript. Focus on "Node.js lets you run JavaScript like Python runs Python."
-
-### 3. pnpm: Package Manager for JavaScript
-
-**Parallel to Python's `uv`:**
-
-| Python | Node.js |
-|--------|---------|
-| `uv` downloads packages | `pnpm` downloads packages |
-| Creates `.venv/` | Creates `node_modules/` |
-| Manages virtual environments | Manages dependencies |
-
-**Teaching tip:** Use this exact comparison. Students understand `uv` already, so `pnpm` is just the JavaScript equivalent.
-
-### 4. mise.toml: Task Orchestration
-
-This is the "magic" students see when they run `mise run test` and get Python + Node.js results.
-
-**Key section:**
-```toml
-[tasks.test]
-depends = ["test-python", "test-node"]
-```
-
-**What to teach:**
-- `depends` field runs multiple tasks sequentially
-- `mise run test` = "run test-python AND test-node"
-- This keeps commands simple while allowing flexibility
-- This is how professional teams manage complexity
-
-**Teaching tip:** Show what `mise run test` actually does under the hood. It's not magic—it's configuration.
-
-### 5. TDD is Language-Agnostic
-
-**Core principle:** The testing workflow is the same everywhere.
+**The Request-Response Cycle**
 
 ```
-Python: write test → run → FAIL → write code → run → PASS → verify
-Node.js: write test → run → FAIL → write code → run → PASS → verify
+1. User clicks button in frontend
+2. Frontend sends HTTP request to backend: "Get data from /api/hello"
+3. Backend receives request
+4. Backend runs function: hello_world()
+5. Backend sends response: {"message": "Hello!", "status": "success"}
+6. Frontend receives response
+7. Frontend updates page with data
+8. User sees the result
 ```
 
-**What to emphasize:**
-- RED phase looks the same (error, function missing)
-- GREEN phase looks the same (all tests pass)
-- VERIFY phase looks the same (run full suite, no regressions)
-- Only the syntax of test and code changes
+**API = Contract**
+- API = Agreement about what data backend provides
+- Example: `/api/hello` = "This endpoint gives you a hello message"
+- Frontend knows: "If I request /api/hello, I'll get back a message"
+- Backend promises: "When you request /api/hello, I'll return this data"
+
+**JSON = Data Format**
+- Most APIs use JSON (JavaScript Object Notation)
+- Easy to read and use in both JavaScript and Python
+- Example: `{"message": "Hello", "status": "success"}`
+
+**Teaching tip:** Use a postcard analogy:
+- Frontend writes postcard: "Send me your hello message"
+- Frontend addresses it: `/api/hello`
+- Puts it in mailbox (sends HTTP request)
+- Postman (HTTP) delivers to backend
+- Backend reads request, writes response
+- Postman brings response back
+- Frontend reads response, updates page
+
+### 3. Project Structure: Where Code Lives
+
+**Key directories:**
+
+| Directory | Purpose | Who uses it |
+|-----------|---------|-------------|
+| `app/` | Frontend pages and layouts | Frontend developer |
+| `components/` | Reusable UI pieces | Frontend developer |
+| `lib/` | Helper functions | Both (mostly frontend) |
+| `api/` | Backend API endpoints | Backend developer |
+| `public/` | Images, icons, static files | Frontend developer |
+| `types/` | Data type definitions | Both |
+
+**Teaching tip:** Show the structure visually:
+```
+Your Web Application
+├── Frontend Code (app/, components/, lib/)
+├── Backend Code (api/)
+├── Configuration (package.json, pyproject.toml, etc.)
+└── Static Files (public/)
+```
+
+### 4. mise: The Task Coordinator
+
+**What is `mise`?**
+- Tool that runs tasks (like "make" in C projects)
+- Coordinates multiple servers
+- Remembers which commands to run
+
+**Key commands:**
+- `mise run dev` - Start everything (frontend + backend)
+- `mise run next-dev` - Start frontend only
+- `mise run fastapi-dev` - Start backend only
+- `mise run kill` - Stop all servers
+
+**Why it matters:**
+- Without it: "start frontend, start backend, remember 2 ports, remember 2 servers"
+- With it: One command (`mise run dev`), everything starts
+- Professional projects have many tasks; `mise` (or similar tools) manage them
+
+**Teaching tip:** Compare to a conductor:
+- Conductor doesn't play every instrument
+- Conductor tells all musicians when to start, stop, go faster, slower
+- `mise` tells frontend and backend when to start
+
+### 5. URLs and Ports: Finding Your Application
+
+**localhost = Your Computer**
+- Browsers normally connect to websites online
+- `localhost` means "connect to this computer"
+
+**Ports = Different Services on Your Computer**
+- Port 3000 = Frontend (Next.js)
+- Port 8000 = Backend (FastAPI)
+- Without ports, can't run multiple servers on same computer
+
+**Full URLs:**
+- `http://localhost:3000` = Frontend address
+- `http://localhost:8000` = Backend address
+- `http://localhost:8000/api/hello` = Specific backend endpoint
+
+**Teaching tip:** Use apartment building analogy:
+- localhost = apartment building
+- port 3000 = apartment 3000 (frontend lives there)
+- port 8000 = apartment 8000 (backend lives there)
+- apartment 8000, room `/api/hello` = specific data
 
 ## Teaching Sequence
 
-### Phase 1: Setup & Context (10 minutes)
+### Phase 1: Understanding Full-Stack Architecture (15 minutes)
 
-**Goal:** Help students understand WHY this matters and WHAT changed
-
-**Activities:**
-1. Show directory structure: before vs. after
-2. Explain why companies have multiple languages
-3. Walk through `mise.toml` to show task coordination
-4. Show that running `mise run test` executes TWO test suites
-
-**Success indicator:** Student can explain why test folders are separated
-
-### Phase 2: Python - multiply_two() (15 minutes)
-
-**Goal:** Refresh TDD in a language they know
+**Goal:** Help students understand WHY frontend and backend exist separately
 
 **Activities:**
-1. Students write test first: `test_multiply_two()` with 3 assertions
-2. Run `mise run test-python` → see RED phase (import error)
-3. Explain: "The test is asking for a function that doesn't exist yet"
-4. Implement: `multiply_two(a: int, b: int) -> int`
-5. Run `mise run test-python` → see GREEN phase (all pass)
-6. Verify: `test_add_two` still passes
+1. Ask: "How does a website work?"
+2. Show simple flow: User → Browser → Server → Browser → User
+3. Explain: "Browser part = frontend, Server part = backend"
+4. Show the project: "This app has both parts"
+5. Navigate the directories: "Frontend here, backend here"
+6. Show the configuration: "`mise` runs both"
 
-**Teaching tips:**
-- This should feel familiar—they've done this before
-- Emphasize: "Same TDD process, just doing it again in Python"
-- Point out: both `test_add_two` and `test_multiply_two` pass
+**Success indicator:** Student can explain why frontend and backend are separate
 
-**Success indicator:** Both Python tests pass without breaking old code
+### Phase 2: Setting Up the Environment (20 minutes)
 
-### Phase 3: Intro to Node.js (10 minutes)
-
-**Goal:** Ease students into JavaScript without overwhelming them
+**Goal:** Get both servers running
 
 **Activities:**
-1. Show `src/math.js` - point out `export function add()`
-2. Compare to Python: same logic, different syntax
-3. Show `tests_node/math.test.js` - point out test structure
-4. Compare to Python: same concept, different syntax
-5. Emphasize: "Same testing principle, different JavaScript syntax"
+1. `mise run venv-create` - Create Python environment
+2. `source .venv/bin/activate` - Activate it
+3. `mise run inst` - Install all dependencies
+4. `mise run dev` - Start both servers
 
-**Teaching tips:**
-- Don't go deep into JavaScript. Keep it surface-level.
-- Use side-by-side comparisons to show "same logic"
-- Focus on: "The test structure is the same idea, just JavaScript syntax"
+**Watch for:**
+- Students might ask "Why does this take so long?" (installing packages)
+- Some dependencies might fail (network issues usually)
+- Make sure both server messages appear
 
-**Success indicator:** Student can identify test vs. implementation in Node files
+**Success indicator:** Both servers start without errors
 
-### Phase 4: Node.js - multiply() (15 minutes)
+### Phase 3: Exploring the Code (15 minutes)
 
-**Goal:** Students write tests and code in JavaScript
-
-**Activities:**
-1. Students write tests: 3 multiply test cases in JavaScript
-2. Run `mise run test-node` → see RED phase (function missing)
-3. Point out: "Same error as Python—function doesn't exist yet"
-4. Implement: `export function multiply(a, b) { return a * b; }`
-5. Run `mise run test-node` → see GREEN phase (all pass)
-6. Verify: old `add` tests still pass
-
-**Teaching tips:**
-- This mirrors Phase 2 exactly—show the parallel
-- Highlight: "RED phase is the same in both languages"
-- Point out: both test sets pass (old + new)
-
-**Success indicator:** All Node.js tests pass without breaking old code
-
-### Phase 5: Multi-Language Verification (5 minutes)
-
-**Goal:** Show the power of coordinated testing
+**Goal:** Get comfortable reading the code
 
 **Activities:**
-1. Run `mise run test` (runs EVERYTHING)
-2. Show output: Python tests + Node.js tests, all passing
-3. Explain: "You changed code in 2 languages and verified both work"
-4. Point out: old code in both languages still works (VERIFY phase)
+1. Open `app/(marketing)/page.tsx` - "This is the homepage"
+2. Scroll through it - "Don't need to understand everything, just see it's code"
+3. Open `api/index.py` - "This is the backend"
+4. Find the `@app.get("/api/hello")` function
+5. Explain: "This function provides data to the frontend"
 
-**Teaching tips:**
-- This is the "aha!" moment—multiple languages, one verification
-- Show how this scales: add more languages, add more functions, `mise run test` still works
-- Explain: "This is how professional teams stay confident"
+**Key points to emphasize:**
+- Frontend code uses JavaScript/React (different syntax from Python)
+- Backend code uses Python (familiar to them)
+- Both do similar things (functions, logic) just different languages
+- None of this is scary—it's just code
 
-**Success indicator:** Student runs `mise run test` and sees both test suites pass
+**Success indicator:** Student can find frontend and backend files
 
-### Phase 6: Comparison & Insight (10 minutes)
+### Phase 4: Using Your Application (10 minutes)
 
-**Goal:** Solidify the "same logic, different syntax" principle
-
-**Activities:**
-1. Put Python and JavaScript multiply side-by-side
-2. Ask: "What's the same? What's different?"
-3. Build comparison table together:
-   - Same: 2 parameters, multiply, return result
-   - Different: def vs. function, type hints, export, semicolons
-4. Key insight: "Learn one language's testing, apply everywhere"
-
-**Teaching tips:**
-- This is where students "get it"
-- Make it visual—use colors or highlighting
-- Emphasize: "The testing principle is what matters, syntax is just details"
-
-**Success indicator:** Student can explain the Python/JavaScript differences without prompting
-
-### Phase 7: Challenge & Consolidation (20 minutes)
-
-**Goal:** Students practice TDD independently in both languages
-
-**Challenge:** Implement `divide_two()` and `divide()` with tests
+**Goal:** See the application actually running
 
 **Activities:**
-1. Students write test first in Python (RED)
-2. Students implement in Python (GREEN)
-3. Verify Python tests pass
-4. Repeat for JavaScript
-5. Run `mise run test` to verify everything
+1. Open browser, go to `localhost:3000`
+2. "This page is being served by Next.js"
+3. Refresh page (see it still works)
+4. Open browser console (F12)
+5. Explain what they're seeing
 
-**Teaching tips:**
-- Students are now doing this independently
-- Resist helping with syntax—let them struggle with JavaScript
-- That struggle is valuable—it's how they learn JavaScript
-- Celebrate when they finish: "You just implemented TDD in 2 languages!"
+**What to highlight:**
+- "The page loaded = frontend is working"
+- "No errors in console = everything is connected"
+- "Next.js is watching your files = changes auto-update"
 
-**Success indicator:** All tests pass (Python + Node.js) after their implementation
+**Success indicator:** Page loads, student sees it working
+
+### Phase 5: Understanding API Communication (15 minutes)
+
+**Goal:** See how frontend and backend talk
+
+**Activities:**
+
+1. **In browser console, run:**
+```javascript
+fetch('http://localhost:8000/api/hello')
+  .then(r => r.json())
+  .then(d => console.log(d))
+```
+
+2. **Result:**
+```
+{message: "Hello from FastAPI!", status: "success"}
+```
+
+3. **Explain the flow:**
+   - You asked: "Give me data from /api/hello"
+   - Backend responded: "Here it is"
+   - Frontend got the data
+
+4. **Point out the code:**
+   - Show `api/index.py` function
+   - Show that it returns exactly what the console showed
+
+**Key insight:** This is how all web apps work. Frontend requests data, backend provides it.
+
+**Success indicator:** Student understands the request-response cycle
+
+### Phase 6: Making a Change (10 minutes)
+
+**Goal:** See live development workflow
+
+**Activities:**
+1. Edit `app/(marketing)/page.tsx` - Change some text
+2. **Don't refresh!** Just watch the page
+3. After a few seconds, page updates automatically
+4. Explain: "This is hot reloading—Next.js rebuilds and updates"
+
+**Why this matters:**
+- Feedback loop is instant
+- Can see changes immediately
+- Makes development fast
+
+**Success indicator:** Student sees code change reflected in browser
+
+### Phase 7: Stopping and Restarting (5 minutes)
+
+**Goal:** Learn to manage the servers
+
+**Activities:**
+1. In terminal: Press `Ctrl+C` to stop servers
+2. "Both servers stopped"
+3. Run `mise run dev` again
+4. "Everything starts fresh"
+5. Mention: `mise run kill` if servers get stuck
+
+**Why important:**
+- Can't have duplicate servers running
+- Sometimes need clean restart
+- Professional skill
+
+**Success indicator:** Can stop and start servers at will
+
+### Phase 8: Directory Deep-Dive (10 minutes)
+
+**Goal:** Understand project organization
+
+**Activities:**
+1. Show `app/` - "All pages and UI"
+2. Show `components/` - "Reusable UI pieces"
+3. Show `api/` - "All backend endpoints"
+4. Show `lib/` - "Helper functions"
+5. Show `public/` - "Images and static files"
+
+**Key insight:** Code is organized by purpose, not by language
+
+**Success indicator:** Student can explain what each directory contains
+
+### Phase 9: Package.json and Dependencies (10 minutes)
+
+**Goal:** Understand what packages are installed
+
+**Activities:**
+1. Open `package.json`
+2. Show dependencies - "All the packages the frontend uses"
+3. Open `package.json.md` - "Explanation of each package"
+4. Explain: "You don't need to memorize these, just know they exist"
+5. Point out key ones: `next`, `react`, `tailwindcss`
+
+**Teaching tip:** "It's like Python's `pyproject.toml` but for JavaScript"
+
+**Success indicator:** Student knows where to find dependency information
+
+### Phase 10: Building on Your Knowledge (20 minutes)
+
+**Goal:** Have students explore independently
+
+**Activities:**
+1. "Browse the code and pick one thing you want to understand"
+2. Could be:
+   - A page in `app/`
+   - The `/api/hello` endpoint
+   - A component in `components/`
+   - Configuration in `tsconfig.json`
+3. Have them read it and explain what they think it does
+4. Discuss as a group
+
+**Why:** Builds confidence in reading code they didn't write
+
+**Success indicator:** Student can read and explain some code
 
 ## Teaching Strategies
 
-### Strategy 1: Mirror, Mirror, Mirror
+### Strategy 1: Show Both Frontend and Backend for Everything
 
-Everything students do in Python, they repeat in Node.js:
-- Test → Code in Python
-- Test → Code in Node.js
+When explaining a concept, show it in both languages:
 
-This shows that TDD is the same process, just different syntax.
-
-### Strategy 2: Side-by-Side Comparison
-
-Whenever showing JavaScript, put Python right next to it:
-
+**Example - Function:**
 ```python
-def multiply_two(a: int, b: int) -> int:
-    return a * b
+# Backend (Python)
+@app.get("/api/hello")
+async def hello_world():
+    return {"message": "Hello!"}
 ```
 
 vs.
 
 ```javascript
-export function multiply(a, b) {
-  return a * b;
+// Frontend (JavaScript)
+async function getHello() {
+  const response = await fetch('/api/hello')
+  return await response.json()
 }
 ```
 
-This makes differences obvious and similarities clear.
+Same concept (function that does something), different syntax.
 
-### Strategy 3: Focus on Testing, Not Syntax
+### Strategy 2: Use Analogies
 
-When teaching JavaScript:
-- Emphasize: "This test structure is the same as Python"
-- Don't get into: "Here's everything about JavaScript syntax"
-- Keep it practical: "Here's what you need to write tests"
+- Frontend/Backend = Restaurant (waiters/kitchen)
+- localhost/ports = Apartment building addresses
+- API = Postcard system
+- HTTP = Postal system
+- JSON = Postcard format
+- `mise` = Conductor
 
-### Strategy 4: Gradual Language Introduction
+Good analogies stick better than technical explanations.
 
-Don't dump JavaScript on them. Introduce it step-by-step:
-1. Show existing code (they don't write yet)
-2. Explain existing tests (they don't write yet)
-3. Have them write tests (still using existing code)
-4. Have them write code (to pass tests)
+### Strategy 3: Emphasize "It's Running on YOUR Computer"
 
-This scaffolds learning.
+"This isn't on the internet. Both servers are running on your laptop right now. You can see them in your terminal. You can kill them with Ctrl+C. You own this completely."
+
+This makes it feel real, not abstract.
+
+### Strategy 4: Focus on One Thing at a Time
+
+Don't try to teach TypeScript, React, FastAPI decorators, HTTP, JSON, and project structure all at once.
+
+Order: Architecture → Running → Communication → Exploring code
+
+### Strategy 5: Use the Browser as Teaching Tool
+
+Everything students need to see is in the browser:
+- Frontend runs there
+- Can test APIs there
+- Can see code changes live
+- Developer console shows errors
+
+### Strategy 6: Celebrate What's Already Done
+
+"Look at this application. The CSS, the layout, the database connections, the API endpoints—someone already did all this. Your job isn't to build it from scratch. Your job is to understand how the pieces fit together and be able to modify them."
+
+This is realistic and encouraging.
 
 ## Common Student Misconceptions
 
-### Misconception 1: "I need to master JavaScript now"
+### Misconception 1: "I Need to Learn JavaScript Fully Now"
 
-**Reality:** They need to write enough JavaScript to pass tests. That's different from mastery.
-
-**How to address:**
-- "You don't need to understand all of JavaScript"
-- "You need to understand: function syntax, export, and how to call functions"
-- "That's enough to write tests and code to pass them"
-
-### Misconception 2: "Node.js is complicated"
-
-**Reality:** Node.js is just "JavaScript on your computer." The complexity comes later (packages, servers, etc.)
+**Reality:** They need to understand enough JavaScript to read frontend code and make basic changes. Full mastery comes later.
 
 **How to address:**
-- "Node.js = JavaScript runtime, like Python is a runtime"
-- "We're just running JavaScript code, same as we run Python"
-- "Focus on: writing tests and making them pass"
+- "You already know programming. JavaScript is just another language with different syntax."
+- "Look at Python function vs. JavaScript function. Same idea, different keywords."
+- "You can look up syntax you don't recognize. That's what professionals do."
 
-### Misconception 3: "I have to memorize JavaScript syntax"
+### Misconception 2: "This is Too Complicated"
 
-**Reality:** They need to recognize patterns, not memorize everything.
-
-**How to address:**
-- "You'll see `function`, not `def`. That's the main difference."
-- "You'll see `export`, which Python doesn't have. That's how JavaScript shares code."
-- "Most of the thinking is the same as Python"
-
-### Misconception 4: "Testing is easier in Python than JavaScript"
-
-**Reality:** Testing is the same in both; only syntax differs.
+**Reality:** It's only complicated if you try to understand everything at once. Take it piece by piece.
 
 **How to address:**
-- "Python: `assert x == y`, JavaScript: `assert.strictEqual(x, y)`"
-- "Same concept, different syntax"
-- "The test idea is identical everywhere"
+- Break it into chunks (frontend works, backend works, communication works)
+- Celebrate each small win
+- "You've already understood the hard part (the architecture). Code is just details."
+
+### Misconception 3: "Frontend and Backend are Always This Complicated"
+
+**Reality:** This project has a lot of scaffolding and UI components. Basic frontend-backend applications are much simpler.
+
+**How to address:**
+- "This app has a lot of extra features. A minimal full-stack app is just: pages + API endpoints."
+- "Once you understand this, simpler projects will be obvious."
+
+### Misconception 4: "I Can't Change Any Code Because I Don't Understand All of It"
+
+**Reality:** Professionals change code they don't fully understand all the time. Understanding the principle (not the details) is enough.
+
+**How to address:**
+- "Change some text in a page. You don't need to understand the whole file."
+- "Add a new API endpoint. You can copy the existing one and modify it."
+- "Don't be afraid to try things. The worst that happens is an error, which tells you what went wrong."
 
 ## Assessment Ideas
 
 ### Quick Checks (During Course)
 
-**For Python phase:**
-- Can student write 3 test assertions correctly?
-- Can student implement multiply_two with proper type hints?
-- Does old code (add_two) still work after changes?
+**Architecture understanding:**
+- Can student explain what frontend does vs. what backend does?
+- Can student describe how they communicate?
 
-**For Node.js phase:**
-- Can student write JavaScript tests in the correct syntax?
-- Can student use `export function` correctly?
-- Do old tests still pass after new code?
+**Technical skills:**
+- Can student start/stop servers?
+- Can student find frontend vs. backend code?
+- Can student change some code and see the result?
 
-**For integration:**
-- Does `mise run test` show all tests passing?
-- Can student explain why tests are in different folders?
+**Exploration:**
+- Can student find a specific file in the project?
+- Can student read code (even if not understanding all the syntax)?
+- Can student use browser developer tools?
 
-### Challenge Tasks
+### Challenges
 
-**After Python:**
-- Implement `subtract_two()` with tests (verify nothing broke)
-
-**After Node.js:**
-- Implement `subtract()` with tests (verify nothing broke)
-
-**After integration:**
-- Implement `power_two()` and `power()` with TDD in both languages
-- Verify `mise run test` passes all tests
+**After module:**
+- **Edit the homepage** - Change some text on the frontend
+- **Call an API** - Use fetch in console to call the backend
+- **Navigate code** - Find the `@app.get("/api/hello")` function
+- **Stop and restart** - Kill servers, restart fresh
 
 ### Stretch Goals
 
 For advanced students:
-- Add more edge cases to tests
-- Create multiple test functions in the same file
-- Add a third language (e.g., simple Go or Rust)
-- Understand how to run just Python tests: `mise run test-python`
-- Understand configuration in `mise.toml` (modify and test)
+- **Add a new API endpoint** - Copy `/api/hello`, modify it, test it
+- **Create a new page** - Add a new file to `app/`
+- **Connect them** - Have frontend page call new backend endpoint
+- **Use `package.json.md`** - Research what a specific package does
+- **Modify styling** - Change colors in `globals.css`
 
 ## Common Student Errors & Solutions
 
-### Error 1: Tests pass in Python but student forgets Node.js
+### Error 1: "Port Already in Use"
 
-**Cause:** Student gets focused on one language
+**Cause:** Server already running or not cleaned up properly
 
-**Solution:** Always run `mise run test` (both languages) at the end. Make it a habit.
+**Solution:** `mise run kill` then `mise run dev`
 
-### Error 2: JavaScript syntax errors (forget `export`, semicolon, etc.)
+### Error 2: "Connection Refused"
 
-**Cause:** Unfamiliar syntax
+**Cause:** Forgot to start servers, or servers crashed
 
-**Solution:** This is okay! Syntax errors teach. Let them debug the error message. Point to similar Python code: "In Python, you'd use `def`. Here use `function`."
+**Solution:** Check terminal, ensure `mise run dev` is running
 
-### Error 3: "My test passes but I broke something else"
+### Error 3: "I Changed the Code but It Didn't Update"
 
-**Cause:** Didn't verify all tests
+**Cause:** Browser cache, or dev server didn't recompile
 
-**Solution:** This is exactly why we verify! Celebrate the catch: "This is why we run all tests before declaring victory."
+**Solution:** Hard refresh (Ctrl+Shift+R or Cmd+Shift+R), check terminal for errors
 
-### Error 4: Trying to memorize JavaScript instead of learning TDD
+### Error 4: "I'm Confused About What's Frontend vs. Backend"
 
-**Cause:** Student overwhelmed by new syntax
+**Cause:** Lots of directories and files
 
-**Solution:** Redirect: "Don't memorize. Recognize patterns. Can you spot `function`? Can you spot `export`? That's enough for now."
+**Solution:** Simplify: "Files in `app/` = frontend. Files in `api/` = backend. Everything else = support."
 
-### Error 5: Running wrong test command
+### Error 5: "The API Call in Console Didn't Work"
 
-**Cause:** Confusion about command names
+**Cause:** Syntax error, or backend not running
 
-**Solution:** Keep a reference handy:
-- `mise run test-python` - just Python
-- `mise run test-node` - just Node.js
-- `mise run test` - both
+**Solution:** Check backend messages in terminal. Copy-paste the example command from TICKET.md.
 
 ## Expected Time Investment
 
 ### Total Course Time
 
-- Phase 1 (Setup): 10 minutes
-- Phase 2 (Python): 15 minutes
-- Phase 3 (Node intro): 10 minutes
-- Phase 4 (Node implementation): 15 minutes
-- Phase 5 (Verification): 5 minutes
-- Phase 6 (Comparison): 10 minutes
-- Phase 7 (Challenge): 20 minutes
+- Phase 1 (Understanding): 15 minutes
+- Phase 2 (Setup): 20 minutes
+- Phase 3 (Code exploration): 15 minutes
+- Phase 4 (Using the app): 10 minutes
+- Phase 5 (API communication): 15 minutes
+- Phase 6 (Making changes): 10 minutes
+- Phase 7 (Managing servers): 5 minutes
+- Phase 8 (Directory structure): 10 minutes
+- Phase 9 (Dependencies): 10 minutes
+- Phase 10 (Independent exploration): 20 minutes
 
-**Total: ~85 minutes for complete course**
+**Total: ~130 minutes** (a little over 2 hours)
 
 ### After First Pass
 
-- Implementing second function independently: 15-20 minutes
-- Mastery: 2-3 functions implemented with tests in both languages
+- Modifying the backend: 15-30 minutes
+- Creating a new frontend page: 15-30 minutes
+- Understanding a specific concept deeply: variable
 
 ## Key Takeaway for Students
 
-**"TDD is the same everywhere. Languages are just different dialects. Master the testing principle in one language, and you can apply it anywhere."**
+**"Full-stack means you understand both halves. Frontend makes it beautiful, backend makes it powerful. Together, they make a complete application. You can now build both."**
 
-When students understand this, they've achieved the goal. The specific JavaScript syntax doesn't matter as much as the realization that testing transcends languages.
+This is the moment when students realize: "I'm not just a Python developer or JavaScript developer. I'm a web application developer."
 
 ## References for Instructors
 
-### Node.js / JavaScript
-- [Node.js Official Docs](https://nodejs.org/docs/)
-- [Node.js Test Module](https://nodejs.org/api/test.html) (built-in testing)
-- [pnpm Documentation](https://pnpm.io/)
+### Next.js / React / Frontend
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://react.dev)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 
-### Testing & TDD
-- [Jest Documentation](https://jestjs.io/) (popular JS testing framework)
-- [Pytest vs Mocha](https://github.com/awesome-testing/javascript-testing-frameworks) (comparison)
-- [TDD Best Practices](https://martinfowler.com/bliki/TestDrivenDevelopment.html)
+### FastAPI / Backend
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Python async Documentation](https://docs.python.org/3/library/asyncio.html)
 
-### Multi-Language Development
-- [Polyglot Programming](https://en.wikipedia.org/wiki/Polyglot_programming)
-- [mise Documentation](https://mise.jdx.dev/) (task runner used here)
+### Full-Stack Concepts
+- [HTTP Protocol Basics](https://developer.mozilla.org/en-US/docs/Web/HTTP)
+- [JSON Format](https://www.json.org/)
+- [REST API Principles](https://restfulapi.net/)
+
+### Tools
+- [mise Documentation](https://mise.jdx.dev/)
+- [Docker (for containerization)](https://www.docker.com/)
+- [Git for version control](https://git-scm.com/)
 
 ## Closing Thoughts
 
-This course teaches more than TDD in Node.js. It teaches that:
+This course is about more than setup. It's about realizing:
 
-1. **Principles transcend syntax** - TDD is about thinking, not language
-2. **Professional development is messy** - Real projects use multiple languages
-3. **Tools help coordination** - `mise` makes managing complexity easier
-4. **Confidence comes from testing** - Running `mise run test` and seeing everything pass is powerful
+1. **Web applications have structure** - Frontend and backend are distinct, coordinated parts
+2. **Communication is the key** - Everything depends on frontend-backend communication via APIs
+3. **Professional development is organized** - Directories, tools (`mise`), configuration files all serve a purpose
+4. **You can now build real things** - Not just scripts or toy projects, but web applications people can use
 
-Students who complete this course gain confidence in multi-language environments and understand that TDD is their superpower across all of them.
+Students who complete this course understand full-stack development. They can read code in different languages, understand how they communicate, and start building applications that do real things.
+
+That's the power of full-stack development. And that's what you're teaching.
+
+Good luck! 🚀

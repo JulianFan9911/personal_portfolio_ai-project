@@ -1,398 +1,583 @@
-# Task Card: Setting Up Node Development Environment with multiply_two
+# Task Card: Setting Up Next.js + FastAPI Full-Stack Development Environment
 
 ## Prerequisites
-Ensure your environment is set up: `mise run venv-create`, `mise run inst`, and `source .venv/bin/activate`
+
+Ensure you have `mise` installed and your environment ready:
+- `mise run venv-create` - Create Python virtual environment
+- `source .venv/bin/activate` - Activate Python environment
+- `mise run inst` - Install all dependencies
 
 ---
 
 ## Overview
 
-You will learn Test-Driven Development (TDD) in a **multi-language project** by implementing `multiply_two()` in Python and `multiply()` in Node.js. The key principle: **write tests first in both languages, then implement code to pass those tests.**
+You will set up and run a complete **full-stack web application** with:
+- **Frontend**: Next.js with React (running on `localhost:3000`)
+- **Backend**: FastAPI with Python (running on `localhost:8000`)
 
-This task card guides you through practicing TDD across Python and Node.js using the same logic but different syntax.
+This task card guides you through understanding the full-stack architecture, starting both servers, and seeing how frontend and backend communicate.
 
 ---
 
-## Part 1: Python - multiply_two()
+## Part 1: Understanding Full-Stack Architecture (10 minutes)
 
-### Task 1.1: Create test_multiply_two() function (RED Phase)
+### Task 1.1: Examine the Project Structure
 
-**File:** `tests_python/test_source_code.py`
+**Objective**: Understand what frontend and backend code looks like
 
-Add the following test function (keep the existing `test_add_two()`):
+1. Open and read the project structure:
+   - List `app/` directory (frontend code): `ls app/`
+   - List `api/` directory (backend code): `ls api/`
 
+2. Open `app/(marketing)/page.tsx` in your editor
+   - This is a React/Next.js page component
+   - It's the home page users will see
+
+3. Open `api/index.py` in your editor
+   - This is the FastAPI backend
+   - Look for the `@app.get("/api/hello")` endpoint
+   - This is the backend providing data
+
+**What to notice:**
+- Frontend code (in `app/`) uses TypeScript/React syntax
+- Backend code (in `api/`) uses Python and FastAPI decorators
+- They're completely separate but work together
+
+**Checklist:**
+- [ ] Located and read `app/(marketing)/page.tsx`
+- [ ] Located and read `api/index.py`
+- [ ] Can identify what each part does (frontend vs. backend)
+
+### Task 1.2: Understand the Configuration
+
+**Objective**: Know how the project is configured to run both servers
+
+1. Open `mise.toml` and find these sections:
+
+```toml
+[tasks.next-dev]
+description = "🌐 Start Next.js development server"
+run = "next dev"
+
+[tasks.fastapi-dev]
+description = "⚙️ Start FastAPI development server"
+run = "uv run -- python -m uvicorn api.index:app --reload --host 127.0.0.1 --port 8000"
+
+[tasks.dev]
+description = "🚀 Start all development servers (Next.js + FastAPI)"
+depends = ["kill"]
+run = "pnpm exec concurrently 'mise run next-dev' 'mise run fastapi-dev'"
+```
+
+2. Understand what each does:
+   - `next-dev` - Starts frontend only
+   - `fastapi-dev` - Starts backend only
+   - `dev` - Starts both at the same time
+
+**Key insight**: `mise` is the conductor! It runs multiple servers in parallel.
+
+**Checklist:**
+- [ ] Found all three tasks in `mise.toml`
+- [ ] Understand that `dev` runs both `next-dev` and `fastapi-dev`
+- [ ] Know the URLs: frontend at 3000, backend at 8000
+
+### Task 1.3: Review package.json
+
+**Objective**: Know what frontend dependencies are installed
+
+1. Open `package.json` and look at dependencies
+2. Don't memorize them—just see that there are many
+3. Note: `package.json.md` exists with full explanations
+
+**Understanding dependencies:**
+- `next` and `react` - Framework and library for frontend
+- `@radix-ui/*` - UI components library
+- `tailwindcss` - Styling framework
+- Many others providing specific features
+
+**Checklist:**
+- [ ] Opened `package.json`
+- [ ] Saw the dependencies list
+- [ ] Know that `package.json.md` explains each one
+
+---
+
+## Part 2: Starting the Development Environment (10 minutes)
+
+### Task 2.1: Install Dependencies (First Time Only)
+
+**Command:**
+```bash
+mise run inst
+```
+
+**What happens:**
+- Installs Python packages (FastAPI, uvicorn, etc.) into `.venv/`
+- Installs JavaScript packages (Next.js, React, etc.) into `node_modules/`
+
+**Expected output:**
+- No red errors at the end
+- Should see messages about packages being downloaded
+- May take 1-2 minutes
+
+**Checklist:**
+- [ ] Command completed without errors
+- [ ] No red error messages in output
+
+### Task 2.2: Start All Development Servers
+
+**Command:**
+```bash
+mise run dev
+```
+
+**What happens:**
+- Automatically runs `mise run kill` (stops any old servers)
+- Starts Next.js frontend on `localhost:3000`
+- Starts FastAPI backend on `localhost:8000`
+- Both run simultaneously
+
+**Expected output:**
+```
+> next dev
+
+  ▲ Next.js 16.1.6
+  - Local:        http://localhost:3000
+
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+```
+
+**Important:**
+- The terminal will keep running (it doesn't return to prompt)
+- This is normal! Both servers are running
+- Leave this terminal open
+
+**Checklist:**
+- [ ] Both server messages appear (Next.js and Uvicorn)
+- [ ] No error messages
+- [ ] Terminal is still running (showing active servers)
+
+### Task 2.3: Open Browser and View Your Application
+
+**In a NEW terminal window** (keep the dev server running):
+
+1. Open your web browser (Chrome, Firefox, Safari, etc.)
+
+2. Go to:
+```
+http://localhost:3000
+```
+
+3. You should see a web page loaded!
+
+**What you're seeing:**
+- A complete web application running on your computer
+- The page is served by Next.js frontend (port 3000)
+- The page can call the FastAPI backend (port 8000) for data
+
+**Compare to the example:**
+![Example Web App](img/01-example-hello-world-web-app.png)
+
+**Checklist:**
+- [ ] Opened browser to `localhost:3000`
+- [ ] Web page loaded successfully
+- [ ] No connection errors
+- [ ] Page displays (doesn't matter what it looks like—it's running!)
+
+---
+
+## Part 3: Understanding Frontend-Backend Communication (10 minutes)
+
+### Task 3.1: Examine the API Endpoint
+
+**File:** `api/index.py`
+
+**Find and read:**
 ```python
-def test_multiply_two():
-    assert multiply_two(3, 4) == 12
-    assert multiply_two(5, 0) == 0
-    assert multiply_two(-2, 3) == -6
+@app.get("/api/hello")
+async def hello_world():
+    """
+    Hello World API endpoint - 用于测试 FastAPI 集成
+    """
+    return JSONResponse(
+        content={
+            "message": "Hello from FastAPI!",
+            "status": "success"
+        }
+    )
 ```
 
 **What this means:**
-- The function must multiply two integers
-- Test case 1: Normal multiplication (3 × 4 = 12)
-- Test case 2: Edge case with zero (5 × 0 = 0)
-- Test case 3: Edge case with negative number (-2 × 3 = -6)
+- `@app.get("/api/hello")` - Creates an endpoint at `/api/hello`
+- The function returns JSON: a message and status
+- When anyone visits `http://localhost:8000/api/hello`, this function runs
 
-### Task 1.2: Run tests (they should FAIL)
-
-```bash
-mise run test-python
-```
-
-**Expected output:**
-```
-ERROR: cannot import name 'multiply_two'
-```
-
-**Why it fails:** The function doesn't exist yet. That's the RED phase! ✅
-
-**Checklist:**
-- [ ] Test file updated with three assertions
-- [ ] `mise run test-python` confirms tests fail with import error
-
-### Task 1.3: Create multiply_two() function (GREEN Phase)
-
-**File:** `learn_personal_portfolio_ai/source_code.py`
-
-Add the following function (keep the existing `add_two()`):
-
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a * b
-```
-
-**Why this implementation:**
-- `a: int, b: int` - Both parameters must be integers (type hints)
-- `-> int` - Function returns an integer (type hint)
-- `return a * b` - Multiply the two numbers
-
-### Task 1.4: Run tests (they should PASS)
-
-```bash
-mise run test-python
-```
-
-**Expected output:**
-```
-tests_python/test_source_code.py::test_add_two PASSED          [50%]
-tests_python/test_source_code.py::test_multiply_two PASSED     [100%]
-======================== 2 passed in 0.02s ========================
-```
-
-**Why this matters:**
-- GREEN phase: tests pass!
-- Both `test_add_two` and `test_multiply_two` pass
-- Nothing is broken (the `add_two` function still works)
-
-**Checklist:**
-- [ ] Function added to source_code.py
-- [ ] `mise run test-python` shows "2 passed"
-- [ ] All assertions pass
-
----
-
-## Part 2: Node.js - multiply()
-
-### Task 2.1: Create multiply tests (RED Phase)
-
-**File:** `tests_node/math.test.js`
-
-Add the following tests after the existing `add` tests:
-
-```javascript
-test('multiply(3, 4) should equal 12', () => {
-  const multiply = require('../src/math.js').multiply;
-  assert.strictEqual(multiply(3, 4), 12);
-});
-
-test('multiply(5, 0) should equal 0', () => {
-  const multiply = require('../src/math.js').multiply;
-  assert.strictEqual(multiply(5, 0), 0);
-});
-
-test('multiply(-2, 3) should equal -6', () => {
-  const multiply = require('../src/math.js').multiply;
-  assert.strictEqual(multiply(-2, 3), -6);
-});
-```
-
-**Key differences from Python:**
-- `test()` instead of `def test_` (Node's test naming convention)
-- `assert.strictEqual(a, b)` instead of `assert a == b`
-- `require()` to import functions instead of `from...import`
-
-### Task 2.2: Run tests (they should FAIL)
-
-```bash
-mise run test-node
-```
-
-**Expected error:**
-```
-TypeError: multiply is not a function
-```
-
-**RED phase achieved!** The test is failing because the function doesn't exist yet. ✅
-
-**Checklist:**
-- [ ] Test file updated with three test cases
-- [ ] `mise run test-node` confirms tests fail with "multiply is not a function"
-
-### Task 2.3: Create multiply() function (GREEN Phase)
-
-**File:** `src/math.js`
-
-Add this function (keep the `add` function):
-
-```javascript
-export function multiply(a, b) {
-  return a * b;
+**Test it:**
+1. Open new browser tab
+2. Go to: `http://localhost:8000/api/hello`
+3. You should see JSON response:
+```json
+{
+  "message": "Hello from FastAPI!",
+  "status": "success"
 }
 ```
 
-**JavaScript function breakdown:**
-- `export function` - Makes the function available for import
-- `multiply(a, b)` - Function name and parameters (no type hints in JavaScript by default)
-- `return a * b` - Multiply them together
-- `;` - End statement (JavaScript convention)
-
-### Task 2.4: Run tests (they should PASS)
-
-```bash
-mise run test-node
-```
-
-**Expected output:**
-```
-✔ add(2, 3) should equal 5
-✔ add(0, 0) should equal 0
-✔ multiply(3, 4) should equal 12 (0.456ms)
-✔ multiply(5, 0) should equal 0 (0.389ms)
-✔ multiply(-2, 3) should equal -6 (0.512ms)
-
-───────────────────────────────────────
-tests 5 passed (1.801ms)
-```
-
-**GREEN phase complete!** All tests pass:
-- Old `add` tests still work
-- New `multiply` tests all pass
-
 **Checklist:**
-- [ ] Function added to src/math.js
-- [ ] `mise run test-node` shows "5 passed"
-- [ ] All multiply tests pass
+- [ ] Read the `@app.get("/api/hello")` function
+- [ ] Understand it returns JSON data
+- [ ] Tested the endpoint in browser (saw JSON response)
 
----
+### Task 3.2: Understand How Frontend Calls Backend
 
-## Part 3: VERIFY - Run All Tests
+**Concept:**
+The frontend can make requests to the backend using the API endpoint.
 
-### Task 3.1: Check all tests still pass
-
-Run the complete test suite (Python + Node.js):
-
-```bash
-mise run test
-```
-
-**Expected output:**
-```
-======================== Python Tests ========================
-tests_python/test_source_code.py::test_add_two PASSED          [50%]
-tests_python/test_source_code.py::test_multiply_two PASSED     [100%]
-======================== 2 passed in 0.02s ========================
-
-======================== Node.js Tests ========================
-✔ add(2, 3) should equal 5
-✔ add(0, 0) should equal 0
-✔ multiply(3, 4) should equal 12
-✔ multiply(5, 0) should equal 0
-✔ multiply(-2, 3) should equal -6
-
-───────────────────────────────────────
-tests 5 passed (1.801ms)
-```
-
-**Verification that your changes didn't break anything:**
-
-- ✅ `test_add_two` still passes (old Python function works)
-- ✅ `test_multiply_two` passes (new Python function works)
-- ✅ Node `add` tests still pass (old Node function works)
-- ✅ Node `multiply` tests pass (new Node function works)
-
-This is the VERIFY phase—you've implemented code in two languages without breaking anything.
-
-**Checklist:**
-- [ ] All tests pass (both Python and Node.js)
-- [ ] No test failures
-- [ ] Output shows "2 passed" for Python and "5 passed" for Node.js
-
----
-
-## Understanding the TDD Cycle
-
-```
-RED (Fail)           → GREEN (Pass)         → VERIFY (No Regressions)
-─────────────────     ───────────────────    ───────────────────────
-1. Write tests       2. Implement code      3. Run full test suite
-2. Run (FAIL)        3. Run (PASS)          4. Confirm nothing broke
-3. See error         4. See success         5. Ready to continue
-```
-
----
-
-## Key Learning Points
-
-### Why Type Hints in Python?
-
-```python
-def multiply_two(a: int, b: int) -> int:
-    #            ↑         ↑        ↑
-    #    Inputs must be   Output must be
-    #       integers         integer
-```
-
-Type hints document the contract: "This function works with integers and returns an integer."
-
-### Why Multiple Test Cases?
-
-Each assertion tests a different scenario:
-- **Normal case** (3, 4): Tests basic multiplication
-- **Edge case with zero** (5, 0): Tests boundary behavior
-- **Edge case with negative** (-2, 3): Tests sign handling
-
-Good tests catch edge cases that simple implementations might miss.
-
-### Why Tests First (TDD)?
-
-- Tests define what "done" means BEFORE you start coding
-- Without tests: you wonder "Is it correct?"
-- With tests: you know "Tests pass = it's correct"
-
----
-
-## Python vs Node.js Comparison
-
-### Same Logic, Different Syntax
-
-**Python:**
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a * b
-```
-
-**JavaScript:**
+**Example code** (you might see this in `app/` files):
 ```javascript
-export function multiply(a, b) {
-  return a * b;
-}
+// Fetch data from backend API
+const response = await fetch('http://localhost:8000/api/hello')
+const data = await response.json()
+console.log(data.message)  // "Hello from FastAPI!"
 ```
 
-### Similarities
+**Request-Response Flow:**
+```
+Frontend (localhost:3000)
+       ↓ (request)
+Backend receives: "Give me /api/hello"
+       ↓ (backend processes)
+Backend runs: hello_world() function
+       ↓ (response)
+Frontend receives: {"message": "Hello from FastAPI!", "status": "success"}
+       ↓
+Frontend updates the page with the data
+```
 
-- Both take two parameters
-- Both multiply them
-- Both return the result
-- **The logic is identical**
+**Key understanding:**
+- Frontend asks backend for data using HTTP requests
+- Backend processes and returns JSON
+- Frontend displays the data to users
 
-### Differences
+**Checklist:**
+- [ ] Understand the request-response cycle
+- [ ] Know that `/api/hello` is an endpoint for data
+- [ ] Recognize that frontend and backend are separate but communicate
 
-- Python: `def` vs JavaScript: `function`
-- Python: has type hints, JavaScript: doesn't
-- Python: `from ... import`, JavaScript: `export`/`import`
-- Python: no semicolons, JavaScript: has semicolons
+### Task 3.3: Look at Frontend Code
 
-**Key takeaway:** Learn one, the other is just syntax.
+**Optional:** Look at one of the frontend files in `app/` directory
+
+- You'll see TypeScript/React syntax (different from Python)
+- You might see `fetch()` calls to the backend
+- This is the user-facing code
+
+**Don't worry about understanding all the syntax**—just see that:
+- Frontend code looks different from backend code
+- They're in separate places (`app/` vs `api/`)
+- They communicate via APIs
+
+**Checklist:**
+- [ ] Opened at least one file in `app/` directory
+- [ ] Recognized it's different from backend code
 
 ---
 
-## Troubleshooting
+## Part 4: Explore and Experiment (15 minutes)
 
-| Problem | Solution |
-|---------|----------|
-| `cannot import name 'multiply_two'` (Python) | Function doesn't exist yet. This is RED phase—add the function. |
-| `TypeError: multiply is not a function` (Node) | Function doesn't exist or isn't exported. Add `export function multiply()`. |
-| `AssertionError: 12 != 11` | Bug in implementation. Check the math. Multiply should use `*`, not `+`. |
-| `only test_add_two passes, not multiply_two` | Make sure you added the test AND the function correctly. |
-| Only Python tests run, not Node.js | Make sure you ran `mise run inst-node-deps` to install Node dependencies. |
+### Task 4.1: Change Frontend Code and See Live Update
+
+**Objective:** See how Next.js development server auto-updates
+
+1. Open `app/(marketing)/page.tsx` in your editor
+
+2. Find some text in the file (like a heading or paragraph)
+
+3. Change the text to something different
+
+4. **Don't refresh!** Just look at your browser
+
+5. The page should update automatically in a few seconds
+
+**What's happening:**
+- Next.js watches your files for changes
+- When you save, it rebuilds the page
+- Browser automatically reloads
+- This is "hot module reloading" (HMR)—super useful for development!
+
+**Checklist:**
+- [ ] Changed some text in a frontend file
+- [ ] Saved the file
+- [ ] Saw the change appear in browser without manual refresh
+
+### Task 4.2: Test the Full Stack Communication
+
+**Objective:** Understand that frontend and backend are working together
+
+1. In your browser, open Developer Tools (F12)
+
+2. Go to Console tab
+
+3. Run this command in the console:
+```javascript
+fetch('http://localhost:8000/api/hello')
+  .then(r => r.json())
+  .then(d => console.log(d))
+```
+
+4. You should see the JSON response printed:
+```javascript
+{message: 'Hello from FastAPI!', status: 'success'}
+```
+
+**What happened:**
+- You called the backend API from the frontend console
+- Backend processed the request
+- Returned JSON data
+- Frontend received and displayed it
+
+**This proves frontend-backend communication works!**
+
+**Checklist:**
+- [ ] Opened Developer Tools (F12)
+- [ ] Ran fetch command in console
+- [ ] Saw JSON response from backend
+- [ ] Confirmed communication is working
+
+### Task 4.3: Examine the Directory Structure
+
+**Objective:** Get familiar with where code lives
+
+1. In your editor, explore these directories:
+   - `app/` - All frontend pages and components
+   - `api/` - Backend API endpoints (just `index.py`)
+   - `components/` - Reusable UI components
+   - `lib/` - Utility functions
+   - `public/` - Static files (images, icons)
+
+2. You don't need to read everything—just see what's there
+
+3. Understand the organization:
+   - Frontend code is in `app/` and `components/`
+   - Backend code is in `api/`
+   - Support files in `lib/`, `public/`, etc.
+
+**Checklist:**
+- [ ] Explored at least 3 directories
+- [ ] Understand separation of frontend vs. backend code
+- [ ] Know where to find things in the future
+
+---
+
+## Part 5: Stopping and Restarting (5 minutes)
+
+### Task 5.1: Stop the Development Servers
+
+**In the terminal running `mise run dev`:**
+
+Press: `Ctrl+C`
+
+**What happens:**
+- Both servers (Next.js and FastAPI) stop
+- Terminal returns to prompt
+- Your browser might show "connection refused" when you try to reload
+
+**Checklist:**
+- [ ] Pressed Ctrl+C to stop servers
+- [ ] Terminal returned to normal prompt
+
+### Task 5.2: Restart Everything Fresh
+
+**Command:**
+```bash
+mise run dev
+```
+
+**This will:**
+1. Run `mise run kill` (extra cleanup)
+2. Start both servers again
+3. Frontend on `localhost:3000`
+4. Backend on `localhost:8000`
+
+**Checklist:**
+- [ ] Both servers started successfully
+- [ ] Can access `localhost:3000` in browser again
+
+### Task 5.3: Know the Emergency Stop
+
+**If servers get stuck:**
+
+Open a new terminal and run:
+```bash
+mise run kill
+```
+
+**This cleanly stops everything.** Then restart with:
+```bash
+mise run dev
+```
+
+**Checklist:**
+- [ ] Know how to use `mise run kill` if needed
+
+---
+
+## Part 6: Verification - It All Works! (5 minutes)
+
+### Task 6.1: Final Checklist
+
+Verify everything is working:
+
+- [ ] `mise run dev` starts both servers without errors
+- [ ] `localhost:3000` loads the frontend in browser
+- [ ] `localhost:8000/api/hello` shows JSON response
+- [ ] Frontend can call backend API (`fetch` in console)
+- [ ] Changing frontend code auto-updates in browser
+- [ ] `Ctrl+C` stops both servers
+- [ ] `mise run dev` can restart everything
 
 ---
 
 ## Success Criteria
 
-You've completed this exercise when:
+You've completed this task when:
 
-- ✅ `test_multiply_two()` with three assertions exists in `tests_python/test_source_code.py`
-- ✅ `multiply_two()` function with type hints exists in `learn_personal_portfolio_ai/source_code.py`
-- ✅ `mise run test-python` shows "2 passed"
-- ✅ Three `multiply` tests exist in `tests_node/math.test.js`
-- ✅ `multiply()` function exists in `src/math.js`
-- ✅ `mise run test-node` shows "5 passed"
-- ✅ `mise run test` shows all tests passing (no failures)
+- ✅ Both Next.js and FastAPI servers run successfully with `mise run dev`
+- ✅ Frontend (localhost:3000) displays a web page
+- ✅ Backend (localhost:8000/api/hello) returns JSON data
+- ✅ You understand the project structure (frontend vs. backend)
+- ✅ You understand how frontend and backend communicate via APIs
+- ✅ You can start, stop, and restart the development environment
 
 ---
 
-## Optional Challenge: Create Another Function with TDD
+## Key Concepts You've Learned
 
-Once you've mastered `multiply`, practice TDD with another function in both languages:
+### Frontend
+- **What it is**: Code that runs in the browser and shows to users (HTML, CSS, JavaScript)
+- **Where it lives**: `app/` directory
+- **Framework**: Next.js with React
+- **How to start**: `mise run next-dev` or `mise run dev`
+- **URL**: `localhost:3000`
 
-### Challenge: Implement `divide_two()` (Python) and `divide()` (Node.js)
+### Backend
+- **What it is**: Server code that processes data and provides APIs
+- **Where it lives**: `api/` directory
+- **Framework**: FastAPI with Python
+- **How to start**: `mise run fastapi-dev` or `mise run dev`
+- **URL**: `localhost:8000`
 
-**Python:**
-1. Write test first (RED): `test_divide_two()` with 3 assertions
-2. Run test (watch it fail)
-3. Implement function (GREEN): `divide_two(a: int, b: int) -> float`
-4. Run test (watch it pass)
-5. Verify all tests: `mise run test-python`
+### API
+- **What it is**: Contract between frontend and backend ("Here's what data I provide")
+- **Example**: `/api/hello` endpoint returns JSON
+- **How it works**: Frontend sends HTTP request → Backend processes → Returns response
 
-**Node.js:**
-1. Write test first (RED): 3 divide test cases
-2. Run test (watch it fail)
-3. Implement function (GREEN): `export function divide(a, b)`
-4. Run test (watch it pass)
-5. Verify all tests: `mise run test-node`
+### Full-Stack Development
+- **What it means**: Building both frontend and backend together
+- **Why it matters**: You can create complete applications
+- **How to manage**: Use `mise` to coordinate multiple servers
 
-**Final verification:**
-```bash
-mise run test
+---
+
+## Understanding the Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    USER'S BROWSER                        │
+│                  (localhost:3000)                         │
+│                                                           │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │          NEXT.JS FRONTEND (React)              │    │
+│  │  ┌──────────────────────────────────────────┐   │    │
+│  │  │ Pages (in app/)                          │   │    │
+│  │  │ Components (in components/)              │   │    │
+│  │  │ - Displays content to user                │   │    │
+│  │  │ - Handles user interactions              │   │    │
+│  │  │ - Calls backend API when needed          │   │    │
+│  │  └──────────────────────────────────────────┘   │    │
+│  └─────────────────────────────────────────────────┘    │
+│                         ↕ (HTTP)                         │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │       FASTAPI BACKEND (Python) (port 8000)     │    │
+│  │  ┌──────────────────────────────────────────┐   │    │
+│  │  │ API Endpoints (in api/index.py)          │   │    │
+│  │  │ @app.get("/api/hello")                   │   │    │
+│  │  │ - Receives requests from frontend        │   │    │
+│  │  │ - Processes data                         │   │    │
+│  │  │ - Returns JSON responses                 │   │    │
+│  │  └──────────────────────────────────────────┘   │    │
+│  └─────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+
+Communication Flow:
+1. User interacts with frontend
+2. Frontend makes HTTP request: GET /api/hello
+3. Backend receives request
+4. Backend function (hello_world()) runs
+5. Backend sends response: {"message": "...", "status": "..."}
+6. Frontend receives data
+7. Frontend displays data to user
 ```
 
-All tests should pass (both Python and Node.js).
+---
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Connection refused" at localhost:3000 | Run `mise run dev` in terminal and wait for startup |
+| Backend not responding | Ensure `mise run dev` is running, check for port 8000 message |
+| Changes don't appear | Refresh browser (Ctrl+R). Next.js may still be compiling. |
+| ".venv doesn't exist" | Run `mise run venv-create` |
+| "node_modules doesn't exist" | Run `mise run inst` |
+| "Port already in use" | Run `mise run kill`, then `mise run dev` |
+| Servers won't stop | Force stop: Open new terminal, run `mise run kill` |
 
 ---
 
-## Next Steps After Mastery
+## Next Challenges
 
-### Level 1: More Functions (Practice TDD)
-- Implement `power_two()` / `power()` - exponentiation
-- Implement `absolute_difference()` / `absoluteDifference()` - absolute difference
-- Implement `is_even()` / `isEven()` - boolean return value
+Once you've completed this:
 
-### Level 2: Complex Testing
-- Test what happens with very large numbers
-- Test division by zero (how should it behave?)
-- Create helper functions that are tested
+1. **Modify the API**
+   - Add a new endpoint in `api/index.py`
+   - Test it in the browser
+   - Call it from frontend code
 
-### Level 3: Real-World Patterns
-- Use type hints with different types (str, float, bool)
-- Create functions that work with multiple types
-- Test error conditions (ValueError, TypeError)
+2. **Create a New Frontend Page**
+   - Add a new file in `app/`
+   - Make it display something
+   - Have it call the backend API
 
----
+3. **Connect Frontend to Backend**
+   - Call `/api/hello` from frontend code
+   - Display the response on the page
+   - Make it interactive
 
-## TDD Principles to Remember
-
-1. **Tests are specification** - They define what code must do before you write it
-2. **RED-GREEN-VERIFY** - Always follow this cycle for clean code
-3. **All tests, all the time** - Run full test suite after every change
-4. **Edge cases matter** - Test zero, negative, boundary conditions
-5. **Type hints document intent** - They help tests and prevent bugs
+4. **Understand the Stack**
+   - Read `package.json.md` to learn about dependencies
+   - Explore how Next.js routing works
+   - Learn how FastAPI decorators work
 
 ---
 
 ## Key Takeaway
 
-**"Tests define success. TDD writes the definition before the solution. In multi-language projects, TDD ensures the same behavior across languages."**
+**You've set up a professional full-stack development environment:**
+- Frontend and backend running separately but together
+- Hot-reloading for fast development
+- Clear separation of concerns (frontend code vs. backend code)
+- Communication via HTTP/JSON APIs
 
-When you run `mise run test`, you're verifying that all your code—Python and JavaScript—works correctly. That's the power of TDD.
+This is exactly how companies build web applications. You're now equipped to build complete applications from user interface to server logic!
+
+---
+
+## Need Help?
+
+- Check the troubleshooting section above
+- Look at `README.md` for detailed explanations
+- Review `package.json.md` for dependency information
+- Look at existing code in `app/` and `api/` for examples
+
+Great job! You're now a full-stack developer! 🚀
