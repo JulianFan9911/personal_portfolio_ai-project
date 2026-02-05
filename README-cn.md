@@ -1,730 +1,548 @@
-# Setting Up Node Development Environment
+# 设置 Next.js + Python FastAPI 开发环境教程
 
-## 你的项目发生了变化！
+## 你好！欢迎来到前后端开发的世界
 
-还记得吗？你之前学的是一个简单的 Python 项目。现在，你的项目变得更加复杂了——**你现在有了一个多语言的代码库**，里面既有 Python 代码，也有 Node.js 代码。
+还记得之前你只是写 Python 代码的时候吗？现在情况有所不同了——**你的项目现在同时有前端和后端代码**。
 
-想象一下：公司通常不会只用一种编程语言。他们可能用 Python 做后端，用 Node.js 做某些服务，用 JavaScript 做网页。这就是为什么你需要学会在一个项目中同时处理多种语言。
+这是什么意思呢？简单地说：
+- **前端**（Frontend）= 用户看到的网页，在浏览器里显示（使用 **Next.js** 和 **JavaScript**）
+- **后端**（Backend）= 网页背后的服务器逻辑，处理数据和请求（使用 **Python FastAPI**）
 
-这个教程会带你一步步设置 Node.js 开发环境，并理解项目结构的变化。
+现实中的大公司就是这样做的。一个 App 可能有几十个人，有些人专门写前端，有些人专门写后端，还有人做其他事情。**学会同时处理前后端，这是一个重要的职业技能。**
 
----
-
-## 学习这个之前，你需要知道什么
-
-你已经完成了 Python 版本的 TDD（测试驱动开发）课程，所以你理解：
-- 如何**先写测试**（RED 阶段）- 测试描述你想要什么
-- 如何**写代码来通过测试**（GREEN 阶段）- 代码满足测试的要求
-- 如何**检查没有破坏其他东西**（VERIFY 阶段）- 运行所有测试确保一切正常
-
-现在问题来了：**TDD 在 Node.js 中怎么工作呢？**
-
-答案很简单：**完全一样！** 只是你用不同的语言（JavaScript），但思想是完全相同的。
+这个教程会带你一步步搭建这个前后端结合的开发环境，最后你可以看到一个真正的、能在浏览器里运行的网页。
 
 ---
 
-## 第一步：理解项目发生了什么变化
+## 在开始之前，你需要知道的
 
-### 之前的样子（只有 Python）
+你已经学过了 Python 的基础知识，现在准备好学习：
+- **什么是 Next.js？** 一个用于构建网页的现代 JavaScript 框架
+- **什么是 FastAPI？** 一个用于快速构建后端服务的 Python 框架
+- **它们怎么一起工作？** 前端发送请求 → 后端处理 → 后端返回数据 → 前端显示
 
-```
-project/
-├── learn_personal_portfolio_ai/     ← Python 的源代码
-├── tests/                           ← 所有测试都放这里
-├── pyproject.toml                   ← Python 的配置文件
-└── mise.toml                        ← 任务配置文件
-```
+---
 
-非常简单——只有一种语言，一个测试文件夹。
+## 第一步：理解项目的新结构
 
-### 现在的样子（Python + Node.js）
+### 之前：只有 Python 后端
 
 ```
-project/
-├── learn_personal_portfolio_ai/     ← Python 的源代码
-├── tests_python/                    ← Python 的测试（改名了！）
-│   └── test_source_code.py
+项目文件夹/
+├── learn_personal_portfolio_ai/    ← Python 代码放在这里
+├── tests_python/                   ← Python 测试
+├── pyproject.toml                  ← Python 配置
+└── mise.toml                        ← 任务配置
+```
+
+简单清晰——一种语言，所有东西都很容易找。
+
+### 现在：Python 后端 + Next.js 前端
+
+```
+项目文件夹/
+├── api/                            ← NEW: Python FastAPI 后端代码
+│   └── index.py                       （这是后端核心！）
 │
-├── src/                             ← 新增：Node.js 的源代码
-│   └── math.js
+├── app/                            ← NEW: Next.js 前端代码
+│   ├── (marketing)/                  （页面代码）
+│   ├── _components/                  （可复用的组件）
+│   ├── layout.tsx                     （网页的总体布局）
+│   └── globals.css                    （网页的样式）
 │
-├── tests_node/                      ← 新增：Node.js 的测试
-│   └── math.test.js
+├── components/                     ← 前端的一些帮助工具
+├── lib/                            ← 前端的一些工具函数
+├── public/                         ← 网页要用的图片、图标等文件
+├── styles/                         ← 更多样式文件
+├── types/                          ← TypeScript 类型定义
 │
-├── pyproject.toml                   ← Python 的配置（没变）
-├── package.json                     ← 新增：Node.js 的配置
-└── mise.toml                        ← 更新了：支持两种语言
+├── package.json                    ← 前端的配置和依赖（重要！）
+├── next.config.js                  ← Next.js 的配置
+├── tsconfig.json                   ← TypeScript 配置
+├── tailwind.config.ts              ← Tailwind CSS 配置
+├── postcss.config.mjs              ← CSS 处理配置
+│
+├── pyproject.toml                  ← Python 的配置（之前就有）
+├── mise.toml                       ← 任务配置（之前就有，现在更新了）
+│
+└── requirements.txt                ← Python 依赖列表（更新了）
 ```
 
-**主要的变化是什么：**
+**这些新目录是什么？你需要全部了解吗？**
 
-1. **测试文件夹分开了** - 以前是一个 `tests/` 文件夹，现在分成 `tests_python/` 和 `tests_node/`。为什么？因为 Python 的测试和 JavaScript 的测试写法不一样，分开会更清楚。
+不，别紧张！虽然看起来很多，但大部分文件只是"支持"的角色。你只需要关注三个最重要的部分：
 
-2. **新增了 `src/` 文件夹** - 这是 Node.js 世界的标准做法。在 Python 里，我们把代码放在 `learn_personal_portfolio_ai/` 里；在 JavaScript 里，约定俗成地放在 `src/` 里。不同的语言，不同的习惯。
+### 🎯 你必须掌握的三个部分
 
-3. **新增了 `package.json` 文件** - 就像 Python 有 `pyproject.toml` 一样，Node.js 有 `package.json`。它描述你的项目信息和依赖。
+#### 1️⃣ **`package.json`** - 前端的"身份证"
 
-4. **`mise.toml` 更新了** - 现在里面有了更多的命令，可以分别运行 Python 测试或 Node.js 测试，或者一起运行。
+这个文件告诉前端需要哪些工具和库。类似于 Python 的 `pyproject.toml`，但这是给 JavaScript/Next.js 用的。
+
+#### 2️⃣ **`api/` 目录** - 后端的核心代码
+
+里面有 `index.py`，这是你的 FastAPI 后端代码。当你的网页需要数据时，就会向这里发送请求。
+
+#### 3️⃣ **`app/` 目录** - 前端的核心代码
+
+里面有 Next.js 的页面和组件。这就是用户在浏览器里看到的网页。
+
+**记住这三个关键点，其他的都是辅助性的。**
 
 ---
 
-## 第二步：Node.js 和 pnpm 是什么？
+## 理解其他配置文件（简单介绍）
 
-你现在可能在想："等等，我需要学 Node.js 吗？" 不用担心，我们的目标很简单：**了解基本概念，把它跑起来就行**。
+你可能还看到一些其他文件，它们的作用是什么呢？
 
-### Node.js：让 JavaScript 在电脑上运行
+| 文件名 | 作用 | 你需要改吗？ |
+|-------|------|-----------|
+| `next.config.js` | 告诉 Next.js 怎么构建你的网页 | 一般不需要 |
+| `tsconfig.json` | TypeScript 的配置（这保证代码没有类型错误） | 一般不需要 |
+| `tailwind.config.ts` | Tailwind CSS 的配置（Tailwind 帮助你快速设计漂亮的网页样式） | 一般不需要 |
+| `postcss.config.mjs` | CSS 处理配置 | 一般不需要 |
+| `pnpm-lock.yaml` | 记录确切的依赖版本（保证别人用同样的版本） | 不要手动改 |
 
-想象一下 JavaScript 通常是什么地方用的？
-
-**网页浏览器！** 你打开网页时，浏览器会运行 JavaScript 代码来让网页有交互性（比如点按钮，表单验证等）。
-
-但有个问题：JavaScript 只能在浏览器里运行。如果你想在电脑上直接运行 JavaScript，就不行。
-
-**这就是 Node.js 的作用！** 它让你可以在电脑上直接运行 JavaScript，就像你用 Python 一样。
-
-```
-Python：    在电脑上运行 Python 代码
-            python script.py
-
-Node.js：   在电脑上运行 JavaScript 代码
-            node script.js
-```
-
-简单地说：**Node.js = 在电脑上直接跑 JavaScript**。它就像是一个 Python 解释器（把代码翻译成电脑能理解的语言），但是它是为 JavaScript 设计的。
-
-### pnpm：Node.js 世界的包管理器
-
-还记得 Python 的 `uv` 吗？它做什么的？
-
-- 下载你需要的包（像 numpy、pytest 这样的库）
-- 管理包的版本
-- 为你创建虚拟环境（`.venv/` 文件夹）
-
-**`pnpm` 在 Node.js 中做的事情完全一样！**
-
-```
-Python:    uv 是包管理器             → 创建 .venv/ 虚拟环境
-Node.js:   pnpm 是包管理器           → 创建 node_modules/ 文件夹
-
-如果你需要一个库，uv 会下载它放在 .venv/ 里
-如果你需要一个库，pnpm 会下载它放在 node_modules/ 里
-```
-
-**这就是全部了。** `pnpm` 是"Node.js 版本的 uv"。你不需要学会所有 pnpm 的命令——`mise` 会替你处理所有复杂的东西。
+**简单来说：这些文件已经为你配置好了，你不需要深入了解它们。**
 
 ---
 
-## 第三步：你的新命令
+## 第二步：什么是 Next.js？什么是 FastAPI？
 
-因为现在有两种语言，所以命令也变多了。但别担心，`mise` 会帮你管理这一切。
+### Next.js：制作网页的框架
 
-### 安装依赖（下载所需的库）
+你可能听说过 React，Next.js 是基于 React 的。如果 React 是"制作网页的工具箱"，那 Next.js 就是"装备完整的工具车"。
 
-```bash
-# 只安装 Python 的依赖
-mise run inst-python-deps
+**Next.js 帮你做什么？**
+- 快速创建网页（不需要从零开始）
+- 自动处理路由（URL 怎么对应哪个页面）
+- 管理样式（怎么让网页好看）
+- 连接前端和后端（让网页能和服务器通信）
 
-# 只安装 Node.js 的依赖
-mise run inst-node-deps
+### FastAPI：Python 的后端框架
 
-# 同时安装两种（推荐！）
-mise run inst
+FastAPI 让你用 Python 快速构建一个"服务器"，接收来自网页的请求，然后处理和返回数据。
+
+**FastAPI 的特点：**
+- 快速（名字里就有 "Fast"！）
+- 简单（代码少，容易理解）
+- 自动生成 API 文档（方便调试）
+
+### 它们怎样一起工作？
+
+```
+用户在浏览器访问网页 (localhost:3000)
+          ↓
+    Next.js 前端代码运行
+          ↓
+用户点击按钮或提交表单
+          ↓
+前端发送请求给后端 (http://localhost:8000/api/hello)
+          ↓
+FastAPI 后端接收请求并处理
+          ↓
+后端返回数据（比如 {"message": "Hello!"}）
+          ↓
+前端接收数据并在网页上显示
 ```
 
-**解释一下：**
-- `inst` 是 `install`（安装）的缩写
-- `inst-python-deps` 意思是"安装 Python 的依赖"
-- `inst-node-deps` 意思是"安装 Node.js 的依赖"
-- 最后一个命令会自动运行前两个（因为 `mise` 聪明地知道如何协调它们）
-
-### 运行测试
-
-```bash
-# 只运行 Python 的测试
-mise run test-python
-
-# 只运行 Node.js 的测试
-mise run test-node
-
-# 同时运行两种测试
-mise run test
-```
-
-**为什么要分开？** 有时候你想快速测试 Python 代码，不想等 Node.js 的测试也跑完。有时候你想检查某个特定语言是否工作正常。灵活性很重要。
+这就是前后端通信的基本流程。
 
 ---
 
-## 第四步：一步步设置你的环境
+## 第三步：了解新的命令
 
-现在让我们把所有东西都启动起来。按照下面的步骤做：
+以前你只需要运行 Python 代码，现在你需要同时运行 Next.js 前端和 FastAPI 后端。好消息是，`mise` 帮你协调一切。
 
-### 1. 创建 Python 虚拟环境
+### 查看 `mise.toml` 里的命令
+
+打开 `mise.toml` 文件，你会看到里面有很多任务。我们重点关注这两个新命令：
+
+#### 👉 `mise run dev` - 一键启动前后端
+
+```toml
+[tasks.dev]
+description = "🚀 Start all development servers (Next.js + FastAPI)"
+depends = ["kill"]
+run = "pnpm exec concurrently 'mise run next-dev' 'mise run fastapi-dev'"
+```
+
+这个命令做了什么？
+1. 先执行 `kill` 命令（关掉任何旧的服务）
+2. 然后同时启动两个服务器：
+   - Next.js（前端）在 `localhost:3000`
+   - FastAPI（后端）在 `localhost:8000`
+
+"同时启动"意味着两个服务器并排运行，互不干扰。
+
+#### 👉 `mise run kill` - 关闭所有服务
+
+```toml
+[tasks.kill]
+description = "🛑 Kill all development servers (Next.js + FastAPI)"
+run = "uv run -- python kill-dev-servers.py"
+```
+
+这个命令做了什么？
+- 关闭所有运行中的 Next.js 和 FastAPI 服务器
+
+**为什么需要？** 有时一个服务器"卡"在后台，你需要干净地关闭它，然后重新启动。
+
+---
+
+## 第四步：理解 `package.json` 的依赖
+
+打开 `package.json`，你会看到一堆名字奇怪的依赖。这些是什么？
+
+```json
+{
+  "dependencies": {
+    "next": "16.1.6",
+    "react": "^18",
+    "react-dom": "^18",
+    "@radix-ui/react-dialog": "^1.1.4",
+    "tailwindcss": "^3.4.17",
+    ...更多...
+  }
+}
+```
+
+**简单解释：**
+- `next` - Next.js 框架本身
+- `react` 和 `react-dom` - React 库（Next.js 基于它）
+- `@radix-ui/*` - 一堆漂亮的 UI 组件（按钮、对话框、菜单等）
+- `tailwindcss` - 快速设计样式的工具
+- 还有很多别的...
+
+**你需要一个一个学这些吗？** 不需要！现在只需要知道它们存在就行。随着学习深入，你会逐步了解它们的用途。
+
+---
+
+## 第五步：设置环境（一步一步来）
+
+现在开始真正的设置。按顺序执行以下命令：
+
+### 1️⃣ 创建 Python 虚拟环境
 
 ```bash
 mise run venv-create
 ```
 
-**发生了什么？** 这个命令创建了一个 `.venv/` 文件夹。这就像是一个"隔离的房间"，Python 在这个房间里安装它需要的所有东西。这样不会影响你电脑上其他的 Python 项目。
+**发生了什么？**
+- 创建了一个叫 `.venv/` 的文件夹
+- 这是一个"独立的房间"，Python 在里面安装它需要的所有包
+- 这样做的好处：不会影响你电脑上其他 Python 项目
 
-### 2. 安装所有依赖
+**怎么知道成功了？**
+- 你应该看到一个 `.venv/` 文件夹被创建
 
-```bash
-mise run inst
-```
-
-**发生了什么？** 这个命令会：
-- 用 `uv` 安装 Python 需要的所有包（放在 `.venv/` 里）
-- 用 `pnpm` 安装 Node.js 需要的所有包（放在 `node_modules/` 里）
-
-这样两种语言的依赖就都装好了。
-
-### 3. 激活 Python 环境
+### 2️⃣ 激活 Python 虚拟环境
 
 ```bash
 source .venv/bin/activate
 ```
 
-**为什么要做这个？** 虽然 `.venv/` 文件夹已经被创建了，但你的终端还不知道要用这个虚拟环境。这个命令告诉你的终端："嘿，从现在开始，用 `.venv/` 里的 Python"。
+**发生了什么？**
+- 告诉你的终端："从现在开始，使用 `.venv/` 里的 Python"
+- 你的终端提示符会改变，开头会显示 `(.venv)`
 
-**怎么知道成功了？** 你的终端提示符会变化。看起来像这样：
-
+**例子：**
 ```
-(.venv) your-computer:project $
+你的电脑名:项目名 $ source .venv/bin/activate
+(.venv) 你的电脑名:项目名 $
 ```
 
-你会看到前面多了 `(.venv)` 这样的标志。这就表示虚拟环境已经激活了。
+看到 `(.venv)` 就说明成功了！
 
-### 4. 验证一切都工作了
+### 3️⃣ 安装所有依赖
 
 ```bash
-mise run test
+mise run inst
 ```
 
-**你会看到什么？** 成功的话，你会看到两部分的测试输出：
+**发生了什么？**
+这个命令会：
+- 安装所有 Python 依赖（FastAPI、uvicorn 等）到 `.venv/`
+- 安装所有 Node.js/JavaScript 依赖（Next.js、React 等）到 `node_modules/`
 
-```
-======================== Python Tests ========================
-tests_python/test_source_code.py::test_add_two PASSED          [50%]
-======================== 1 passed in 0.02s ========================
+这可能需要一两分钟，因为要下载很多包。耐心等待！
 
-======================== Node.js Tests ========================
-✔ add(2, 3) should equal 5 (1.234ms)
-✔ add(0, 0) should equal 0 (0.567ms)
+**怎么知道成功了？**
+- 命令完成后，没有红色错误信息
+- 出现了一个 `node_modules/` 文件夹
 
-───────────────────────────────────────
-tests 2 passed (1.801ms)
-```
+### 4️⃣ 启动开发服务器
 
-**意思是？**
-- Python 的 `test_add_two()` 通过了
-- Node.js 的两个 `add` 测试也通过了
-- 没有任何东西坏掉
-
-**恭喜！** 你的 Node 开发环境现在已经设置好了。
-
----
-
-## 第五步：理解 `mise.toml` 的变化
-
-想知道为什么只用一个 `mise run test` 命令，就能同时运行两种语言的测试？秘密在 `mise.toml` 文件里。
-
-### Python 的任务（之前就有的）
-
-```toml
-[tasks.venv-create]
-description = "✨ Create Python virtual environment (.venv)"
-run = "uv venv"
-
-[tasks.inst-python-deps]
-description = "💾 Install Python dependencies via uv"
-run = "uv sync --all-extras"
-
-[tasks.test-python]
-description = "🧪 Run Python tests with pytest"
-run = ".venv/bin/pytest tests_python"
-```
-
-**解释：**
-- `venv-create` - 创建虚拟环境
-- `inst-python-deps` - 用 uv 安装 Python 包
-- `test-python` - 运行 Python 测试（现在指向 `tests_python/` 而不是之前的 `tests/`）
-
-### Node.js 的任务（全新的）
-
-```toml
-[tasks.inst-node-deps]
-description = "📦 Install Node.js dependencies via pnpm"
-run = "pnpm install"
-
-[tasks.test-node]
-description = "🧪 Run Node.js tests"
-run = "node --test tests_node/*.test.js"
-```
-
-**解释：**
-- `inst-node-deps` - 用 pnpm 安装 Node.js 包。这和 `inst-python-deps` 的概念一样，只是用了 Node.js 的工具
-- `test-node` - 运行 Node.js 测试。用 Node.js 的内置测试工具来运行 `tests_node/` 里的所有 `.test.js` 文件
-
-### 协调任务（中枢）
-
-```toml
-[tasks.inst]
-description = "💾 Install all dependencies (Python + Node.js)"
-depends = ["inst-python-deps", "inst-node-deps"]
-
-[tasks.test]
-description = "🧪 Run all tests (Python + Node.js)"
-depends = ["test-python", "test-node"]
-```
-
-**这是最聪明的部分！** `depends` 字段是什么意思呢？
-
-它说："当有人运行这个任务时，先运行这些任务。"
-
-所以：
-- `mise run inst` 会自动运行 `inst-python-deps` 和 `inst-node-deps`
-- `mise run test` 会自动运行 `test-python` 和 `test-node`
-
-**为什么这样设计？** 这样你有选择：
-- 如果你只想改 Python 代码，可以用 `mise run test-python` 快速测试
-- 如果你想检查整个项目，可以用 `mise run test` 测试所有东西
-- 但对大多数人来说，`mise run test` 就够了
-
----
-
-## 第六步：认识这些新文件
-
-现在让我们看看这些新文件是什么，以及它们做什么。
-
-### `package.json` - Node.js 的信息文件
-
-```json
-{
-  "name": "learn-personal-portfolio-ai",
-  "version": "0.1.1",
-  "private": true,
-  "scripts": {},
-  "dependencies": {},
-  "devDependencies": {}
-}
-```
-
-**这是什么？** 它是 Node.js 世界的"身份证"。就像 Python 的 `pyproject.toml` 一样，它告诉 Node.js：
-
-- **name** - 这个项目叫什么
-- **version** - 项目现在是什么版本
-- **private** - 这个项目是私有的（不打算发布到网上的包管理器）
-- **dependencies** - 这个项目需要哪些包来正常工作
-- **devDependencies** - 这个项目在开发/测试时需要哪些包
-
-目前它很空，因为我们的项目还很简单，不需要外部包。但随着项目增长，这个文件会越来越重要。
-
-### `src/math.js` - Node.js 的代码
-
-```javascript
-export function add(a, b) {
-  return a + b;
-}
-```
-
-**这是什么？** 这是一个 JavaScript 函数。让我分解一下：
-
-- `export` - 这很重要！它的意思是"让其他文件可以使用这个函数"。就像 Python 中你可以在另一个文件里 `from xxx import add` 一样。
-- `function add(a, b)` - 定义一个叫 `add` 的函数，它接收两个参数 `a` 和 `b`
-- `return a + b` - 返回两个数字的和
-- 分号 `;` - JavaScript 的习惯（虽然有些开发者不写，但通常都会写）
-
-**和 Python 的区别：**
-
-Python:
-```python
-def add_two(a: int, b: int) -> int:
-    return a + b
-```
-
-JavaScript:
-```javascript
-export function add(a, b) {
-  return a + b;
-}
-```
-
-核心逻辑是一样的（都是相加），只是写法不同。
-
-### `tests_node/math.test.js` - Node.js 的测试
-
-```javascript
-import { test } from 'node:test';
-import assert from 'node:assert';
-import { add } from '../src/math.js';
-
-test('add(2, 3) should equal 5', () => {
-  assert.strictEqual(add(2, 3), 5);
-});
-```
-
-**这是什么？** 这是一个 Node.js 测试。让我解释每一行：
-
-- `import { test } from 'node:test';` - 导入 Node.js 的测试工具
-- `import assert from 'node:assert';` - 导入 Node.js 的断言工具（用来检查是否相等）
-- `import { add } from '../src/math.js';` - 导入我们想要测试的函数
-
-然后：
-- `test('add(2, 3) should equal 5', () => { ... })` - 定义一个测试。第一个参数是测试的描述（"add(2, 3) 应该等于 5"），第二个参数是测试的代码
-- `assert.strictEqual(add(2, 3), 5);` - 检查 `add(2, 3)` 的结果是否等于 `5`。如果是，测试通过；如果不是，测试失败
-
-**和 Python 的区别：**
-
-Python:
-```python
-def test_add_two():
-    assert add_two(3, 4) == 12
-```
-
-JavaScript:
-```javascript
-test('add(2, 3) should equal 5', () => {
-  assert.strictEqual(add(2, 3), 5);
-});
-```
-
-概念是一样的（都是测试函数），只是写法不同。
-
----
-
-## 第七步：你的第一个 Node.js 函数
-
-现在你理解了所有的东西，让我们用你已经知道的 TDD 工作流来写一个 Node.js 函数。
-
-### RED 阶段：先写失败的测试
-
-**文件：** `tests_node/math.test.js`
-
-在现有的 `add` 测试后面添加这个：
-
-```javascript
-test('multiply(3, 4) should equal 12', () => {
-  const multiply = require('../src/math.js').multiply;
-  assert.strictEqual(multiply(3, 4), 12);
-});
-
-test('multiply(5, 0) should equal 0', () => {
-  const multiply = require('../src/math.js').multiply;
-  assert.strictEqual(multiply(5, 0), 0);
-});
-
-test('multiply(-2, 3) should equal -6', () => {
-  const multiply = require('../src/math.js').multiply;
-  assert.strictEqual(multiply(-2, 3), -6);
-});
-```
-
-**你在做什么？** 你在写测试，说"我想要一个 `multiply` 函数，它应该能：
-- 将 3 和 4 相乘得到 12
-- 将 5 和 0 相乘得到 0
-- 将 -2 和 3 相乘得到 -6"
-
-### 运行测试（看它失败）
+现在是激动的时刻！运行：
 
 ```bash
-mise run test-node
+mise run dev
 ```
 
-**你会看到什么？**
+**发生了什么？**
+- 同时启动了两个服务器：
+  - Next.js 前端服务器（在 `localhost:3000`）
+  - FastAPI 后端服务器（在 `localhost:8000`）
+
+**你会看到很多输出信息，别紧张！** 这些都是正常的。你应该看到类似这样的：
 
 ```
-TypeError: multiply is not a function
+> next dev
+
+  ▲ Next.js 16.1.6
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Ready in 2.5s
+
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 ```
 
-或者
+**这意味着两个服务器都已启动！🎉**
+
+### 5️⃣ 打开浏览器查看网页
+
+打开你最喜欢的浏览器（Chrome、Firefox、Safari 等），输入：
 
 ```
-Cannot find module property 'multiply'
+http://localhost:3000
 ```
 
-**这很好！** 这正是 RED 阶段应该的样子。测试在对你说："嘿，这个函数还不存在，你需要写它。"
+然后按回车。
 
-### GREEN 阶段：写代码通过测试
+**你应该看到什么？**
 
-**文件：** `src/math.js`
+一个漂亮的网页应该加载并显示出来。这个网页是用 Next.js 写的，正在你的电脑上运行！
 
-添加这个函数（保留 `add` 函数）：
+参考一下这个截图看看应该是什么样的：
 
-```javascript
-export function multiply(a, b) {
-  return a * b;
-}
-```
-
-**你在做什么？** 你实现了测试要求的函数。它接收两个数字，相乘，然后返回结果。
-
-### 运行测试（看它通过）
-
-```bash
-mise run test-node
-```
-
-**你会看到什么？**
-
-```
-✔ add(2, 3) should equal 5
-✔ add(0, 0) should equal 0
-✔ multiply(3, 4) should equal 12 (0.456ms)
-✔ multiply(5, 0) should equal 0 (0.389ms)
-✔ multiply(-2, 3) should equal -6 (0.512ms)
-
-───────────────────────────────────────
-tests 5 passed (1.801ms)
-```
-
-**太棒了！** 所有的测试都通过了。你写的新代码工作正常，旧的 `add` 测试也没有坏掉。
-
-### VERIFY 阶段：检查整个项目
-
-现在运行所有测试（Python + Node.js）：
-
-```bash
-mise run test
-```
-
-**你会看到什么？**
-
-```
-======================== Python Tests ========================
-tests_python/test_source_code.py::test_add_two PASSED          [50%]
-======================== 1 passed in 0.02s ========================
-
-======================== Node.js Tests ========================
-✔ add(2, 3) should equal 5
-✔ add(0, 0) should equal 0
-✔ multiply(3, 4) should equal 12
-✔ multiply(5, 0) should equal 0
-✔ multiply(-2, 3) should equal -6
-
-───────────────────────────────────────
-tests 5 passed (1.801ms)
-```
-
-**检查清单：**
-- ✅ Python 测试仍然通过（你没有破坏任何东西）
-- ✅ Node.js 的 `add` 测试仍然通过
-- ✅ Node.js 的新 `multiply` 测试都通过
-
-完美！你刚才完成了整个 TDD 循环，而且是用两种不同的语言。
+![示例网页](img/01-example-hello-world-web-app.png)
 
 ---
 
-## 第八步：对比 Python 和 Node.js
+## 第六步：前后端是怎么通信的？
 
-现在你已经用两种语言写了相同的逻辑。让我们看看它们有多相似。
+现在你有了一个运行的网页。但它怎么和后端通信的呢？让我们看一下代码。
 
-### 同样的逻辑，两种语言
+### 后端：FastAPI 提供的 API
 
-**Python 版本：**
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a * b
-```
-
-**JavaScript 版本：**
-```javascript
-export function multiply(a, b) {
-  return a * b;
-}
-```
-
-### 相同的地方
-
-- 两个都接收两个参数（`a` 和 `b`）
-- 两个都相乘（`a * b`）
-- 两个都返回结果
-- **逻辑完全相同**
-
-### 不同的地方
-
-| Python | JavaScript |
-|--------|-----------|
-| 用 `def` 关键字定义函数 | 用 `function` 关键字定义函数 |
-| 有类型提示：`: int`, `-> int` | 没有类型提示（虽然可以用 JSDoc 添加） |
-| 使用缩进来表示代码块 | 使用花括号 `{}` 来表示代码块 |
-| 行尾不需要分号 | 行尾通常有分号 `;` |
-| 需要 `from ... import` 来导入 | 需要 `export` 来导出，`import` 来导入 |
-
-**最重要的一点：** 语法不同，但**思想是一样的**。你理解了一个，另一个就很容易了。
-
----
-
-## 第九步：你的挑战
-
-现在你已经看到了完整的流程。是时候自己练习了。按照下面的步骤做，但这次是你自己来做，不是跟着教程。
-
-### 挑战 1：Python - 添加 `divide_two()` 函数
-
-**步骤 1：写测试（RED 阶段）**
-
-在 `tests_python/test_source_code.py` 里添加：
+打开 `api/index.py`：
 
 ```python
-def test_divide_two():
-    assert divide_two(10, 2) == 5
-    assert divide_two(9, 3) == 3
-    assert divide_two(-6, 2) == -3
+@app.get("/api/hello")
+async def hello_world():
+    """
+    Hello World API endpoint - 用于测试 FastAPI 集成
+    """
+    return JSONResponse(
+        content={
+            "message": "Hello from FastAPI!",
+            "status": "success"
+        }
+    )
 ```
 
-**步骤 2：运行测试，看它失败**
+这段代码做什么？
+- 创建了一个 API 端点：`/api/hello`
+- 当前端访问 `http://localhost:8000/api/hello` 时，它返回一个 JSON 响应
+- JSON 是一种数据格式，包含 `message` 和 `status`
 
-```bash
-mise run test-python
-```
+### 前端：调用后端的 API
 
-你会看到 `cannot import name 'divide_two'` 这样的错误。很好，这就是 RED 阶段。
-
-**步骤 3：实现函数（GREEN 阶段）**
-
-在 `learn_personal_portfolio_ai/source_code.py` 里添加：
-
-```python
-def divide_two(a: int, b: int) -> float:
-    return a / b
-```
-
-为什么返回类型是 `float` 而不是 `int`？因为除法可能产生小数。比如 `5 / 2 = 2.5`。
-
-**步骤 4：运行测试，看它通过**
-
-```bash
-mise run test-python
-```
-
-你应该看到 "3 passed" 或类似的成功消息（`test_add_two` + `test_multiply_two` + `test_divide_two`）。
-
-### 挑战 2：Node.js - 添加 `divide()` 函数
-
-**步骤 1：写测试（RED 阶段）**
-
-在 `tests_node/math.test.js` 里添加：
+现在看看前端怎么使用这个后端 API。你可以看 `app/test-api/page.tsx`（如果存在的话），或者在其他页面中，你会看到类似的代码：
 
 ```javascript
-test('divide(10, 2) should equal 5', () => {
-  const divide = require('../src/math.js').divide;
-  assert.strictEqual(divide(10, 2), 5);
-});
-
-test('divide(9, 3) should equal 3', () => {
-  const divide = require('../src/math.js').divide;
-  assert.strictEqual(divide(9, 3), 3);
-});
-
-test('divide(-6, 2) should equal -3', () => {
-  const divide = require('../src/math.js').divide;
-  assert.strictEqual(divide(-6, 2), -3);
-});
+// 这是一个简化的例子，展示前端怎么调用后端 API
+const response = await fetch('http://localhost:8000/api/hello')
+const data = await response.json()
+console.log(data.message)  // 打印："Hello from FastAPI!"
 ```
 
-**步骤 2：运行测试，看它失败**
+**流程是这样的：**
 
-```bash
-mise run test-node
-```
+1. 前端代码运行，想获取一些数据
+2. 发送一个请求到后端：`http://localhost:8000/api/hello`
+3. 后端接收请求，执行 `hello_world()` 函数
+4. 后端返回 JSON 数据：`{"message": "Hello from FastAPI!", "status": "success"}`
+5. 前端接收数据，可以用它来更新网页的显示
 
-你会看到错误信息说 `divide` 不存在或不是一个函数。
-
-**步骤 3：实现函数（GREEN 阶段）**
-
-在 `src/math.js` 里添加：
-
-```javascript
-export function divide(a, b) {
-  return a / b;
-}
-```
-
-**步骤 4：运行测试，看它通过**
-
-```bash
-mise run test-node
-```
-
-### 挑战 3：验证整个项目
-
-最后，运行所有测试来确保没有破坏任何东西：
-
-```bash
-mise run test
-```
-
-**成功的标志是什么？** 你应该看到类似这样的：
-
-```
-======================== Python Tests ========================
-... [至少 3 个测试通过]
-
-======================== Node.js Tests ========================
-... [至少 8 个测试通过，包括 add, multiply, divide]
-```
-
-所有东西都绿色（✔ 或 PASSED），没有红色的失败消息。
+**这就是前后端通信！**
 
 ---
 
-## 关键要点总结
+## 第七步：理解项目的主要目录
 
-✅ **Node.js 让你在电脑上运行 JavaScript** - 就像 Python 解释器一样，但是是为 JavaScript 设计的
+现在你知道怎么跑起项目了，让我们快速了解一下里面的主要目录是做什么的。
 
-✅ **pnpm 管理 Node.js 的包** - 和 Python 的 uv 一样的角色，只是为 Node.js
+### `app/` 目录 - 网页的内容
 
-✅ **项目结构分离了关注点** - Python 代码在 `learn_personal_portfolio_ai/`，Node.js 代码在 `src/`。测试也分别放在 `tests_python/` 和 `tests_node/`。为什么？这样更清晰，更容易维护。
+```
+app/
+├── (marketing)/
+│   ├── page.tsx          ← 首页的代码
+│   └── layout.tsx        ← 首页的整体布局
+├── _components/          ← 可复用的组件（比如"导航栏"、"联系表单"）
+├── layout.tsx            ← 整个网站的总体布局
+└── globals.css           ← 整个网站的全局样式
+```
 
-✅ **测试文件夹被分开了** - `tests_python/` 给 Python，`tests_node/` 给 Node.js。这样你可以快速地只测试你在做的语言。
+**简单来说：** `app/` 里的代码就是用户在浏览器里看到的所有东西。
 
-✅ **`mise` 协调一切** - 一个命令可以运行整个多语言项目的测试。`mise run test` 自动会跑 Python 和 Node.js 的测试。
+### `api/` 目录 - 后端的服务
 
-✅ **TDD 在两种语言中完全相同** - RED → GREEN → VERIFY，不管你用 Python 还是 JavaScript
+```
+api/
+└── index.py              ← FastAPI 应用的主文件，所有 API 端点都在这里
+```
 
-✅ **语法改变，但思想不变** - `multiply` 在 Python 和 JavaScript 里都做同样的事情，只是写法不同
+**简单来说：** `api/index.py` 就是整个后端服务。当前端发送请求时，这里的函数会处理。
+
+### `components/` 目录 - 通用的 UI 组件库
+
+这里面有一堆已经写好的 UI 组件（按钮、卡片、模态框等）。你可以在 `app/` 里直接使用它们，无需重新写。
+
+### `lib/` 目录 - 工具函数
+
+这里有一些辅助函数，比如：
+- 格式化日期的函数
+- 生成 SEO 元数据的函数
+- 其他通用工具
+
+### `public/` 目录 - 静态文件
+
+这里放网页需要的静态文件：
+- 图片（`.png`、`.jpg` 等）
+- 图标（`.ico` 等）
+- 字体文件
+
+### `styles/` 目录 - 样式文件
+
+这里放全局的样式定义。
+
+### `types/` 目录 - TypeScript 类型定义
+
+TypeScript 让 JavaScript 代码更安全。这里定义了各种数据类型。
 
 ---
 
-## 还有什么？
+## 第八步：排查常见问题
 
-现在你已经设置好了 Node 开发环境：
-
-1. **练习 TDD 工作流** - 完成上面的所有挑战
-2. **添加更多函数** - 尝试自己实现 `power()`（幂次方）、`absolute()`（绝对值）等
-3. **探索 Node.js 生态** - 想知道有什么包可用吗？查看 npm（Node.js 包管理器的网站）
-4. **习惯 JavaScript 语法** - 和 Python 不同，但你会很快学会
-
----
-
-## 总结
-
-你现在已经：
-
-- ✅ 理解了项目为什么改变了
-- ✅ 学会了 Node.js 和 pnpm 的基本概念
-- ✅ 成功设置了 Node.js 开发环境
-- ✅ 理解了新的命令结构（分离和协调的任务）
-- ✅ 在两种语言中都实现了函数
-- ✅ 证明了 TDD 在两种语言中的工作方式是相同的
-
-你现在有了一个**真实世界的多语言开发环境**，就像专业的软件公司一样。你已经准备好在多个平台上构建更复杂的应用了。
-
-欢迎来到多语言软件开发的世界！🚀
-
----
-
-## 常见问题和解决方案
+如果你遇到问题，看看这个表格：
 
 | 问题 | 解决方案 |
 |------|--------|
-| `command not found: mise` | `mise` 没有安装。运行 `curl https://mise.jdx.dev \| sh` 来安装 |
-| `Cannot find module '~/src/math.js'` 或 `divide is not a function` | 确保你在 `src/math.js` 里用 `export function` 定义了函数 |
-| `.venv not found` | 运行 `mise run venv-create` 创建 Python 虚拟环境 |
-| `node_modules not found` | 运行 `mise run inst` 安装依赖 |
-| 测试失败（比如说 12 != 11） | 检查你的逻辑。`multiply` 应该用 `*`，不是 `+` |
-| 只有 Python 测试运行，没有 Node.js 测试 | 确保你运行了 `mise run inst-node-deps` 来安装 Node.js 依赖 |
-| 我改了代码，但测试仍然失败 | 仔细读错误信息。通常会告诉你是什么错了。如果不清楚，打印出函数返回的值，看看是否符合预期 |
+| `command not found: mise` | 安装 mise：`curl https://mise.jdx.dev \| sh` |
+| `.venv 文件夹不存在` | 运行 `mise run venv-create` 创建 |
+| `node_modules 不存在` | 运行 `mise run inst` 安装依赖 |
+| 浏览器访问 `localhost:3000` 显示"连接被拒绝"或"无法连接" | 确保 `mise run dev` 还在运行，检查是否有错误信息 |
+| 后端服务报错"端口已被使用" | 运行 `mise run kill` 关闭旧服务，然后重新运行 `mise run dev` |
+| 修改了代码但网页没有更新 | 刷新浏览器（按 Ctrl+R 或 Cmd+R），或检查控制台的错误信息 |
+| "Cannot find module..."错误 | 检查文件路径是否正确，或重新运行 `mise run inst` 安装依赖 |
 
 ---
 
-欢迎开始你的多语言开发之旅！有任何问题，别害羞，多问。这就是学习的过程。💪
+## 第九步：接下来做什么？
+
+现在你有了一个运行的前后端项目！接下来可以：
+
+1. **探索现有代码**
+   - 打开 `app/` 看看前端页面是怎么写的
+   - 打开 `api/index.py` 看看后端 API 是怎么写的
+   - 尝试修改一些文字或颜色，看看网页怎么变化
+
+2. **添加新的 API 端点**
+   - 在 `api/index.py` 中添加新的 `@app.get()` 或 `@app.post()` 函数
+   - 创建新的后端功能
+
+3. **创建新的前端页面**
+   - 在 `app/` 里创建新的页面
+   - 调用后端的 API 获取数据
+   - 展示数据在网页上
+
+4. **深入学习**
+   - 学习 React 和 Next.js 的更多特性
+   - 学习 FastAPI 的更高级用法
+   - 学习如何部署到真实服务器
+
+---
+
+## 快速参考：常用命令
+
+```bash
+# 安装依赖（第一次需要）
+mise run inst
+
+# 启动开发服务器（前后端一起运行）
+mise run dev
+
+# 关闭所有服务器
+mise run kill
+
+# 如果只想运行前端
+mise run next-dev
+
+# 如果只想运行后端
+mise run fastapi-dev
+
+# 只运行 Python 测试
+mise run test-python
+
+# 只运行 Node.js 测试
+mise run test-node
+
+# 运行所有测试
+mise run test
+
+# 导出 Python 依赖列表
+mise run export
+```
+
+---
+
+## 关键概念总结
+
+✅ **前端（Frontend）** = 网页界面，用户看得到（Next.js + React）
+
+✅ **后端（Backend）** = 服务器逻辑，处理数据（FastAPI + Python）
+
+✅ **API** = 前后端通信的接口，定义了"前端可以向后端要什么数据"
+
+✅ **`localhost:3000`** = 你的前端服务器地址
+
+✅ **`localhost:8000`** = 你的后端服务器地址
+
+✅ **`mise`** = 你的任务管理工具，帮你协调前后端
+
+✅ **`package.json`** = 前端的配置和依赖清单
+
+✅ **`api/index.py`** = 后端的核心代码
+
+✅ **`app/`** = 前端的核心代码
+
+---
+
+## 祝贺！ 🎉
+
+你现在已经：
+
+- ✅ 理解了前后端分离的架构
+- ✅ 成功搭建了 Next.js + FastAPI 开发环境
+- ✅ 启动了一个真实运行的网页应用
+- ✅ 了解了前后端如何通信
+- ✅ 掌握了基本的命令和文件结构
+
+你现在已经是一个**全栈开发者**！（Full-stack 意思是"既懂前端也懂后端"）
+
+接下来的学习会更有趣。加油！💪
+
+---
+
+## 需要帮助？
+
+如果遇到问题或有疑问：
+- 检查上面的"排查常见问题"部分
+- 查看终端的错误信息（通常能告诉你哪里出错了）
+- 根据错误信息搜索解决方案
+
+记住：**所有的开发者都会遇到错误，重要的是怎么读懂错误信息和解决它。**
+
+祝你学习愉快！ 🚀
