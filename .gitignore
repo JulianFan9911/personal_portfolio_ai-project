@@ -3,7 +3,13 @@
 .claude/skills/lesson-smith*
 .idea
 tmp
+
+# Node Stuff
 node_modules
+
+# NextJS Stuff
+.next
+next-env.d.ts
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
