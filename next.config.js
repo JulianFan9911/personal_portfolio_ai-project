@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Performance optimizations
-  swcMinify: true, // Use SWC for faster minification
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production', // Remove console.log in production
   },
