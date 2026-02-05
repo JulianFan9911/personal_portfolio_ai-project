@@ -176,7 +176,8 @@ http://localhost:3000
 - The page can call the FastAPI backend (port 8000) for data
 
 **Compare to the example:**
-![Example Web App](img/01-example-hello-world-web-app.png)
+
+[Example Web App](/Users/sanhehu/Documents/GitHub/learn_personal_portfolio_ai-project/img/01-example-hello-world-web-app.png)
 
 **Checklist:**
 - [ ] Opened browser to `localhost:3000`
@@ -483,22 +484,22 @@ You've completed this task when:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    USER'S BROWSER                        │
-│                  (localhost:3000)                         │
-│                                                           │
+│                    USER'S BROWSER                       │
+│                  (localhost:3000)                       │
+│                                                         │
 │  ┌─────────────────────────────────────────────────┐    │
-│  │          NEXT.JS FRONTEND (React)              │    │
+│  │          NEXT.JS FRONTEND (React)               │    │
 │  │  ┌──────────────────────────────────────────┐   │    │
 │  │  │ Pages (in app/)                          │   │    │
 │  │  │ Components (in components/)              │   │    │
-│  │  │ - Displays content to user                │   │    │
+│  │  │ - Displays content to user               │   │    │
 │  │  │ - Handles user interactions              │   │    │
 │  │  │ - Calls backend API when needed          │   │    │
 │  │  └──────────────────────────────────────────┘   │    │
 │  └─────────────────────────────────────────────────┘    │
-│                         ↕ (HTTP)                         │
+│                         ↕ (HTTP)                        │
 │  ┌─────────────────────────────────────────────────┐    │
-│  │       FASTAPI BACKEND (Python) (port 8000)     │    │
+│  │       FASTAPI BACKEND (Python) (port 8000)      │    │
 │  │  ┌──────────────────────────────────────────┐   │    │
 │  │  │ API Endpoints (in api/index.py)          │   │    │
 │  │  │ @app.get("/api/hello")                   │   │    │
