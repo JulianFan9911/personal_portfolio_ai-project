@@ -56,6 +56,7 @@ run = "uv run -- python -m uvicorn api.index:app --reload --host 127.0.0.1 --por
 
 [tasks.dev]
 description = "🚀 Start all development servers (Next.js + FastAPI)"
+depends = ["kill"]
 run = "pnpm exec concurrently 'mise run next-dev' 'mise run fastapi-dev'"
 
 [tasks.kill]

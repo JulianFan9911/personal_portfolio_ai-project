@@ -35,3 +35,5 @@
 - `mise run test-node` - Run Node.js tests
 - `mise run test` - Run all tests (Python + Node.js)
 - `mise run export` - Export Python requirements to requirements.txt
+- `mise run dev` - Start all development servers (Next.js + FastAPI, auto-kills old instances first)
+- `mise run kill` - Kill all running development servers
