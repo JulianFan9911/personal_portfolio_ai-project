@@ -1,386 +1,730 @@
-# 实战学习测试驱动开发（TDD）
+# Setting Up Node Development Environment
 
-**开始前的准备：** 确保你的环境已经准备好，运行这些命令：`mise run venv-create`、`mise run inst` 和 `source .venv/bin/activate`。你应该在终端的提示符中看到 `(.venv)`。
+## 你的项目发生了变化！
 
----
+还记得吗？你之前学的是一个简单的 Python 项目。现在，你的项目变得更加复杂了——**你现在有了一个多语言的代码库**，里面既有 Python 代码，也有 Node.js 代码。
 
-## 你即将学到什么
+想象一下：公司通常不会只用一种编程语言。他们可能用 Python 做后端，用 Node.js 做某些服务，用 JavaScript 做网页。这就是为什么你需要学会在一个项目中同时处理多种语言。
 
-想象一下你要盖房子。你会：
-- **选项 A：** 随便开始盖，希望它最后是对的，然后再检查墙是否笔直？
-- **选项 B：** 先画一份详细的蓝图，然后按照计划盖，这样你知道一定会是对的？
-
-选项 B 显然更聪明，对吧？这就是测试驱动开发（TDD）的思想——在写实际代码之前先写一份"蓝图"（测试）。这份蓝图告诉你代码到底应该做什么，然后你不断修改代码，直到它完全符合蓝图的要求。
-
-在这节课里，你将通过写自己的代码和测试来学习这个强大的方法。一开始可能感觉很奇怪（先写测试再写代码？），但很快你就会明白为什么专业程序员都这样做。
+这个教程会带你一步步设置 Node.js 开发环境，并理解项目结构的变化。
 
 ---
 
-## 为什么你应该在乎测试？
+## 学习这个之前，你需要知道什么
 
-让我给你讲一个故事。Sarah 是一个程序员。她写了一些代码，完美地运行着。两周后，她需要修改它来添加一个新功能。突然间，出问题了。她花了 3 个小时调试，最后发现她的新改变破坏了一个旧功能。很沮丧吧？
+你已经完成了 Python 版本的 TDD（测试驱动开发）课程，所以你理解：
+- 如何**先写测试**（RED 阶段）- 测试描述你想要什么
+- 如何**写代码来通过测试**（GREEN 阶段）- 代码满足测试的要求
+- 如何**检查没有破坏其他东西**（VERIFY 阶段）- 运行所有测试确保一切正常
 
-现在想象一个不同的场景：Sarah 有测试。在她修改代码后，她运行 `mise test`，立即看到她的改变破坏了什么。她可以马上修复。不需要浪费时间去寻找 bug。
+现在问题来了：**TDD 在 Node.js 中怎么工作呢？**
 
-更好的是，对你这个学生来说：**当你请 AI 帮助你写代码时，测试让 AI 能够验证自己的工作。** 你可以说"请改进这个函数"，然后 AI 可以运行 `mise test` 来检查改进是否真的有效。没有测试的话，你就得手动检查 AI 做的所有事情。
-
-这很强大。这就是我们为什么要从测试开始。
-
----
-
-## 你的挑战：TDD 工作流
-
-你要实现一个叫做 `multiply_two` 的函数，它将两个数字相乘。但这里有个关键：你要先写测试（描述函数应该做什么），然后写代码使测试通过。
-
-这听起来可能有点反向，但相信我——一旦你理解了它，你就会看到为什么这是天才的做法。
+答案很简单：**完全一样！** 只是你用不同的语言（JavaScript），但思想是完全相同的。
 
 ---
 
-## 第 1 步：理解我们要建造什么
+## 第一步：理解项目发生了什么变化
 
-在我们甚至触碰电脑之前，让我们想想 `multiply_two` 应该做什么：
-- 它接收两个数字作为输入
-- 它把它们相乘
-- 它给你返回结果
+### 之前的样子（只有 Python）
 
-例子：
-- `multiply_two(3, 4)` 应该给出 `12`（因为 3 × 4 = 12）
-- `multiply_two(5, 0)` 应该给出 `0`（因为 5 × 0 = 0）
-- `multiply_two(-2, 3)` 应该给出 `-6`（因为 -2 × 3 = -6）
-
-现在问题是：我们怎样准确地告诉计算机我们期望什么？答案是：把它写成一个测试！
-
----
-
-## 第 2 步：写测试（RED 阶段）
-
-这是测试驱动开发的"RED"阶段。我们叫它"RED"是因为当你运行测试时，它会以红色错误信息失败。这完全没问题——这正是整个要点！
-
-### 任务：把测试添加到 `tests/test_source_code.py`
-
-打开你的 `tests/test_source_code.py` 文件。你会看到已经有一个 `add_two` 函数的测试。现在，你要为 `multiply_two` 添加一个新测试。
-
-把这段代码添加到文件中（保留已经在那里的所有东西）：
-
-```python
-def test_multiply_two():
-    assert multiply_two(3, 4) == 12
-    assert multiply_two(5, 0) == 0
-    assert multiply_two(-2, 3) == -6
+```
+project/
+├── learn_personal_portfolio_ai/     ← Python 的源代码
+├── tests/                           ← 所有测试都放这里
+├── pyproject.toml                   ← Python 的配置文件
+└── mise.toml                        ← 任务配置文件
 ```
 
-**这是什么意思？**
+非常简单——只有一种语言，一个测试文件夹。
 
-让我们逐行分解：
-- `def test_multiply_two():` - 我们在创建一个测试函数。所有测试函数都以 `test_` 开头。
-- `assert multiply_two(3, 4) == 12` - 这是一个测试用例。它说："当我调用 `multiply_two(3, 4)` 时，我期望它等于 12。如果不是，测试失败并告诉我出了问题。"
-- `assert multiply_two(5, 0) == 0` - 另一个测试用例。当你乘以零时，你应该得到零。
-- `assert multiply_two(-2, 3) == -6` - 另一个测试用例。即使用负数，乘法也应该正常工作。
+### 现在的样子（Python + Node.js）
 
-把 `assert` 理解为说："这件事应该是真的。如果不是，停下来告诉我有问题。"
+```
+project/
+├── learn_personal_portfolio_ai/     ← Python 的源代码
+├── tests_python/                    ← Python 的测试（改名了！）
+│   └── test_source_code.py
+│
+├── src/                             ← 新增：Node.js 的源代码
+│   └── math.js
+│
+├── tests_node/                      ← 新增：Node.js 的测试
+│   └── math.test.js
+│
+├── pyproject.toml                   ← Python 的配置（没变）
+├── package.json                     ← 新增：Node.js 的配置
+└── mise.toml                        ← 更新了：支持两种语言
+```
 
-### 运行测试（期望它失败）
+**主要的变化是什么：**
 
-现在让我们运行这个测试，看它失败：
+1. **测试文件夹分开了** - 以前是一个 `tests/` 文件夹，现在分成 `tests_python/` 和 `tests_node/`。为什么？因为 Python 的测试和 JavaScript 的测试写法不一样，分开会更清楚。
+
+2. **新增了 `src/` 文件夹** - 这是 Node.js 世界的标准做法。在 Python 里，我们把代码放在 `learn_personal_portfolio_ai/` 里；在 JavaScript 里，约定俗成地放在 `src/` 里。不同的语言，不同的习惯。
+
+3. **新增了 `package.json` 文件** - 就像 Python 有 `pyproject.toml` 一样，Node.js 有 `package.json`。它描述你的项目信息和依赖。
+
+4. **`mise.toml` 更新了** - 现在里面有了更多的命令，可以分别运行 Python 测试或 Node.js 测试，或者一起运行。
+
+---
+
+## 第二步：Node.js 和 pnpm 是什么？
+
+你现在可能在想："等等，我需要学 Node.js 吗？" 不用担心，我们的目标很简单：**了解基本概念，把它跑起来就行**。
+
+### Node.js：让 JavaScript 在电脑上运行
+
+想象一下 JavaScript 通常是什么地方用的？
+
+**网页浏览器！** 你打开网页时，浏览器会运行 JavaScript 代码来让网页有交互性（比如点按钮，表单验证等）。
+
+但有个问题：JavaScript 只能在浏览器里运行。如果你想在电脑上直接运行 JavaScript，就不行。
+
+**这就是 Node.js 的作用！** 它让你可以在电脑上直接运行 JavaScript，就像你用 Python 一样。
+
+```
+Python：    在电脑上运行 Python 代码
+            python script.py
+
+Node.js：   在电脑上运行 JavaScript 代码
+            node script.js
+```
+
+简单地说：**Node.js = 在电脑上直接跑 JavaScript**。它就像是一个 Python 解释器（把代码翻译成电脑能理解的语言），但是它是为 JavaScript 设计的。
+
+### pnpm：Node.js 世界的包管理器
+
+还记得 Python 的 `uv` 吗？它做什么的？
+
+- 下载你需要的包（像 numpy、pytest 这样的库）
+- 管理包的版本
+- 为你创建虚拟环境（`.venv/` 文件夹）
+
+**`pnpm` 在 Node.js 中做的事情完全一样！**
+
+```
+Python:    uv 是包管理器             → 创建 .venv/ 虚拟环境
+Node.js:   pnpm 是包管理器           → 创建 node_modules/ 文件夹
+
+如果你需要一个库，uv 会下载它放在 .venv/ 里
+如果你需要一个库，pnpm 会下载它放在 node_modules/ 里
+```
+
+**这就是全部了。** `pnpm` 是"Node.js 版本的 uv"。你不需要学会所有 pnpm 的命令——`mise` 会替你处理所有复杂的东西。
+
+---
+
+## 第三步：你的新命令
+
+因为现在有两种语言，所以命令也变多了。但别担心，`mise` 会帮你管理这一切。
+
+### 安装依赖（下载所需的库）
 
 ```bash
-mise test
+# 只安装 Python 的依赖
+mise run inst-python-deps
+
+# 只安装 Node.js 的依赖
+mise run inst-node-deps
+
+# 同时安装两种（推荐！）
+mise run inst
 ```
 
-**你会看到：**
+**解释一下：**
+- `inst` 是 `install`（安装）的缩写
+- `inst-python-deps` 意思是"安装 Python 的依赖"
+- `inst-node-deps` 意思是"安装 Node.js 的依赖"
+- 最后一个命令会自动运行前两个（因为 `mise` 聪明地知道如何协调它们）
 
-```
-ERROR: cannot import name 'multiply_two'
-```
-
-完美！这正是应该发生的。测试告诉你："我试图使用 `multiply_two` 函数，但它还不存在。"这就是 RED 阶段——测试失败了，这很好。这意味着测试工作正常，它告诉你需要构建什么。
-
-**检查点：**
-- [ ] 你已经把测试添加到 `tests/test_source_code.py`
-- [ ] 你已经运行 `mise test` 并看到它以 `multiply_two` 不存在的错误失败
-
----
-
-## 第 3 步：理解类型注解（快速插曲）
-
-在我们写函数之前，让我解释一些重要的东西：类型注解。看这个：
-
-```python
-def multiply_two(a: int, b: int) -> int:
-```
-
-这看起来很复杂，但实际上这是一个书面的承诺：
-- `a: int` 意思是"第一个输入（a）必须是一个整数"
-- `b: int` 意思是"第二个输入（b）必须是一个整数"
-- `-> int` 意思是"我保证给你返回一个整数"
-
-为什么这有用？因为这就像写一份合同。当某人使用你的函数时，他们立即知道："这个函数只对整数有效。如果我给它小数，可能会出问题。"它还帮助 AI 和其他工具在错误发生之前就发现它们。
-
-在 Python 中，你不*必须*写类型注解（代码没有它们也能运行），但专业程序员总是这样做，因为它使代码更清晰，防止 bug。
-
----
-
-## 第 4 步：实现函数（GREEN 阶段）
-
-现在我们进入"GREEN"阶段。在这个阶段，我们写实际的代码使测试通过。
-
-### 任务：把函数添加到 `learn_personal_portfolio_ai/source_code.py`
-
-打开你的 `learn_personal_portfolio_ai/source_code.py` 文件。你会看到 `add_two` 函数已经在那里了。现在添加这个新函数：
-
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a * b
-```
-
-**这做什么？**
-
-- `def multiply_two(a: int, b: int) -> int:` - 我们在定义一个函数。它接收两个整数输入（a 和 b）并返回一个整数。
-- `return a * b` - 这是实际的工作。它把 a 和 b 相乘并返回结果。
-
-就这样！这是一个简单的函数。这里的要点不是要聪明——要点是写出让测试通过的代码。简单、清晰的代码，做的正好是测试所期望的。
-
-### 运行测试（期望它通过）
-
-现在让我们再次运行测试：
+### 运行测试
 
 ```bash
-mise test
+# 只运行 Python 的测试
+mise run test-python
+
+# 只运行 Node.js 的测试
+mise run test-node
+
+# 同时运行两种测试
+mise run test
 ```
 
-**你应该看到：**
-
-```
-tests/test_source_code.py::test_add_two PASSED          [50%]
-tests/test_source_code.py::test_multiply_two PASSED     [100%]
-======================== 2 passed in 0.02s ========================
-```
-
-**是的！** 你的测试通过了！这是 GREEN 阶段。两个测试都通过了：
-- 旧的 `test_add_two` 仍然通过（你没有破坏任何东西）
-- 新的 `test_multiply_two` 通过（你的代码正常工作）
-
-注意它说"2 passed"——这真的很重要。这意味着你在添加 `multiply_two` 时没有意外破坏 `add_two` 函数。这是测试的一个超能力：如果你破坏了什么东西，你会立即得到反馈。
-
-**检查点：**
-- [ ] 你已经把 `multiply_two` 函数添加到 `source_code.py`
-- [ ] 你已经运行 `mise test` 并看到"2 passed"
-- [ ] 两个测试都通过了
+**为什么要分开？** 有时候你想快速测试 Python 代码，不想等 Node.js 的测试也跑完。有时候你想检查某个特定语言是否工作正常。灵活性很重要。
 
 ---
 
-## 第 5 步：理解一切如何一起工作
+## 第四步：一步步设置你的环境
 
-让我解释幕后发生了什么，这样你就能理解更大的图景。
+现在让我们把所有东西都启动起来。按照下面的步骤做：
 
-### 测试文件
-
-当你写这个测试时：
-```python
-def test_multiply_two():
-    assert multiply_two(3, 4) == 12
-```
-
-你在用代码写一个规范。你在说："我在定义 `multiply_two` 应该做什么。它应该把 3 和 4 相乘并返回 12。这不是可选的——这是要求。"
-
-注意重要的模式：函数名以 `test_` 开头，使用 `assert` 语句检查事情是否为真。这是所有 pytest 测试的基本配方，无论多么复杂。
-
-### 源代码文件
-
-当你写这个函数时：
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a * b
-```
-
-你在写实现，满足规范。你在说："这是我乘以两个数字的方式——我使用 Python 的 `*` 运算符。"
-
-### 它们如何连接：Pytest 框架
-
-这里是关键洞察：**pytest 是一个做一件简单事情的库**——它寻找测试文件，运行以 `test_` 开头的函数，检查它们的 `assert` 语句是否为真。就这样。这是整个概念。
-
-任何测试的基本配方是：
-1. **导入**你想测试的东西：`from learn_personal_portfolio_ai.source_code import multiply_two`
-2. **定义一个测试函数**以 `test_` 开头：`def test_multiply_two():`
-3. **使用 assert 语句**说什么应该是真的：`assert multiply_two(3, 4) == 12`
-
-这个简单的模式是所有测试的基础，无论是像你的简单测试还是大项目中的复杂测试。一切都建立在这个基本想法上。
-
-当你运行 `mise test` 时，这是实际发生的事情：
-
-1. pytest（一个测试库）启动并在 `tests/` 文件夹中查找
-2. 它找到所有名为 `test_*.py` 的文件
-3. 它找到所有以 `test_` 开头的函数
-4. 它运行每个测试函数
-5. 在每个测试内，检查所有 `assert` 语句
-6. 如果所有断言都为真，测试通过 ✅
-7. 如果任何断言为假，测试失败 ❌ 并显示出了什么问题
-
-在你的情况下：
-- pytest 找到 `test_multiply_two()`
-- 它运行 `assert multiply_two(3, 4) == 12`
-- 函数返回 `3 * 4 = 12`
-- 断言检查：12 == 12 吗？是的！
-- 测试通过 ✅
-
-### 为什么 Pytest？
-
-**pytest 是 Python 中测试的事实标准。** 当专业 Python 开发者写测试时，他们使用 pytest。它简单（如你所见），强大，广泛使用。一旦你学会 pytest，你就可以测试 Python 中的任何东西。
-
----
-
-## 为什么测试重要：真实世界的好处
-
-让我给你一个具体的例子说明为什么这重要。想象你后来意识到："哦等等，`multiply_two` 也应该处理小数，不仅仅是整数。"你改变了函数：
-
-```python
-def multiply_two(a: int, b: int) -> float:  # 改变了返回类型
-    return a * b
-```
-
-你运行 `mise test`，一切仍然通过。好——你的改变与现有测试兼容。你的代码没有破坏任何东西。
-
-现在想象一个不同的改变。你不小心打错了：
-
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a + b  # 哎呀！加法而不是乘法！
-```
-
-你运行 `mise test`：
-
-```
-AssertionError: assert 7 == 12
-    assert multiply_two(3, 4) == 12
-```
-
-测试立即捕获你的错误！你可以立即修复它，而不是花几个小时调试。
-
-**这就是为什么 AI 开发者喜欢测试。** 当 AI 写代码（或修改代码）时，测试提供立即反馈："你破坏了什么吗？你的代码真的有效吗？"不需要手动检查。
-
----
-
-## TDD 的三个阶段
-
-现在你理解了完整的工作流。让我总结一下：
-
-### 第 1 阶段：RED（测试失败）
-你写一个描述应该发生什么的测试。你运行它，它失败因为代码不存在。这告诉你到底要构建什么。
-
-### 第 2 阶段：GREEN（测试通过）
-你写最简单的代码使测试通过。不花哨，不复杂——只是足够满足测试。
-
-### 第 3 阶段：VERIFY（什么都没破坏）
-你运行整个测试套件确保你没有意外破坏其他东西。在你的情况下，`test_add_two` 和 `test_multiply_two` 都通过，所以你知道一切都在工作。
-
----
-
-## 我们学到了什么
-
-让我们回顾你学到的东西：
-
-1. **测试作为规范** - 测试在你写代码之前定义代码应该做什么
-2. **`assert` 关键字** - 这是你说"这应该是真的"的方式
-3. **类型注解** - 它们记录函数期望和返回什么类型
-4. **RED-GREEN 循环** - 写测试（失败），写代码（通过）
-5. **安全网** - 运行所有测试捕捉回归问题
-
----
-
-## 自己试试：可选挑战
-
-感觉自信吗？试试这个：
-
-1. 写一个 `subtract_two` 函数的测试，它减去两个数字
-2. 运行测试（看它以 RED 失败）
-3. 写 `subtract_two` 函数
-4. 运行所有测试（看它们变成 GREEN）
-
-这会加强你学到的一切。测试可能看起来像：
-
-```python
-def test_subtract_two():
-    assert subtract_two(10, 3) == 7
-    assert subtract_two(5, 5) == 0
-    assert subtract_two(-2, 3) == -5
-```
-
-你能想出实现吗？（提示：它就像 `multiply_two` 但使用 `-` 而不是 `*`）
-
----
-
-## 幕后：配置如何使它工作
-
-你可能想知道："mise test 怎么知道运行测试？"答案在两个配置文件中。但首先，让我揭露一下实际发生的事情。
-
-### 真正的命令
-
-当你输入 `mise test` 时，这是幕后真正发生的。实际运行的命令是：
+### 1. 创建 Python 虚拟环境
 
 ```bash
-.venv/bin/pytest tests
+mise run venv-create
 ```
 
-这意味着："使用 pytest（在你虚拟环境的 bin 文件夹中）来运行 `tests/` 文件夹中的所有测试。"
+**发生了什么？** 这个命令创建了一个 `.venv/` 文件夹。这就像是一个"隔离的房间"，Python 在这个房间里安装它需要的所有东西。这样不会影响你电脑上其他的 Python 项目。
 
-如果你想的话，你可以直接输入这个命令：
+### 2. 安装所有依赖
+
 ```bash
-.venv/bin/pytest tests  # 这和 mise test 一样！
+mise run inst
 ```
 
-但那太长了，很烦人。所以我们有配置文件来使它更短。
+**发生了什么？** 这个命令会：
+- 用 `uv` 安装 Python 需要的所有包（放在 `.venv/` 里）
+- 用 `pnpm` 安装 Node.js 需要的所有包（放在 `node_modules/` 里）
 
-### 配置文件
+这样两种语言的依赖就都装好了。
 
-**`pyproject.toml`** 声明 pytest 是一个测试依赖：
+### 3. 激活 Python 环境
+
+```bash
+source .venv/bin/activate
+```
+
+**为什么要做这个？** 虽然 `.venv/` 文件夹已经被创建了，但你的终端还不知道要用这个虚拟环境。这个命令告诉你的终端："嘿，从现在开始，用 `.venv/` 里的 Python"。
+
+**怎么知道成功了？** 你的终端提示符会变化。看起来像这样：
+
+```
+(.venv) your-computer:project $
+```
+
+你会看到前面多了 `(.venv)` 这样的标志。这就表示虚拟环境已经激活了。
+
+### 4. 验证一切都工作了
+
+```bash
+mise run test
+```
+
+**你会看到什么？** 成功的话，你会看到两部分的测试输出：
+
+```
+======================== Python Tests ========================
+tests_python/test_source_code.py::test_add_two PASSED          [50%]
+======================== 1 passed in 0.02s ========================
+
+======================== Node.js Tests ========================
+✔ add(2, 3) should equal 5 (1.234ms)
+✔ add(0, 0) should equal 0 (0.567ms)
+
+───────────────────────────────────────
+tests 2 passed (1.801ms)
+```
+
+**意思是？**
+- Python 的 `test_add_two()` 通过了
+- Node.js 的两个 `add` 测试也通过了
+- 没有任何东西坏掉
+
+**恭喜！** 你的 Node 开发环境现在已经设置好了。
+
+---
+
+## 第五步：理解 `mise.toml` 的变化
+
+想知道为什么只用一个 `mise run test` 命令，就能同时运行两种语言的测试？秘密在 `mise.toml` 文件里。
+
+### Python 的任务（之前就有的）
+
 ```toml
-[project.optional-dependencies]
-test = [
-    "pytest>=8.2.2,<9.0.0",
-]
+[tasks.venv-create]
+description = "✨ Create Python virtual environment (.venv)"
+run = "uv venv"
+
+[tasks.inst-python-deps]
+description = "💾 Install Python dependencies via uv"
+run = "uv sync --all-extras"
+
+[tasks.test-python]
+description = "🧪 Run Python tests with pytest"
+run = ".venv/bin/pytest tests_python"
 ```
 
-这说："这个项目需要 pytest 来测试。当某人运行 `mise run inst` 时，也安装 pytest。"
+**解释：**
+- `venv-create` - 创建虚拟环境
+- `inst-python-deps` - 用 uv 安装 Python 包
+- `test-python` - 运行 Python 测试（现在指向 `tests_python/` 而不是之前的 `tests/`）
 
-**`mise.toml`** 定义一个快捷命令：
+### Node.js 的任务（全新的）
+
 ```toml
+[tasks.inst-node-deps]
+description = "📦 Install Node.js dependencies via pnpm"
+run = "pnpm install"
+
+[tasks.test-node]
+description = "🧪 Run Node.js tests"
+run = "node --test tests_node/*.test.js"
+```
+
+**解释：**
+- `inst-node-deps` - 用 pnpm 安装 Node.js 包。这和 `inst-python-deps` 的概念一样，只是用了 Node.js 的工具
+- `test-node` - 运行 Node.js 测试。用 Node.js 的内置测试工具来运行 `tests_node/` 里的所有 `.test.js` 文件
+
+### 协调任务（中枢）
+
+```toml
+[tasks.inst]
+description = "💾 Install all dependencies (Python + Node.js)"
+depends = ["inst-python-deps", "inst-node-deps"]
+
 [tasks.test]
-description = "🧪 Run tests with pytest"
-run = ".venv/bin/pytest tests"
+description = "🧪 Run all tests (Python + Node.js)"
+depends = ["test-python", "test-node"]
 ```
 
-这说："当我运行 `mise test` 时，实际上运行命令 `.venv/bin/pytest tests`。"
+**这是最聪明的部分！** `depends` 字段是什么意思呢？
 
-所以 `mise test` 只是更长命令 `.venv/bin/pytest tests` 的一个**包装器**（快捷方式）。它使测试更容易，给你的团队中的每个人一个一致的方式来运行测试。
+它说："当有人运行这个任务时，先运行这些任务。"
 
-### 大图景
+所以：
+- `mise run inst` 会自动运行 `inst-python-deps` 和 `inst-node-deps`
+- `mise run test` 会自动运行 `test-python` 和 `test-node`
 
-```
-mise test  →  (在 mise.toml 中查找命令)  →  .venv/bin/pytest tests  →  (在 tests/ 文件夹上运行 pytest)
-```
-
-把 `mise` 想象成一个为你记住命令的任务运行器。不是记住复杂的命令，你只需要输入短名称，比如 `mise test`、`mise venv-create` 等等。
+**为什么这样设计？** 这样你有选择：
+- 如果你只想改 Python 代码，可以用 `mise run test-python` 快速测试
+- 如果你想检查整个项目，可以用 `mise run test` 测试所有东西
+- 但对大多数人来说，`mise run test` 就够了
 
 ---
 
-## 关键要点
+## 第六步：认识这些新文件
 
-记住这些重要的点：
+现在让我们看看这些新文件是什么，以及它们做什么。
 
-- ✅ **测试优先** - 在 TDD 中，你在代码前写测试
-- ✅ **测试是规范** - 它们准确定义代码应该做什么
-- ✅ **Assert 是承诺** - 每个 `assert` 是你的代码必须满足的要求
-- ✅ **类型注解记录意图** - 它们告诉读者你的函数使用什么类型
-- ✅ **总是运行所有测试** - 在问题变成大问题之前捕捉回归问题
+### `package.json` - Node.js 的信息文件
+
+```json
+{
+  "name": "learn-personal-portfolio-ai",
+  "version": "0.1.1",
+  "private": true,
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}
+```
+
+**这是什么？** 它是 Node.js 世界的"身份证"。就像 Python 的 `pyproject.toml` 一样，它告诉 Node.js：
+
+- **name** - 这个项目叫什么
+- **version** - 项目现在是什么版本
+- **private** - 这个项目是私有的（不打算发布到网上的包管理器）
+- **dependencies** - 这个项目需要哪些包来正常工作
+- **devDependencies** - 这个项目在开发/测试时需要哪些包
+
+目前它很空，因为我们的项目还很简单，不需要外部包。但随着项目增长，这个文件会越来越重要。
+
+### `src/math.js` - Node.js 的代码
+
+```javascript
+export function add(a, b) {
+  return a + b;
+}
+```
+
+**这是什么？** 这是一个 JavaScript 函数。让我分解一下：
+
+- `export` - 这很重要！它的意思是"让其他文件可以使用这个函数"。就像 Python 中你可以在另一个文件里 `from xxx import add` 一样。
+- `function add(a, b)` - 定义一个叫 `add` 的函数，它接收两个参数 `a` 和 `b`
+- `return a + b` - 返回两个数字的和
+- 分号 `;` - JavaScript 的习惯（虽然有些开发者不写，但通常都会写）
+
+**和 Python 的区别：**
+
+Python:
+```python
+def add_two(a: int, b: int) -> int:
+    return a + b
+```
+
+JavaScript:
+```javascript
+export function add(a, b) {
+  return a + b;
+}
+```
+
+核心逻辑是一样的（都是相加），只是写法不同。
+
+### `tests_node/math.test.js` - Node.js 的测试
+
+```javascript
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { add } from '../src/math.js';
+
+test('add(2, 3) should equal 5', () => {
+  assert.strictEqual(add(2, 3), 5);
+});
+```
+
+**这是什么？** 这是一个 Node.js 测试。让我解释每一行：
+
+- `import { test } from 'node:test';` - 导入 Node.js 的测试工具
+- `import assert from 'node:assert';` - 导入 Node.js 的断言工具（用来检查是否相等）
+- `import { add } from '../src/math.js';` - 导入我们想要测试的函数
+
+然后：
+- `test('add(2, 3) should equal 5', () => { ... })` - 定义一个测试。第一个参数是测试的描述（"add(2, 3) 应该等于 5"），第二个参数是测试的代码
+- `assert.strictEqual(add(2, 3), 5);` - 检查 `add(2, 3)` 的结果是否等于 `5`。如果是，测试通过；如果不是，测试失败
+
+**和 Python 的区别：**
+
+Python:
+```python
+def test_add_two():
+    assert add_two(3, 4) == 12
+```
+
+JavaScript:
+```javascript
+test('add(2, 3) should equal 5', () => {
+  assert.strictEqual(add(2, 3), 5);
+});
+```
+
+概念是一样的（都是测试函数），只是写法不同。
 
 ---
 
-## 准备好成为 TDD 开发者了吗？
+## 第七步：你的第一个 Node.js 函数
 
-你现在理解了专业开发者每天使用的基本模式。恭喜！继续在你写的每个函数上练习这个，你会养成先思考测试、再思考代码的习惯。
+现在你理解了所有的东西，让我们用你已经知道的 TDD 工作流来写一个 Node.js 函数。
 
-你的下一个挑战：试试上面的可选 `subtract_two` 挑战。然后，继续。创建更多带有测试的函数。很快，这将成为第二天性。
+### RED 阶段：先写失败的测试
 
-记住：**测试不是额外工作——它们是你的超能力。** 它们告诉你什么时候出了问题。它们让 AI 充满信心地帮助你。它们把调试从 3 小时的噩梦变成 30 秒的修复。
+**文件：** `tests_node/math.test.js`
 
-欢迎来到测试驱动开发。🎯
+在现有的 `add` 测试后面添加这个：
+
+```javascript
+test('multiply(3, 4) should equal 12', () => {
+  const multiply = require('../src/math.js').multiply;
+  assert.strictEqual(multiply(3, 4), 12);
+});
+
+test('multiply(5, 0) should equal 0', () => {
+  const multiply = require('../src/math.js').multiply;
+  assert.strictEqual(multiply(5, 0), 0);
+});
+
+test('multiply(-2, 3) should equal -6', () => {
+  const multiply = require('../src/math.js').multiply;
+  assert.strictEqual(multiply(-2, 3), -6);
+});
+```
+
+**你在做什么？** 你在写测试，说"我想要一个 `multiply` 函数，它应该能：
+- 将 3 和 4 相乘得到 12
+- 将 5 和 0 相乘得到 0
+- 将 -2 和 3 相乘得到 -6"
+
+### 运行测试（看它失败）
+
+```bash
+mise run test-node
+```
+
+**你会看到什么？**
+
+```
+TypeError: multiply is not a function
+```
+
+或者
+
+```
+Cannot find module property 'multiply'
+```
+
+**这很好！** 这正是 RED 阶段应该的样子。测试在对你说："嘿，这个函数还不存在，你需要写它。"
+
+### GREEN 阶段：写代码通过测试
+
+**文件：** `src/math.js`
+
+添加这个函数（保留 `add` 函数）：
+
+```javascript
+export function multiply(a, b) {
+  return a * b;
+}
+```
+
+**你在做什么？** 你实现了测试要求的函数。它接收两个数字，相乘，然后返回结果。
+
+### 运行测试（看它通过）
+
+```bash
+mise run test-node
+```
+
+**你会看到什么？**
+
+```
+✔ add(2, 3) should equal 5
+✔ add(0, 0) should equal 0
+✔ multiply(3, 4) should equal 12 (0.456ms)
+✔ multiply(5, 0) should equal 0 (0.389ms)
+✔ multiply(-2, 3) should equal -6 (0.512ms)
+
+───────────────────────────────────────
+tests 5 passed (1.801ms)
+```
+
+**太棒了！** 所有的测试都通过了。你写的新代码工作正常，旧的 `add` 测试也没有坏掉。
+
+### VERIFY 阶段：检查整个项目
+
+现在运行所有测试（Python + Node.js）：
+
+```bash
+mise run test
+```
+
+**你会看到什么？**
+
+```
+======================== Python Tests ========================
+tests_python/test_source_code.py::test_add_two PASSED          [50%]
+======================== 1 passed in 0.02s ========================
+
+======================== Node.js Tests ========================
+✔ add(2, 3) should equal 5
+✔ add(0, 0) should equal 0
+✔ multiply(3, 4) should equal 12
+✔ multiply(5, 0) should equal 0
+✔ multiply(-2, 3) should equal -6
+
+───────────────────────────────────────
+tests 5 passed (1.801ms)
+```
+
+**检查清单：**
+- ✅ Python 测试仍然通过（你没有破坏任何东西）
+- ✅ Node.js 的 `add` 测试仍然通过
+- ✅ Node.js 的新 `multiply` 测试都通过
+
+完美！你刚才完成了整个 TDD 循环，而且是用两种不同的语言。
+
+---
+
+## 第八步：对比 Python 和 Node.js
+
+现在你已经用两种语言写了相同的逻辑。让我们看看它们有多相似。
+
+### 同样的逻辑，两种语言
+
+**Python 版本：**
+```python
+def multiply_two(a: int, b: int) -> int:
+    return a * b
+```
+
+**JavaScript 版本：**
+```javascript
+export function multiply(a, b) {
+  return a * b;
+}
+```
+
+### 相同的地方
+
+- 两个都接收两个参数（`a` 和 `b`）
+- 两个都相乘（`a * b`）
+- 两个都返回结果
+- **逻辑完全相同**
+
+### 不同的地方
+
+| Python | JavaScript |
+|--------|-----------|
+| 用 `def` 关键字定义函数 | 用 `function` 关键字定义函数 |
+| 有类型提示：`: int`, `-> int` | 没有类型提示（虽然可以用 JSDoc 添加） |
+| 使用缩进来表示代码块 | 使用花括号 `{}` 来表示代码块 |
+| 行尾不需要分号 | 行尾通常有分号 `;` |
+| 需要 `from ... import` 来导入 | 需要 `export` 来导出，`import` 来导入 |
+
+**最重要的一点：** 语法不同，但**思想是一样的**。你理解了一个，另一个就很容易了。
+
+---
+
+## 第九步：你的挑战
+
+现在你已经看到了完整的流程。是时候自己练习了。按照下面的步骤做，但这次是你自己来做，不是跟着教程。
+
+### 挑战 1：Python - 添加 `divide_two()` 函数
+
+**步骤 1：写测试（RED 阶段）**
+
+在 `tests_python/test_source_code.py` 里添加：
+
+```python
+def test_divide_two():
+    assert divide_two(10, 2) == 5
+    assert divide_two(9, 3) == 3
+    assert divide_two(-6, 2) == -3
+```
+
+**步骤 2：运行测试，看它失败**
+
+```bash
+mise run test-python
+```
+
+你会看到 `cannot import name 'divide_two'` 这样的错误。很好，这就是 RED 阶段。
+
+**步骤 3：实现函数（GREEN 阶段）**
+
+在 `learn_personal_portfolio_ai/source_code.py` 里添加：
+
+```python
+def divide_two(a: int, b: int) -> float:
+    return a / b
+```
+
+为什么返回类型是 `float` 而不是 `int`？因为除法可能产生小数。比如 `5 / 2 = 2.5`。
+
+**步骤 4：运行测试，看它通过**
+
+```bash
+mise run test-python
+```
+
+你应该看到 "3 passed" 或类似的成功消息（`test_add_two` + `test_multiply_two` + `test_divide_two`）。
+
+### 挑战 2：Node.js - 添加 `divide()` 函数
+
+**步骤 1：写测试（RED 阶段）**
+
+在 `tests_node/math.test.js` 里添加：
+
+```javascript
+test('divide(10, 2) should equal 5', () => {
+  const divide = require('../src/math.js').divide;
+  assert.strictEqual(divide(10, 2), 5);
+});
+
+test('divide(9, 3) should equal 3', () => {
+  const divide = require('../src/math.js').divide;
+  assert.strictEqual(divide(9, 3), 3);
+});
+
+test('divide(-6, 2) should equal -3', () => {
+  const divide = require('../src/math.js').divide;
+  assert.strictEqual(divide(-6, 2), -3);
+});
+```
+
+**步骤 2：运行测试，看它失败**
+
+```bash
+mise run test-node
+```
+
+你会看到错误信息说 `divide` 不存在或不是一个函数。
+
+**步骤 3：实现函数（GREEN 阶段）**
+
+在 `src/math.js` 里添加：
+
+```javascript
+export function divide(a, b) {
+  return a / b;
+}
+```
+
+**步骤 4：运行测试，看它通过**
+
+```bash
+mise run test-node
+```
+
+### 挑战 3：验证整个项目
+
+最后，运行所有测试来确保没有破坏任何东西：
+
+```bash
+mise run test
+```
+
+**成功的标志是什么？** 你应该看到类似这样的：
+
+```
+======================== Python Tests ========================
+... [至少 3 个测试通过]
+
+======================== Node.js Tests ========================
+... [至少 8 个测试通过，包括 add, multiply, divide]
+```
+
+所有东西都绿色（✔ 或 PASSED），没有红色的失败消息。
+
+---
+
+## 关键要点总结
+
+✅ **Node.js 让你在电脑上运行 JavaScript** - 就像 Python 解释器一样，但是是为 JavaScript 设计的
+
+✅ **pnpm 管理 Node.js 的包** - 和 Python 的 uv 一样的角色，只是为 Node.js
+
+✅ **项目结构分离了关注点** - Python 代码在 `learn_personal_portfolio_ai/`，Node.js 代码在 `src/`。测试也分别放在 `tests_python/` 和 `tests_node/`。为什么？这样更清晰，更容易维护。
+
+✅ **测试文件夹被分开了** - `tests_python/` 给 Python，`tests_node/` 给 Node.js。这样你可以快速地只测试你在做的语言。
+
+✅ **`mise` 协调一切** - 一个命令可以运行整个多语言项目的测试。`mise run test` 自动会跑 Python 和 Node.js 的测试。
+
+✅ **TDD 在两种语言中完全相同** - RED → GREEN → VERIFY，不管你用 Python 还是 JavaScript
+
+✅ **语法改变，但思想不变** - `multiply` 在 Python 和 JavaScript 里都做同样的事情，只是写法不同
+
+---
+
+## 还有什么？
+
+现在你已经设置好了 Node 开发环境：
+
+1. **练习 TDD 工作流** - 完成上面的所有挑战
+2. **添加更多函数** - 尝试自己实现 `power()`（幂次方）、`absolute()`（绝对值）等
+3. **探索 Node.js 生态** - 想知道有什么包可用吗？查看 npm（Node.js 包管理器的网站）
+4. **习惯 JavaScript 语法** - 和 Python 不同，但你会很快学会
+
+---
+
+## 总结
+
+你现在已经：
+
+- ✅ 理解了项目为什么改变了
+- ✅ 学会了 Node.js 和 pnpm 的基本概念
+- ✅ 成功设置了 Node.js 开发环境
+- ✅ 理解了新的命令结构（分离和协调的任务）
+- ✅ 在两种语言中都实现了函数
+- ✅ 证明了 TDD 在两种语言中的工作方式是相同的
+
+你现在有了一个**真实世界的多语言开发环境**，就像专业的软件公司一样。你已经准备好在多个平台上构建更复杂的应用了。
+
+欢迎来到多语言软件开发的世界！🚀
+
+---
+
+## 常见问题和解决方案
+
+| 问题 | 解决方案 |
+|------|--------|
+| `command not found: mise` | `mise` 没有安装。运行 `curl https://mise.jdx.dev \| sh` 来安装 |
+| `Cannot find module '~/src/math.js'` 或 `divide is not a function` | 确保你在 `src/math.js` 里用 `export function` 定义了函数 |
+| `.venv not found` | 运行 `mise run venv-create` 创建 Python 虚拟环境 |
+| `node_modules not found` | 运行 `mise run inst` 安装依赖 |
+| 测试失败（比如说 12 != 11） | 检查你的逻辑。`multiply` 应该用 `*`，不是 `+` |
+| 只有 Python 测试运行，没有 Node.js 测试 | 确保你运行了 `mise run inst-node-deps` 来安装 Node.js 依赖 |
+| 我改了代码，但测试仍然失败 | 仔细读错误信息。通常会告诉你是什么错了。如果不清楚，打印出函数返回的值，看看是否符合预期 |
+
+---
+
+欢迎开始你的多语言开发之旅！有任何问题，别害羞，多问。这就是学习的过程。💪

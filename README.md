@@ -1,386 +1,699 @@
-# Learning Test-Driven Development in Action
+# Setting Up Node Development Environment
 
-**Before you start:** Make sure your environment is ready by running these commands: `mise run venv-create`, `mise run inst`, and `source .venv/bin/activate`. You should see `(.venv)` in your terminal prompt.
+## Your Project Has Changed!
 
----
+Remember when you were working on a simple Python project? Well, things are about to get more exciting—**your project now has a multi-language codebase** with both Python and Node.js code.
 
-## What You're About to Learn
+Here's why this matters: Real-world companies don't stick to one programming language. They might use Python for the backend, Node.js for certain services, and JavaScript for the web frontend. Learning to navigate a multi-language project is a critical professional skill.
 
-Imagine you're building a house. Would you:
-- **Option A:** Start building randomly and hope it turns out right, then check if the walls are straight?
-- **Option B:** First make a detailed blueprint, then build according to the plan so you know it will be correct?
-
-Option B is much smarter, right? That's what Test-Driven Development (TDD) is—making a "blueprint" (test) before writing the actual code. The blueprint tells you exactly what the code should do, and you keep writing code until it matches the blueprint perfectly.
-
-In this lesson, you'll learn this powerful approach by writing your own code and tests. It might feel weird at first (writing tests before code?), but you'll quickly see why professionals do this everywhere.
+This tutorial will guide you through setting up your Node.js development environment and understanding how the project structure has evolved.
 
 ---
 
-## Why Should You Care About Tests?
+## What You Should Already Know
 
-Let me tell you a story. Sarah is a programmer. She writes some code that works perfectly. Two weeks later, she modifies it for a new feature. Suddenly, something breaks. She spends 3 hours debugging to find out that her new change broke an old feature. Frustrating, right?
+You've completed the Python TDD (Test-Driven Development) course, so you understand:
+- How to **write tests first** (RED phase) - tests describe what you want
+- How to **write code to pass tests** (GREEN phase) - code satisfies the test requirements
+- How to **verify nothing broke** (VERIFY phase) - run all tests to ensure everything works
 
-Now imagine a different scenario: Sarah has tests. After she modifies the code, she runs `mise test` and immediately sees that her change broke something. She can fix it right away. No wasted time hunting for bugs.
+Now the question is: **How does TDD work in Node.js?**
 
-Here's the even better part for you as a student: **When you ask AI to help with code, tests let the AI verify its own work.** You can say, "Please improve this function," and the AI can run `mise test` to check if the improvement actually works. Without tests, you'd have to manually check everything the AI does.
-
-That's powerful. That's why we start with tests.
-
----
-
-## Your Challenge: The TDD Workflow
-
-You're going to implement a function called `multiply_two` that multiplies two numbers. But here's the key: you'll write the test first (describing what the function should do), and then write the code to make that test pass.
-
-This might sound backwards, but trust me—once you understand it, you'll see why this is brilliant.
+The simple answer: **Exactly the same!** You're just using a different language (JavaScript), but the thinking is identical.
 
 ---
 
-## Step 1: Understanding What We're Building
+## Step 1: Understanding What Changed
 
-Before we even touch the computer, let's think about what `multiply_two` should do:
-- It takes two numbers as input
-- It multiplies them together
-- It gives you the result
+### Before: Single Language (Python Only)
 
-Examples:
-- `multiply_two(3, 4)` should give `12` (because 3 × 4 = 12)
-- `multiply_two(5, 0)` should give `0` (because 5 × 0 = 0)
-- `multiply_two(-2, 3)` should give `-6` (because -2 × 3 = -6)
-
-Now, the question is: how do we tell the computer exactly what we expect? The answer is: write it down as a test!
-
----
-
-## Step 2: Write the Test (RED Phase)
-
-This is the "RED" phase of Test-Driven Development. We call it "RED" because when you run the test, it will fail with a red error message. And that's completely okay—that's the whole point!
-
-### Task: Add a Test to `tests/test_source_code.py`
-
-Look at your `tests/test_source_code.py` file. You'll see there's already a test for the `add_two` function. Now, you're going to add a new test for `multiply_two`.
-
-Add this code to the file (keep everything that's already there):
-
-```python
-def test_multiply_two():
-    assert multiply_two(3, 4) == 12
-    assert multiply_two(5, 0) == 0
-    assert multiply_two(-2, 3) == -6
+```
+project/
+├── learn_personal_portfolio_ai/     ← Python source code
+├── tests/                           ← All tests go here
+├── pyproject.toml                   ← Python config
+└── mise.toml                        ← Task config
 ```
 
-**What does this mean?**
+Simple—one language, one test folder.
 
-Let's break it down line by line:
-- `def test_multiply_two():` - We're creating a test function. All test functions start with `test_`.
-- `assert multiply_two(3, 4) == 12` - This is a test case. It says: "When I call `multiply_two(3, 4)`, I expect it to equal 12. If it doesn't, the test fails and tells me something is wrong."
-- `assert multiply_two(5, 0) == 0` - Another test case. When you multiply by zero, you should get zero.
-- `assert multiply_two(-2, 3) == -6` - Another test case. Even with negative numbers, multiplication should work correctly.
+### Now: Multi-Language (Python + Node.js)
 
-Think of `assert` as saying: "This thing should be true. If it's not true, stop and tell me something is wrong."
+```
+project/
+├── learn_personal_portfolio_ai/     ← Python source code
+├── tests_python/                    ← Python tests (renamed!)
+│   └── test_source_code.py
+│
+├── src/                             ← NEW: Node.js source code
+│   └── math.js
+│
+├── tests_node/                      ← NEW: Node.js tests
+│   └── math.test.js
+│
+├── pyproject.toml                   ← Python config (unchanged)
+├── package.json                     ← NEW: Node.js config
+└── mise.toml                        ← Updated: supports both languages
+```
 
-### Run the Test (Expect It to Fail)
+**What's different:**
 
-Now let's run this test to see it fail:
+1. **Test folders are separated** - Previously one `tests/` folder, now split into `tests_python/` and `tests_node/`. Why? Because Python and JavaScript tests are written differently, and separation keeps things clear.
+
+2. **New `src/` folder** - This is the Node.js convention. In Python, we put code in `learn_personal_portfolio_ai/`; in JavaScript, the standard is `src/`. Different languages, different traditions.
+
+3. **New `package.json` file** - Just as Python has `pyproject.toml`, Node.js has `package.json`. It describes your project and its dependencies.
+
+4. **Updated `mise.toml`** - Now it has more commands to run Python tests, Node.js tests, or both.
+
+---
+
+## Step 2: What Are Node.js and pnpm?
+
+You might be thinking: "Do I really need to learn Node.js?" Don't worry—we're keeping it simple: **understand the basics and get it working**.
+
+### Node.js: Running JavaScript on Your Computer
+
+Where does JavaScript normally run? **In web browsers!** When you visit a website, the browser runs JavaScript to make the page interactive (buttons, forms, etc.).
+
+But here's the problem: JavaScript only runs in browsers. You can't directly run JavaScript on your computer like you would Python.
+
+**Enter Node.js!** It lets you run JavaScript on your computer directly, just like Python.
+
+```
+Python:   python script.py           (run Python code on your computer)
+Node.js:  node script.js             (run JavaScript code on your computer)
+```
+
+Simply put: **Node.js = a JavaScript runtime for your computer**. Think of it like a Python interpreter, but designed for JavaScript.
+
+### pnpm: Node.js Package Manager
+
+Remember Python's `uv`? Here's what it does:
+
+- Downloads packages you need (like numpy, pytest)
+- Manages package versions
+- Creates virtual environments (`.venv/`)
+
+**`pnpm` does the exact same things for Node.js!**
+
+```
+Python:    uv is a package manager       → creates .venv/
+Node.js:   pnpm is a package manager     → creates node_modules/
+```
+
+Think of pnpm as "the uv of Node.js." You won't need to learn all pnpm commands—`mise` handles everything for you.
+
+---
+
+## Step 3: Your New Commands
+
+Because you now have two languages, you have more commands. But don't worry—`mise` coordinates everything.
+
+### Installing Dependencies
 
 ```bash
-mise test
+# Install only Python dependencies
+mise run inst-python-deps
+
+# Install only Node.js dependencies
+mise run inst-node-deps
+
+# Install both (recommended!)
+mise run inst
 ```
 
-**What you'll see:**
+**What these mean:**
+- `inst` is short for "install"
+- `inst-python-deps` means "install Python dependencies"
+- `inst-node-deps` means "install Node.js dependencies"
+- The last command automatically runs both (mise orchestrates them)
 
-```
-ERROR: cannot import name 'multiply_two'
-```
-
-Perfect! This is exactly what should happen. The test is telling you: "I tried to use the `multiply_two` function, but it doesn't exist yet." This is the RED phase—the test is failing, and that's good. It means the test is working correctly and it's telling you what needs to be built.
-
-**Checkpoint:**
-- [ ] You've added the test to `tests/test_source_code.py`
-- [ ] You've run `mise test` and seen it fail with the error about `multiply_two` not existing
-
----
-
-## Step 3: Understand Type Hints (A Quick Detour)
-
-Before we write the function, let me explain something important: type hints. Look at this:
-
-```python
-def multiply_two(a: int, b: int) -> int:
-```
-
-This looks complicated, but it's actually a written promise:
-- `a: int` means "the first input (a) must be an integer"
-- `b: int` means "the second input (b) must be an integer"
-- `-> int` means "I promise to give you back an integer"
-
-Why is this useful? Because it's like writing a contract. When someone uses your function, they immediately know: "This function only works with whole numbers. If I give it decimal numbers, something might go wrong." It also helps AI and other tools catch mistakes before they happen.
-
-In Python, you don't *have* to write type hints (the code will work without them), but professional programmers always do because it makes code clearer and prevents bugs.
-
----
-
-## Step 4: Implement the Function (GREEN Phase)
-
-Now we move to the "GREEN" phase. In this phase, we write the actual code to make the test pass.
-
-### Task: Add the Function to `learn_personal_portfolio_ai/source_code.py`
-
-Look at your `learn_personal_portfolio_ai/source_code.py` file. You'll see the `add_two` function already there. Now add this new function:
-
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a * b
-```
-
-**What does this do?**
-
-- `def multiply_two(a: int, b: int) -> int:` - We're defining a function. It takes two integer inputs (a and b) and returns an integer.
-- `return a * b` - This is the actual work. It multiplies a and b together and gives back the result.
-
-That's it! It's a simple function. The point here is not to be clever—the point is to write code that makes the test pass. Simple, clear code that does exactly what the test expects.
-
-### Run the Test (Expect It to Pass)
-
-Now let's run the test again:
+### Running Tests
 
 ```bash
-mise test
+# Run only Python tests
+mise run test-python
+
+# Run only Node.js tests
+mise run test-node
+
+# Run both
+mise run test
 ```
 
-**What you should see:**
-
-```
-tests/test_source_code.py::test_add_two PASSED          [50%]
-tests/test_source_code.py::test_multiply_two PASSED     [100%]
-======================== 2 passed in 0.02s ========================
-```
-
-**Yes!** Your test passes! This is the GREEN phase. Both tests pass:
-- The old `test_add_two` still passes (you didn't break anything)
-- The new `test_multiply_two` passes (your code works correctly)
-
-Notice it says "2 passed"—that's really important. It means you didn't accidentally break the `add_two` function while adding `multiply_two`. This is one of the superpowers of testing: you get immediate feedback if you break something.
-
-**Checkpoint:**
-- [ ] You've added the `multiply_two` function to `source_code.py`
-- [ ] You've run `mise test` and seen "2 passed"
-- [ ] Both tests pass
+**Why separate?** Sometimes you want to quickly test Python code without waiting for Node tests. Sometimes you want to check just one language. Flexibility matters.
 
 ---
 
-## Step 5: Understand How It All Works Together
+## Step 4: Setting Up Your Environment
 
-Let me explain what's happening under the hood so you understand the bigger picture.
+Let's get everything running. Follow these steps in order:
 
-### The Test File
-
-When you write this test:
-```python
-def test_multiply_two():
-    assert multiply_two(3, 4) == 12
-```
-
-You're writing a specification in code. You're saying: "I'm defining what `multiply_two` should do. It should multiply 3 and 4 and return 12. This is not optional—this is the requirement."
-
-Notice the important pattern: the function name starts with `test_`, and it uses `assert` statements to check if things are true. This is the basic recipe for all pytest tests, no matter how complex.
-
-### The Source Code File
-
-When you write this function:
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a * b
-```
-
-You're writing the implementation that satisfies the specification. You're saying: "Here's how I'll multiply two numbers—I'll use Python's `*` operator."
-
-### How They Connect: The Pytest Framework
-
-Here's the key insight: **pytest is a library that does one simple thing**—it looks for test files, runs functions that start with `test_`, and checks if their `assert` statements are true. That's it. That's the whole concept.
-
-The basic recipe for any test is:
-1. **Import** what you want to test: `from learn_personal_portfolio_ai.source_code import multiply_two`
-2. **Define a test function** starting with `test_`: `def test_multiply_two():`
-3. **Use assert statements** to say what should be true: `assert multiply_two(3, 4) == 12`
-
-This simple pattern is the foundation of all testing, whether it's simple tests like yours or complex tests in huge projects. Everything builds on this basic idea.
-
-When you run `mise test`, here's what actually happens:
-
-1. pytest (a testing library) starts and looks in the `tests/` folder
-2. It finds all files named `test_*.py`
-3. It finds all functions starting with `test_`
-4. It runs each test function
-5. Inside each test, it checks all the `assert` statements
-6. If all assertions are true, the test passes ✅
-7. If any assertion is false, the test fails ❌ and shows what went wrong
-
-In your case:
-- pytest finds `test_multiply_two()`
-- It runs `assert multiply_two(3, 4) == 12`
-- The function returns `3 * 4 = 12`
-- The assertion checks: is 12 == 12? Yes!
-- Test passes ✅
-
-### Why Pytest?
-
-**pytest is the de facto standard for testing in Python.** When professional Python developers write tests, they use pytest. It's simple (as you've seen), powerful, and widely used. Once you learn pytest, you can test anything in Python.
-
----
-
-## Why Tests Matter: The Real-World Benefit
-
-Let me give you a concrete example of why this matters. Imagine you later realize: "Oh wait, `multiply_two` should work with decimals too, not just whole numbers." You change the function:
-
-```python
-def multiply_two(a: int, b: int) -> float:  # Changed return type
-    return a * b
-```
-
-You run `mise test` and everything still passes. Good—your change is compatible with existing tests. Your code didn't break anything.
-
-Now imagine a different change. You accidentally type:
-
-```python
-def multiply_two(a: int, b: int) -> int:
-    return a + b  # Oops! Added instead of multiplied!
-```
-
-You run `mise test`:
-
-```
-AssertionError: assert 7 == 12
-    assert multiply_two(3, 4) == 12
-```
-
-The test immediately catches your mistake! You can fix it right away instead of spending hours debugging later.
-
-**This is why AI developers love tests.** When AI writes code (or modifies code), tests provide immediate feedback: "Did you break anything? Did your code actually work?" No manual checking needed.
-
----
-
-## The Three Phases of TDD
-
-Now you understand the complete workflow. Let me summarize it:
-
-### Phase 1: RED (Test Fails)
-You write a test that describes what should happen. You run it, and it fails because the code doesn't exist yet. This tells you exactly what to build.
-
-### Phase 2: GREEN (Test Passes)
-You write the simplest code that makes the test pass. Not fancy, not complex—just enough to satisfy the test.
-
-### Phase 3: VERIFY (Nothing Broke)
-You run the entire test suite to make sure you didn't accidentally break anything else. In your case, both `test_add_two` and `test_multiply_two` pass, so you know everything is working.
-
----
-
-## What We've Learned
-
-Let's recap what you've learned:
-
-1. **Tests as Specification** - Tests define what code should do before you write it
-2. **The `assert` Keyword** - It's how you say "this should be true"
-3. **Type Hints** - They document what types a function expects and returns
-4. **The RED-GREEN Cycle** - Write test (fails), write code (passes)
-5. **The Safety Net** - Run all tests to catch regressions
-
----
-
-## Try It Yourself: Optional Challenge
-
-Feel confident? Try this on your own:
-
-1. Write a test for a `subtract_two` function that subtracts two numbers
-2. Run the test (watch it fail with RED)
-3. Write the `subtract_two` function
-4. Run all tests (watch them go GREEN)
-
-This will reinforce everything you've learned. The test might look like:
-
-```python
-def test_subtract_two():
-    assert subtract_two(10, 3) == 7
-    assert subtract_two(5, 5) == 0
-    assert subtract_two(-2, 3) == -5
-```
-
-Can you figure out the implementation? (Hint: it's just like `multiply_two` but using `-` instead of `*`)
-
----
-
-## Behind the Scenes: How Configuration Makes It Work
-
-You might be wondering: "How does `mise test` know to run tests?" The answer is in two configuration files. But first, let me demystify what's actually happening.
-
-### The Actual Command
-
-When you type `mise test`, here's what really happens under the hood. The actual command that runs is:
+### 1. Create Python Virtual Environment
 
 ```bash
-.venv/bin/pytest tests
+mise run venv-create
 ```
 
-This means: "Use pytest (which is in your virtual environment's bin folder) to run all tests in the `tests/` folder."
+**What happens:** This creates a `.venv/` folder. Think of it as an "isolated room" where Python installs everything it needs. This doesn't affect other Python projects on your computer.
 
-You could type this command directly if you wanted:
+### 2. Install All Dependencies
+
 ```bash
-.venv/bin/pytest tests  # This is the same as mise test!
+mise run inst
 ```
 
-But that's long and annoying to type. So we have configuration files to make it shorter.
+**What happens:** This installs:
+- All Python packages (using `uv`, goes into `.venv/`)
+- All Node.js packages (using `pnpm`, goes into `node_modules/`)
 
-### The Configuration Files
+Both language ecosystems are now ready.
 
-**`pyproject.toml`** declares that pytest is a test dependency:
+### 3. Activate Python Environment
+
+```bash
+source .venv/bin/activate
+```
+
+**Why do this?** Your `.venv/` folder exists, but your terminal doesn't know to use it yet. This command says: "From now on, use the Python from `.venv/`."
+
+**How do you know it worked?** Your terminal prompt changes to show `(.venv)` at the beginning:
+
+```
+(.venv) your-computer:project $
+```
+
+That `(.venv)` marker means the virtual environment is active.
+
+### 4. Verify Everything Works
+
+```bash
+mise run test
+```
+
+**You should see output from both Python and Node.js tests:**
+
+```
+======================== Python Tests ========================
+tests_python/test_source_code.py::test_add_two PASSED          [50%]
+======================== 1 passed in 0.02s ========================
+
+======================== Node.js Tests ========================
+✔ add(2, 3) should equal 5 (1.234ms)
+✔ add(0, 0) should equal 0 (0.567ms)
+
+───────────────────────────────────────
+tests 2 passed (1.801ms)
+```
+
+**What this means:**
+- Python's `test_add_two()` passed
+- Node.js's `add` tests passed
+- Nothing is broken
+
+**Congratulations!** Your Node development environment is now set up.
+
+---
+
+## Step 5: Understanding the Configuration
+
+Ever wonder how running one command (`mise run test`) executes tests in two different languages? The secret is in `mise.toml`.
+
+### Python Tasks
+
 ```toml
-[project.optional-dependencies]
-test = [
-    "pytest>=8.2.2,<9.0.0",
-]
+[tasks.inst-python-deps]
+description = "💾 Install Python dependencies via uv"
+run = "uv sync --all-extras"
+
+[tasks.test-python]
+description = "🧪 Run Python tests with pytest"
+run = ".venv/bin/pytest tests_python"
 ```
 
-This says: "This project needs pytest for testing. When someone runs `mise run inst`, install pytest too."
+These look familiar. Notice that tests now run against `tests_python/` instead of the old `tests/`.
 
-**`mise.toml`** defines a shortcut command:
+### Node.js Tasks (New)
+
 ```toml
+[tasks.inst-node-deps]
+description = "📦 Install Node.js dependencies via pnpm"
+run = "pnpm install"
+
+[tasks.test-node]
+description = "🧪 Run Node.js tests"
+run = "node --test tests_node/*.test.js"
+```
+
+These are new. Notice the pattern mirrors the Python tasks:
+- `inst-node-deps` mirrors `inst-python-deps`
+- `test-node` mirrors `test-python`
+
+### Orchestration (The Magic)
+
+```toml
+[tasks.inst]
+description = "💾 Install all dependencies (Python + Node.js)"
+depends = ["inst-python-deps", "inst-node-deps"]
+
 [tasks.test]
-description = "🧪 Run tests with pytest"
-run = ".venv/bin/pytest tests"
+description = "🧪 Run all tests (Python + Node.js)"
+depends = ["test-python", "test-node"]
 ```
 
-This says: "When I run `mise test`, actually run the command `.venv/bin/pytest tests`."
+The `depends` field is what makes this work. It says: "When someone runs this task, run these tasks first."
 
-So `mise test` is just a **wrapper** (a shortcut) for the longer command `.venv/bin/pytest tests`. It makes testing easier and gives everyone on your team a consistent way to run tests.
+So:
+- `mise run inst` automatically runs both `inst-python-deps` and `inst-node-deps`
+- `mise run test` automatically runs both `test-python` and `test-node`
 
-### The Big Picture
+---
+
+## Step 6: Meet the New Files
+
+### `package.json` - Node.js Project File
+
+```json
+{
+  "name": "learn-personal-portfolio-ai",
+  "version": "0.1.1",
+  "private": true,
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}
+```
+
+This is Node.js's version of `pyproject.toml`. It tells Node.js:
+
+- **name** - Your project name
+- **version** - Current version
+- **private** - This project is private (won't be published online)
+- **dependencies** - Packages your project needs to run
+- **devDependencies** - Packages needed only for development/testing
+
+Currently it's minimal because our project is simple. But as it grows, this file becomes important.
+
+### `src/math.js` - Node.js Code
+
+```javascript
+export function add(a, b) {
+  return a + b;
+}
+```
+
+This is a JavaScript function. Let me break it down:
+
+- `export` - This makes the function available for import (like Python's `from xxx import add`)
+- `function add(a, b)` - Define a function named `add` that takes two parameters
+- `return a + b` - Return the sum
+- `;` - JavaScript convention to end the statement
+
+**Compare to Python:**
+
+Python:
+```python
+def add_two(a: int, b: int) -> int:
+    return a + b
+```
+
+JavaScript:
+```javascript
+export function add(a, b) {
+  return a + b;
+}
+```
+
+The logic is identical (both add two numbers). Only the syntax differs.
+
+### `tests_node/math.test.js` - Node.js Tests
+
+```javascript
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { add } from '../src/math.js';
+
+test('add(2, 3) should equal 5', () => {
+  assert.strictEqual(add(2, 3), 5);
+});
+```
+
+This is a Node.js test. Let me explain each line:
+
+- `import { test } from 'node:test';` - Import Node's test tool
+- `import assert from 'node:assert';` - Import Node's assertion tool (checks equality)
+- `import { add } from '../src/math.js';` - Import the function to test
+
+Then:
+- `test('add(2, 3) should equal 5', () => { ... })` - Define a test. First parameter describes what you're testing, second parameter is the test code
+- `assert.strictEqual(add(2, 3), 5);` - Check if `add(2, 3)` equals `5`. If yes, test passes; if no, test fails
+
+**Compare to Python:**
+
+Python:
+```python
+def test_add_two():
+    assert add_two(3, 4) == 12
+```
+
+JavaScript:
+```javascript
+test('add(2, 3) should equal 5', () => {
+  assert.strictEqual(add(2, 3), 5);
+});
+```
+
+Concept is the same (both test a function). Only syntax differs.
+
+---
+
+## Step 7: Your First Node.js Function
+
+Now that you understand the setup, let's use the TDD workflow you already know to write a Node.js function.
+
+### RED Phase: Write the Test First
+
+**File:** `tests_node/math.test.js`
+
+Add this test after the existing `add` tests:
+
+```javascript
+test('multiply(3, 4) should equal 12', () => {
+  const multiply = require('../src/math.js').multiply;
+  assert.strictEqual(multiply(3, 4), 12);
+});
+
+test('multiply(5, 0) should equal 0', () => {
+  const multiply = require('../src/math.js').multiply;
+  assert.strictEqual(multiply(5, 0), 0);
+});
+
+test('multiply(-2, 3) should equal -6', () => {
+  const multiply = require('../src/math.js').multiply;
+  assert.strictEqual(multiply(-2, 3), -6);
+});
+```
+
+**What you're doing:** Writing a test that says "I want a `multiply` function that:
+- Multiplies 3 and 4 to get 12
+- Multiplies 5 and 0 to get 0
+- Multiplies -2 and 3 to get -6"
+
+### Run the Test (Watch It Fail)
+
+```bash
+mise run test-node
+```
+
+**You'll see an error:**
 
 ```
-mise test  →  (looks up command in mise.toml)  →  .venv/bin/pytest tests  →  (runs pytest on tests/ folder)
+TypeError: multiply is not a function
 ```
 
-Think of `mise` as a task runner that remembers commands for you. Instead of remembering complicated commands, you just type short names like `mise test`, `mise venv-create`, etc.
+or
+
+```
+Cannot find property 'multiply'
+```
+
+**This is perfect!** This is exactly what RED phase looks like. The test is telling you: "This function doesn't exist yet—go build it."
+
+### GREEN Phase: Write Code to Pass
+
+**File:** `src/math.js`
+
+Add this function (keep the `add` function):
+
+```javascript
+export function multiply(a, b) {
+  return a * b;
+}
+```
+
+**What you're doing:** Implementing what the test requires. The function takes two numbers, multiplies them, and returns the result.
+
+### Run the Test (Watch It Pass)
+
+```bash
+mise run test-node
+```
+
+**You should see:**
+
+```
+✔ add(2, 3) should equal 5
+✔ add(0, 0) should equal 0
+✔ multiply(3, 4) should equal 12 (0.456ms)
+✔ multiply(5, 0) should equal 0 (0.389ms)
+✔ multiply(-2, 3) should equal -6 (0.512ms)
+
+───────────────────────────────────────
+tests 5 passed (1.801ms)
+```
+
+**Excellent!** All tests pass. The new code works, and the old `add` tests still pass—nothing broke.
+
+### VERIFY Phase: Check Everything
+
+Now run all tests (Python + Node.js):
+
+```bash
+mise run test
+```
+
+**You should see:**
+
+```
+======================== Python Tests ========================
+tests_python/test_source_code.py::test_add_two PASSED          [50%]
+======================== 1 passed in 0.02s ========================
+
+======================== Node.js Tests ========================
+✔ add(2, 3) should equal 5
+✔ add(0, 0) should equal 0
+✔ multiply(3, 4) should equal 12
+✔ multiply(5, 0) should equal 0
+✔ multiply(-2, 3) should equal -6
+
+───────────────────────────────────────
+tests 5 passed (1.801ms)
+```
+
+**Checklist:**
+- ✅ Python tests still pass (nothing broke)
+- ✅ Node.js `add` tests still pass
+- ✅ Node.js `multiply` tests all pass
+
+Perfect! You just completed the entire TDD cycle in two different languages.
+
+---
+
+## Step 8: Comparing Python and JavaScript
+
+Now that you've written the same logic in both languages, let's see how similar they really are.
+
+### Same Logic, Two Languages
+
+**Python:**
+```python
+def multiply_two(a: int, b: int) -> int:
+    return a * b
+```
+
+**JavaScript:**
+```javascript
+export function multiply(a, b) {
+  return a * b;
+}
+```
+
+### What's the Same
+
+- Both take two parameters (a and b)
+- Both multiply them together (a * b)
+- Both return the result
+- **The logic is identical**
+
+### What's Different
+
+| Python | JavaScript |
+|--------|-----------|
+| Uses `def` to define functions | Uses `function` to define functions |
+| Has type hints: `: int`, `-> int` | No type hints (though JSDoc can add them) |
+| Uses indentation for code blocks | Uses curly braces `{}` for code blocks |
+| Doesn't require semicolons at line end | Usually has semicolons `;` at line end |
+| Uses `from ... import` for imports | Uses `export` to export, `import` to import |
+
+**Key insight:** The syntax is different, but **the thinking is the same**. Once you understand one, the other is just syntax.
+
+---
+
+## Step 9: Your Challenge
+
+Now you've seen the full workflow. Time to practice on your own. Follow these steps, but this time YOU do the work (not just following along):
+
+### Challenge 1: Python - Add `divide_two()` Function
+
+**Step 1: Write the test (RED phase)**
+
+Add this to `tests_python/test_source_code.py`:
+
+```python
+def test_divide_two():
+    assert divide_two(10, 2) == 5
+    assert divide_two(9, 3) == 3
+    assert divide_two(-6, 2) == -3
+```
+
+**Step 2: Run the test and watch it fail**
+
+```bash
+mise run test-python
+```
+
+You'll see `cannot import name 'divide_two'`. Good—that's RED phase.
+
+**Step 3: Implement the function (GREEN phase)**
+
+Add this to `learn_personal_portfolio_ai/source_code.py`:
+
+```python
+def divide_two(a: int, b: int) -> float:
+    return a / b
+```
+
+Why `float` instead of `int`? Because division produces decimals. (E.g., `5 / 2 = 2.5`)
+
+**Step 4: Run the test and watch it pass**
+
+```bash
+mise run test-python
+```
+
+You should see "3 passed" (or more if you had `test_multiply_two` too).
+
+### Challenge 2: Node.js - Add `divide()` Function
+
+**Step 1: Write the test (RED phase)**
+
+Add this to `tests_node/math.test.js`:
+
+```javascript
+test('divide(10, 2) should equal 5', () => {
+  const divide = require('../src/math.js').divide;
+  assert.strictEqual(divide(10, 2), 5);
+});
+
+test('divide(9, 3) should equal 3', () => {
+  const divide = require('../src/math.js').divide;
+  assert.strictEqual(divide(9, 3), 3);
+});
+
+test('divide(-6, 2) should equal -3', () => {
+  const divide = require('../src/math.js').divide;
+  assert.strictEqual(divide(-6, 2), -3);
+});
+```
+
+**Step 2: Run the test and watch it fail**
+
+```bash
+mise run test-node
+```
+
+Error message: `divide is not a function`. Perfect—RED phase.
+
+**Step 3: Implement the function (GREEN phase)**
+
+Add this to `src/math.js`:
+
+```javascript
+export function divide(a, b) {
+  return a / b;
+}
+```
+
+**Step 4: Run the test and watch it pass**
+
+```bash
+mise run test-node
+```
+
+### Challenge 3: Verify the Whole Project
+
+Finally, run all tests:
+
+```bash
+mise run test
+```
+
+**Success looks like:**
+- All Python tests pass (including your new `test_divide_two`)
+- All Node.js tests pass (including your new `divide` tests)
+- No failures or errors
 
 ---
 
 ## Key Takeaways
 
-Remember these important points:
+✅ **Node.js runs JavaScript on your computer** - Like Python, but for JavaScript
 
-- ✅ **Tests come first** - In TDD, you write tests before code
-- ✅ **Tests are specification** - They define exactly what code should do
-- ✅ **Assert is a promise** - Each `assert` is a requirement your code must satisfy
-- ✅ **Type hints document intent** - They tell readers what types your function uses
-- ✅ **Run all tests always** - Catch regressions before they become problems
+✅ **pnpm manages Node.js packages** - Same role as uv, but for Node.js
+
+✅ **Project structure separates concerns** - Python code in `learn_personal_portfolio_ai/`, Node.js in `src/`. Tests separated too. Why? Clarity and maintainability.
+
+✅ **Test folders are separated** - `tests_python/` for Python, `tests_node/` for Node.js. You can quickly test just one language.
+
+✅ **`mise` coordinates everything** - One command runs your entire multi-language project. `mise run test` runs Python and Node.js tests.
+
+✅ **TDD is universal** - RED → GREEN → VERIFY works in Python, JavaScript, and beyond
+
+✅ **Syntax changes, thinking stays the same** - `multiply` does the same thing in Python and JavaScript, just written differently
 
 ---
 
-## Ready to Become a TDD Developer?
+## What's Next?
 
-You now understand the fundamental pattern that professional developers use every day. Congratulations! Keep practicing this on every function you write, and you'll develop the habit of thinking in tests first, code second.
+Now that your Node development environment is set up:
 
-Your next challenge: try the optional `subtract_two` challenge above. Then, keep going. Create more functions with tests. Soon, this will become second nature.
+1. **Practice TDD** - Complete all challenges above
+2. **Add more functions** - Implement `power()`, `absolute()`, etc. in both languages
+3. **Explore Node.js** - See what packages are available (though you won't need many for this course)
+4. **Get comfortable with JavaScript syntax** - It's different from Python, but you'll pick it up quickly
 
-Remember: **tests are not extra work—they're your superpower.** They tell you when something breaks. They let AI help you with confidence. They turn debugging from a 3-hour nightmare into a 30-second fix.
+---
 
-Welcome to Test-Driven Development. 🎯
+## Summary
+
+You've now:
+
+- ✅ Understood why the project structure changed
+- ✅ Learned what Node.js and pnpm are
+- ✅ Successfully set up your Node development environment
+- ✅ Learned the new command structure (separated and coordinated tasks)
+- ✅ Implemented functions in both Python and JavaScript
+- ✅ Proven that TDD works the same way in both languages
+
+You now have a **real-world multi-language development environment**, just like professional software companies use. You're ready to build more complex applications across different platforms.
+
+Welcome to multi-language software development! 🚀
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `command not found: mise` | `mise` isn't installed. Run `curl https://mise.jdx.dev \| sh` |
+| `Cannot find module '~/src/math.js'` or `divide is not a function` | Make sure you used `export function` in `src/math.js` |
+| `.venv not found` | Run `mise run venv-create` to create the Python virtual environment |
+| `node_modules not found` | Run `mise run inst` to install dependencies |
+| Test fails with wrong number (like `12 != 11`) | Check your logic. `multiply` should use `*`, not `+` |
+| Only Python tests run, not Node.js | Make sure you ran `mise run inst-node-deps` |
+| Code changed but tests still fail | Read the error message carefully. Usually it tells you what's wrong. If confused, print the result and compare to expected |
+
+---
+
+Ready to master multi-language development? Let's go! 💪

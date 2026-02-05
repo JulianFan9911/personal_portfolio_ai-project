@@ -1,213 +1,442 @@
-# Teaching Guide - Test-Driven Development (TDD) Fundamentals
+# Teaching Guide - Setting Up Node Development Environment
 
 ## Course Overview
 
-This course teaches Test-Driven Development by having students implement a `multiply_two` function following the TDD workflow: write tests first, then implement code to pass those tests. Students learn that tests are not an afterthought but a fundamental design tool.
+This course teaches Test-Driven Development (TDD) in a **multi-language project** by having students implement `multiply_two()` in Python and `multiply()` in Node.js. The key insight: **TDD principles are universal across languages—only syntax differs.**
+
+Students learn that:
+- TDD guides development the same way in every language
+- Understanding one language's syntax doesn't mean understanding another's, but the testing principle stays identical
+- Professional projects often mix languages, and this course prepares them for that reality
 
 ## Target Audience
-- Intermediate beginners who have completed basic Python setup
-- Students learning to work effectively with AI (where tests provide verification)
-- Anyone wanting to understand professional development practices
+
+- Students who completed the Python TDD fundamentals course
+- Learners ready to expand into multi-language development
+- Anyone wanting to understand how professional teams manage multiple codebases
+- Developers preparing to work with AI assistance across different languages
 
 ## Learning Objectives
 
 By the end of this course, students will:
-1. Understand and apply the TDD workflow (Red → Green → Refactor)
-2. Write meaningful pytest test cases with multiple assertions
-3. Recognize how tests serve as specification before coding
-4. Appreciate how tests enable AI assistance and code confidence
-5. Apply TDD to create new functions independently
 
-## Concept Sequence
+1. **Understand multi-language project structure** - Know why and how separate language ecosystems coexist
+2. **Apply TDD across different languages** - Write tests and code in both Python and JavaScript
+3. **Compare language syntax** - Recognize how the same logic looks different across languages
+4. **Use task coordination tools** - Understand how `mise` orchestrates multiple language test suites
+5. **Work confidently in multi-language environments** - Know how professional teams handle this complexity
 
-### Phase 1: Understanding the TDD Cycle (5 minutes)
-**Goal:** Grasp the conceptual model before practicing
+## Prerequisite Knowledge
 
-**Key Concepts:**
-- TDD phases: RED (test fails) → GREEN (test passes) → REFACTOR (improve)
-- Tests define specification before implementation
-- Tests are executable documentation of expected behavior
+Students should already understand:
+- Basic Python syntax and functions
+- TDD workflow: RED (test fails) → GREEN (test passes) → VERIFY (nothing broke)
+- What pytest is and how to run `mise test`
+- Type hints in Python (`: int`, `-> int`)
+
+## Key Concepts to Teach
+
+### 1. Project Evolution: Single Language → Multi-Language
+
+**Why this matters:** Real-world projects aren't monolithic. They combine languages strategically.
+
+**What changed:**
+- `tests/` → split into `tests_python/` and `tests_node/`
+- New `src/` folder (JavaScript convention)
+- New `package.json` (JavaScript configuration)
+- Updated `mise.toml` (task coordination)
+
+**Teaching tip:** Show the before/after directory structure side-by-side. Help students see this isn't random—it follows each language's conventions.
+
+### 2. Node.js: JavaScript Runtime
+
+**Analogy:** Python is to Python files as Node.js is to JavaScript files.
+
+**What to emphasize:**
+- JavaScript normally runs in browsers
+- Node.js lets you run JavaScript anywhere (server-side)
+- It's just a different runtime—same language, different environment
+
+**Teaching tip:** Don't overwhelm students with JavaScript. Focus on "Node.js lets you run JavaScript like Python runs Python."
+
+### 3. pnpm: Package Manager for JavaScript
+
+**Parallel to Python's `uv`:**
+
+| Python | Node.js |
+|--------|---------|
+| `uv` downloads packages | `pnpm` downloads packages |
+| Creates `.venv/` | Creates `node_modules/` |
+| Manages virtual environments | Manages dependencies |
+
+**Teaching tip:** Use this exact comparison. Students understand `uv` already, so `pnpm` is just the JavaScript equivalent.
+
+### 4. mise.toml: Task Orchestration
+
+This is the "magic" students see when they run `mise run test` and get Python + Node.js results.
+
+**Key section:**
+```toml
+[tasks.test]
+depends = ["test-python", "test-node"]
+```
+
+**What to teach:**
+- `depends` field runs multiple tasks sequentially
+- `mise run test` = "run test-python AND test-node"
+- This keeps commands simple while allowing flexibility
+- This is how professional teams manage complexity
+
+**Teaching tip:** Show what `mise run test` actually does under the hood. It's not magic—it's configuration.
+
+### 5. TDD is Language-Agnostic
+
+**Core principle:** The testing workflow is the same everywhere.
+
+```
+Python: write test → run → FAIL → write code → run → PASS → verify
+Node.js: write test → run → FAIL → write code → run → PASS → verify
+```
+
+**What to emphasize:**
+- RED phase looks the same (error, function missing)
+- GREEN phase looks the same (all tests pass)
+- VERIFY phase looks the same (run full suite, no regressions)
+- Only the syntax of test and code changes
+
+## Teaching Sequence
+
+### Phase 1: Setup & Context (10 minutes)
+
+**Goal:** Help students understand WHY this matters and WHAT changed
 
 **Activities:**
-- Read through the TDD cycle diagram
-- Look at the existing `test_add_two()` to understand test structure
-- Understand that `assert` statements define "what should be true"
+1. Show directory structure: before vs. after
+2. Explain why companies have multiple languages
+3. Walk through `mise.toml` to show task coordination
+4. Show that running `mise run test` executes TWO test suites
 
-**Success Criteria:**
-- Student can explain what "RED" means (test fails because feature missing)
-- Student can explain what "GREEN" means (test passes because code works)
-- Student can identify assertions in existing tests
+**Success indicator:** Student can explain why test folders are separated
 
-### Phase 2: Writing Tests First (10 minutes)
-**Goal:** Create test cases before implementing the function
+### Phase 2: Python - multiply_two() (15 minutes)
 
-**Key Concepts:**
-- Test names follow `test_<function_name>` convention
-- Multiple assertions test different scenarios (happy path + edge cases)
-- Edge cases: zero, negative numbers, boundary conditions
-- Tests are concrete examples of expected behavior
+**Goal:** Refresh TDD in a language they know
 
 **Activities:**
-- Students add `test_multiply_two()` to `tests/test_source_code.py`
-- Include three assertions:
-  - Normal case: `multiply_two(3, 4) == 12`
-  - Edge case zero: `multiply_two(5, 0) == 0`
-  - Edge case negative: `multiply_two(-2, 3) == -6`
-- Run `mise test` and observe the RED phase (tests fail)
+1. Students write test first: `test_multiply_two()` with 3 assertions
+2. Run `mise run test-python` → see RED phase (import error)
+3. Explain: "The test is asking for a function that doesn't exist yet"
+4. Implement: `multiply_two(a: int, b: int) -> int`
+5. Run `mise run test-python` → see GREEN phase (all pass)
+6. Verify: `test_add_two` still passes
 
-**Success Criteria:**
-- Test file created and contains three test assertions
-- Student understands why test fails (function doesn't exist yet)
-- Student reads error message: "cannot import name 'multiply_two'"
+**Teaching tips:**
+- This should feel familiar—they've done this before
+- Emphasize: "Same TDD process, just doing it again in Python"
+- Point out: both `test_add_two` and `test_multiply_two` pass
 
-### Phase 3: Implementation (GREEN Phase) (10 minutes)
-**Goal:** Write minimal code to pass all tests
+**Success indicator:** Both Python tests pass without breaking old code
 
-**Key Concepts:**
-- Type hints clearly document the contract (`a: int, b: int) -> int`)
-- Implementation should satisfy all test cases
-- Simple, direct implementation is better than complex logic
-- The code must make tests pass, not more, not less
+### Phase 3: Intro to Node.js (10 minutes)
+
+**Goal:** Ease students into JavaScript without overwhelming them
 
 **Activities:**
-- Students add `multiply_two()` function to `learn_personal_portfolio_ai/source_code.py`
-- Implementation: `return a * b`
-- Run `mise test` and observe GREEN phase (tests pass)
-- Verify that ALL tests pass (both `test_add_two` and `test_multiply_two`)
+1. Show `src/math.js` - point out `export function add()`
+2. Compare to Python: same logic, different syntax
+3. Show `tests_node/math.test.js` - point out test structure
+4. Compare to Python: same concept, different syntax
+5. Emphasize: "Same testing principle, different JavaScript syntax"
 
-**Success Criteria:**
-- Function exists with proper type hints
-- All assertions in test pass
-- Output shows: "2 passed"
-- Student can explain why the implementation works for all test cases
+**Teaching tips:**
+- Don't go deep into JavaScript. Keep it surface-level.
+- Use side-by-side comparisons to show "same logic"
+- Focus on: "The test structure is the same idea, just JavaScript syntax"
 
-### Phase 4: Understanding Configuration (5 minutes)
-**Goal:** See how tests are executed under the hood
+**Success indicator:** Student can identify test vs. implementation in Node files
 
-**Key Concepts:**
-- `pyproject.toml` declares pytest as a test dependency
-- `mise.toml` defines the `test` task as a shortcut
-- `mise test` runs pytest on the `tests/` directory
-- Configuration enables reproducible test execution
+### Phase 4: Node.js - multiply() (15 minutes)
+
+**Goal:** Students write tests and code in JavaScript
 
 **Activities:**
-- Review `pyproject.toml` to find pytest declaration
-- Review `mise.toml` to find the test task definition
-- Understand the chain: `mise test` → `.venv/bin/pytest tests`
+1. Students write tests: 3 multiply test cases in JavaScript
+2. Run `mise run test-node` → see RED phase (function missing)
+3. Point out: "Same error as Python—function doesn't exist yet"
+4. Implement: `export function multiply(a, b) { return a * b; }`
+5. Run `mise run test-node` → see GREEN phase (all pass)
+6. Verify: old `add` tests still pass
 
-**Success Criteria:**
-- Student can locate pytest in pyproject.toml
-- Student can locate test task in mise.toml
-- Student understands what `mise test` actually runs
+**Teaching tips:**
+- This mirrors Phase 2 exactly—show the parallel
+- Highlight: "RED phase is the same in both languages"
+- Point out: both test sets pass (old + new)
+
+**Success indicator:** All Node.js tests pass without breaking old code
+
+### Phase 5: Multi-Language Verification (5 minutes)
+
+**Goal:** Show the power of coordinated testing
+
+**Activities:**
+1. Run `mise run test` (runs EVERYTHING)
+2. Show output: Python tests + Node.js tests, all passing
+3. Explain: "You changed code in 2 languages and verified both work"
+4. Point out: old code in both languages still works (VERIFY phase)
+
+**Teaching tips:**
+- This is the "aha!" moment—multiple languages, one verification
+- Show how this scales: add more languages, add more functions, `mise run test` still works
+- Explain: "This is how professional teams stay confident"
+
+**Success indicator:** Student runs `mise run test` and sees both test suites pass
+
+### Phase 6: Comparison & Insight (10 minutes)
+
+**Goal:** Solidify the "same logic, different syntax" principle
+
+**Activities:**
+1. Put Python and JavaScript multiply side-by-side
+2. Ask: "What's the same? What's different?"
+3. Build comparison table together:
+   - Same: 2 parameters, multiply, return result
+   - Different: def vs. function, type hints, export, semicolons
+4. Key insight: "Learn one language's testing, apply everywhere"
+
+**Teaching tips:**
+- This is where students "get it"
+- Make it visual—use colors or highlighting
+- Emphasize: "The testing principle is what matters, syntax is just details"
+
+**Success indicator:** Student can explain the Python/JavaScript differences without prompting
+
+### Phase 7: Challenge & Consolidation (20 minutes)
+
+**Goal:** Students practice TDD independently in both languages
+
+**Challenge:** Implement `divide_two()` and `divide()` with tests
+
+**Activities:**
+1. Students write test first in Python (RED)
+2. Students implement in Python (GREEN)
+3. Verify Python tests pass
+4. Repeat for JavaScript
+5. Run `mise run test` to verify everything
+
+**Teaching tips:**
+- Students are now doing this independently
+- Resist helping with syntax—let them struggle with JavaScript
+- That struggle is valuable—it's how they learn JavaScript
+- Celebrate when they finish: "You just implemented TDD in 2 languages!"
+
+**Success indicator:** All tests pass (Python + Node.js) after their implementation
 
 ## Teaching Strategies
 
-### 1. The Red-Green-Refactor Cycle
-Make the TDD phases explicit:
-- **RED:** "Tests fail—that's good! The test is telling you what to build"
-- **GREEN:** "Write minimal code to pass—don't over-engineer"
-- **REFACTOR:** "Once all tests pass, you can safely improve the code"
+### Strategy 1: Mirror, Mirror, Mirror
 
-### 2. Tests as Specification
-Emphasize that tests ARE the specification:
-- "Before you know HOW to code it, tests tell you WHAT to code"
-- "The test `assert multiply_two(3, 4) == 12` means: multiply_two MUST work this way"
+Everything students do in Python, they repeat in Node.js:
+- Test → Code in Python
+- Test → Code in Node.js
 
-### 3. Edge Cases Matter
-Explain why multiple assertions in one test are important:
-- Normal case: `multiply_two(3, 4) == 12` (basic functionality)
-- Edge case zero: `multiply_two(5, 0) == 0` (boundary behavior)
-- Edge case negative: `multiply_two(-2, 3) == -6` (sign handling)
+This shows that TDD is the same process, just different syntax.
 
-### 4. AI Verification Advantage
-Connect tests to AI workflows:
-- "AI can run tests and know if it broke something"
-- "You can ask AI to modify code, it runs `mise test`, and you see if it worked"
-- "Tests replace manual verification with automated confidence"
+### Strategy 2: Side-by-Side Comparison
+
+Whenever showing JavaScript, put Python right next to it:
+
+```python
+def multiply_two(a: int, b: int) -> int:
+    return a * b
+```
+
+vs.
+
+```javascript
+export function multiply(a, b) {
+  return a * b;
+}
+```
+
+This makes differences obvious and similarities clear.
+
+### Strategy 3: Focus on Testing, Not Syntax
+
+When teaching JavaScript:
+- Emphasize: "This test structure is the same as Python"
+- Don't get into: "Here's everything about JavaScript syntax"
+- Keep it practical: "Here's what you need to write tests"
+
+### Strategy 4: Gradual Language Introduction
+
+Don't dump JavaScript on them. Introduce it step-by-step:
+1. Show existing code (they don't write yet)
+2. Explain existing tests (they don't write yet)
+3. Have them write tests (still using existing code)
+4. Have them write code (to pass tests)
+
+This scaffolds learning.
 
 ## Common Student Misconceptions
 
-### Misconception 1: "Tests are extra work that slow me down"
-**Reality:** Tests are upfront work that save debugging later
-- Without tests: AI modifies code, you wonder if it's correct
-- With tests: AI runs `mise test`, you know immediately if it broke
+### Misconception 1: "I need to master JavaScript now"
+
+**Reality:** They need to write enough JavaScript to pass tests. That's different from mastery.
 
 **How to address:**
-- Show failing test → student manually tests → show passing test
-- Point out: "Manual testing takes longer and you forget cases"
+- "You don't need to understand all of JavaScript"
+- "You need to understand: function syntax, export, and how to call functions"
+- "That's enough to write tests and code to pass them"
 
-### Misconception 2: "I'll test after I code"
-**Reality:** TDD tests are written first, as specification
-- Test-first: "I know exactly what to build"
-- Test-after: "I might code the wrong thing and have to rewrite"
+### Misconception 2: "Node.js is complicated"
 
-**How to address:**
-- Show the RED phase: test fails because function missing
-- This is the whole point—tests guide development
-
-### Misconception 3: "One assert per test is better"
-**Reality:** Multiple related assertions in one test are good
-- Testing `multiply_two(3, 4) == 12` only covers one case
-- Testing `[3*4, 5*0, -2*3]` covers happy path + edge cases
+**Reality:** Node.js is just "JavaScript on your computer." The complexity comes later (packages, servers, etc.)
 
 **How to address:**
-- Discuss edge cases explicitly
-- Show what breaks if you only test positive numbers
+- "Node.js = JavaScript runtime, like Python is a runtime"
+- "We're just running JavaScript code, same as we run Python"
+- "Focus on: writing tests and making them pass"
+
+### Misconception 3: "I have to memorize JavaScript syntax"
+
+**Reality:** They need to recognize patterns, not memorize everything.
+
+**How to address:**
+- "You'll see `function`, not `def`. That's the main difference."
+- "You'll see `export`, which Python doesn't have. That's how JavaScript shares code."
+- "Most of the thinking is the same as Python"
+
+### Misconception 4: "Testing is easier in Python than JavaScript"
+
+**Reality:** Testing is the same in both; only syntax differs.
+
+**How to address:**
+- "Python: `assert x == y`, JavaScript: `assert.strictEqual(x, y)`"
+- "Same concept, different syntax"
+- "The test idea is identical everywhere"
 
 ## Assessment Ideas
 
 ### Quick Checks (During Course)
-- Can student write the three test assertions correctly?
-- Can student explain what RED and GREEN phases mean?
-- Can student identify type hints in the function signature?
-- Can student run `mise test` and interpret the output?
 
-### Challenge Task (End of Course)
-- Create a new function (e.g., `divide_two`, `subtract_two`, `power_two`)
-- Write tests first (RED phase)
-- Implement the function (GREEN phase)
-- Verify all tests pass and nothing else broke
+**For Python phase:**
+- Can student write 3 test assertions correctly?
+- Can student implement multiply_two with proper type hints?
+- Does old code (add_two) still work after changes?
 
-### Stretch Goals (For Advanced Students)
-- Test more edge cases (division by zero, very large numbers)
+**For Node.js phase:**
+- Can student write JavaScript tests in the correct syntax?
+- Can student use `export function` correctly?
+- Do old tests still pass after new code?
+
+**For integration:**
+- Does `mise run test` show all tests passing?
+- Can student explain why tests are in different folders?
+
+### Challenge Tasks
+
+**After Python:**
+- Implement `subtract_two()` with tests (verify nothing broke)
+
+**After Node.js:**
+- Implement `subtract()` with tests (verify nothing broke)
+
+**After integration:**
+- Implement `power_two()` and `power()` with TDD in both languages
+- Verify `mise run test` passes all tests
+
+### Stretch Goals
+
+For advanced students:
+- Add more edge cases to tests
 - Create multiple test functions in the same file
-- Understand pytest fixtures for more complex testing
-- Use type checking tools (mypy) to validate type hints
+- Add a third language (e.g., simple Go or Rust)
+- Understand how to run just Python tests: `mise run test-python`
+- Understand configuration in `mise.toml` (modify and test)
 
 ## Common Student Errors & Solutions
 
-### Error 1: "ModuleNotFoundError: No module named multiply_two"
-**Cause:** Student forgot to import or function doesn't exist yet
-**Solution:** In RED phase, this is expected! Explains that the function must be created next
+### Error 1: Tests pass in Python but student forgets Node.js
 
-### Error 2: "AssertionError: 12 != 11"
-**Cause:** Implementation has a bug
-**Solution:** Show that the test caught the bug. Fix the implementation and run `mise test` again
+**Cause:** Student gets focused on one language
 
-### Error 3: "Tests pass but I changed add_two() function"
-**Cause:** Student didn't verify all tests still pass
-**Solution:** Emphasize running full test suite, not just new tests
+**Solution:** Always run `mise run test` (both languages) at the end. Make it a habit.
+
+### Error 2: JavaScript syntax errors (forget `export`, semicolon, etc.)
+
+**Cause:** Unfamiliar syntax
+
+**Solution:** This is okay! Syntax errors teach. Let them debug the error message. Point to similar Python code: "In Python, you'd use `def`. Here use `function`."
+
+### Error 3: "My test passes but I broke something else"
+
+**Cause:** Didn't verify all tests
+
+**Solution:** This is exactly why we verify! Celebrate the catch: "This is why we run all tests before declaring victory."
+
+### Error 4: Trying to memorize JavaScript instead of learning TDD
+
+**Cause:** Student overwhelmed by new syntax
+
+**Solution:** Redirect: "Don't memorize. Recognize patterns. Can you spot `function`? Can you spot `export`? That's enough for now."
+
+### Error 5: Running wrong test command
+
+**Cause:** Confusion about command names
+
+**Solution:** Keep a reference handy:
+- `mise run test-python` - just Python
+- `mise run test-node` - just Node.js
+- `mise run test` - both
 
 ## Expected Time Investment
-- Understanding TDD cycle: 5 minutes
-- Writing tests: 10 minutes
-- Implementing function: 10 minutes
-- Understanding configuration: 5 minutes
-- **Total: 30 minutes for complete course**
 
-- Creating own function with TDD: 15-20 minutes
-- **Full mastery: 45-50 minutes**
+### Total Course Time
 
-## Key Takeaway
+- Phase 1 (Setup): 10 minutes
+- Phase 2 (Python): 15 minutes
+- Phase 3 (Node intro): 10 minutes
+- Phase 4 (Node implementation): 15 minutes
+- Phase 5 (Verification): 5 minutes
+- Phase 6 (Comparison): 10 minutes
+- Phase 7 (Challenge): 20 minutes
 
-**"Tests are not validation; they are specification. In TDD, you write the specification (test) first, then code the solution."**
+**Total: ~85 minutes for complete course**
 
-This fundamental shift changes how students think about development and makes AI assistance powerful (AI can write code and verify it works).
+### After First Pass
+
+- Implementing second function independently: 15-20 minutes
+- Mastery: 2-3 functions implemented with tests in both languages
+
+## Key Takeaway for Students
+
+**"TDD is the same everywhere. Languages are just different dialects. Master the testing principle in one language, and you can apply it anywhere."**
+
+When students understand this, they've achieved the goal. The specific JavaScript syntax doesn't matter as much as the realization that testing transcends languages.
 
 ## References for Instructors
 
-- [Pytest Documentation](https://docs.pytest.org/)
+### Node.js / JavaScript
+- [Node.js Official Docs](https://nodejs.org/docs/)
+- [Node.js Test Module](https://nodejs.org/api/test.html) (built-in testing)
+- [pnpm Documentation](https://pnpm.io/)
+
+### Testing & TDD
+- [Jest Documentation](https://jestjs.io/) (popular JS testing framework)
+- [Pytest vs Mocha](https://github.com/awesome-testing/javascript-testing-frameworks) (comparison)
 - [TDD Best Practices](https://martinfowler.com/bliki/TestDrivenDevelopment.html)
-- [Red-Green-Refactor Cycle](https://en.wikipedia.org/wiki/Test-driven_development#Red–green–refactor)
-- [Type Hints in Python](https://docs.python.org/3/library/typing.html)
-- [Edge Case Testing](https://en.wikipedia.org/wiki/Edge_case)
+
+### Multi-Language Development
+- [Polyglot Programming](https://en.wikipedia.org/wiki/Polyglot_programming)
+- [mise Documentation](https://mise.jdx.dev/) (task runner used here)
+
+## Closing Thoughts
+
+This course teaches more than TDD in Node.js. It teaches that:
+
+1. **Principles transcend syntax** - TDD is about thinking, not language
+2. **Professional development is messy** - Real projects use multiple languages
+3. **Tools help coordination** - `mise` makes managing complexity easier
+4. **Confidence comes from testing** - Running `mise run test` and seeing everything pass is powerful
+
+Students who complete this course gain confidence in multi-language environments and understand that TDD is their superpower across all of them.
