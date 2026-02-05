@@ -6,6 +6,8 @@ claude = "latest"
 python = "3.12"
 ruff = "latest"
 uv = "latest"
+node = "24"
+pnpm = "latest"
 
 # === Tasks
 [tasks.venv-create]
@@ -16,14 +18,30 @@ run = "uv venv"
 description = "💥 Remove Python virtual environment folder (.venv)"
 run = "rm -r .venv"
 
-[tasks.inst]
-description = "💾 Install Python dependencies (dev, test, doc, etc.) via uv"
+[tasks.inst-python-deps]
+description = "💾 Install Python dependencies via uv"
 run = "uv sync --all-extras"
 
+[tasks.inst-node-deps]
+description = "📦 Install Node.js dependencies via pnpm"
+run = "pnpm install"
+
+[tasks.inst]
+description = "💾 Install all dependencies (Python + Node.js)"
+depends = ["inst-python-deps", "inst-node-deps"]
+
 [tasks.export]
-description = "💾 Expore Core Python dependencies to requirements.txt via uv"
+description = "💾 Export Core Python dependencies to requirements.txt via uv"
 run = "uv export --format requirements-txt --no-dev --no-emit-project > requirements.txt"
 
+[tasks.test-python]
+description = "🧪 Run Python tests with pytest"
+run = ".venv/bin/pytest tests_python"
+
+[tasks.test-node]
+description = "🧪 Run Node.js tests"
+run = "node --test tests_node/*.test.js"
+
 [tasks.test]
-description = "🧪 Run tests with pytest"
-run = ".venv/bin/pytest tests"
+description = "🧪 Run all tests (Python + Node.js)"
+depends = ["test-python", "test-node"]
