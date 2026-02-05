@@ -1,3 +1,9 @@
+# User Settings
+.claude/claude-code-messages.md
+.claude/skills/lesson-smith*
+.idea
+tmp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
