@@ -1,145 +1,213 @@
-# Teaching Guide - Python Development Environment & Basics
+# Teaching Guide - Test-Driven Development (TDD) Fundamentals
 
 ## Course Overview
 
-This is an introductory course on setting up a professional Python development environment and understanding core Python concepts. Students will progress from environment setup to writing and testing their own Python functions.
+This course teaches Test-Driven Development by having students implement a `multiply_two` function following the TDD workflow: write tests first, then implement code to pass those tests. Students learn that tests are not an afterthought but a fundamental design tool.
+
+## Target Audience
+- Intermediate beginners who have completed basic Python setup
+- Students learning to work effectively with AI (where tests provide verification)
+- Anyone wanting to understand professional development practices
 
 ## Learning Objectives
 
 By the end of this course, students will:
-1. Understand and use virtual environments for Python projects
-2. Manage dependencies using modern tools (uv and mise)
-3. Recognize and write type hints in Python
-4. Organize code into packages and modules
-5. Import and reuse code across files
+1. Understand and apply the TDD workflow (Red → Green → Refactor)
+2. Write meaningful pytest test cases with multiple assertions
+3. Recognize how tests serve as specification before coding
+4. Appreciate how tests enable AI assistance and code confidence
+5. Apply TDD to create new functions independently
 
 ## Concept Sequence
 
-### Phase 1: Environment Setup (2 minutes)
-**Goal:** Get Python running in an isolated, reproducible environment
+### Phase 1: Understanding the TDD Cycle (5 minutes)
+**Goal:** Grasp the conceptual model before practicing
 
 **Key Concepts:**
-- Virtual environments isolate project dependencies
-- Configuration files (`mise.toml`, `pyproject.toml`) define project requirements
-- `uv` provides fast, deterministic dependency resolution
+- TDD phases: RED (test fails) → GREEN (test passes) → REFACTOR (improve)
+- Tests define specification before implementation
+- Tests are executable documentation of expected behavior
 
 **Activities:**
-- Run `mise run venv-create` to create virtual environment
-- Run `mise run inst` to install dependencies
-- Activate the environment with `source .venv/bin/activate`
+- Read through the TDD cycle diagram
+- Look at the existing `test_add_two()` to understand test structure
+- Understand that `assert` statements define "what should be true"
 
 **Success Criteria:**
-- Virtual environment created and activated
-- Student can run `python --version` within the environment
+- Student can explain what "RED" means (test fails because feature missing)
+- Student can explain what "GREEN" means (test passes because code works)
+- Student can identify assertions in existing tests
 
-### Phase 2: Running Existing Code (3-5 minutes)
-**Goal:** Execute working code to understand the project structure
+### Phase 2: Writing Tests First (10 minutes)
+**Goal:** Create test cases before implementing the function
 
 **Key Concepts:**
-- Package structure: `learn_personal_portfolio_ai/` contains source code
-- Module imports: How to bring code from one file into another
-- Function calls: Using functions written elsewhere
+- Test names follow `test_<function_name>` convention
+- Multiple assertions test different scenarios (happy path + edge cases)
+- Edge cases: zero, negative numbers, boundary conditions
+- Tests are concrete examples of expected behavior
 
 **Activities:**
-- Run `python scripts/test_source_code.py`
-- Observe the output (`3`)
-- Examine how `add_two()` is imported and called
+- Students add `test_multiply_two()` to `tests/test_source_code.py`
+- Include three assertions:
+  - Normal case: `multiply_two(3, 4) == 12`
+  - Edge case zero: `multiply_two(5, 0) == 0`
+  - Edge case negative: `multiply_two(-2, 3) == -6`
+- Run `mise test` and observe the RED phase (tests fail)
 
 **Success Criteria:**
-- Script executes without errors
-- Student understands the import statement
+- Test file created and contains three test assertions
+- Student understands why test fails (function doesn't exist yet)
+- Student reads error message: "cannot import name 'multiply_two'"
 
-### Phase 3: Understanding Type Hints (5-10 minutes)
-**Goal:** Learn why and how to use type annotations
+### Phase 3: Implementation (GREEN Phase) (10 minutes)
+**Goal:** Write minimal code to pass all tests
 
 **Key Concepts:**
-- Type hints document what types functions expect and return
-- `def add_two(a: int, b: int) -> int:` clearly shows intent
-- Type hints help catch errors and improve IDE support
+- Type hints clearly document the contract (`a: int, b: int) -> int`)
+- Implementation should satisfy all test cases
+- Simple, direct implementation is better than complex logic
+- The code must make tests pass, not more, not less
 
 **Activities:**
-- Read the `add_two()` function signature
-- Try calling it with wrong types (e.g., `add_two("a", "b")`) to see runtime behavior
-- Discuss how type hints improve code clarity
+- Students add `multiply_two()` function to `learn_personal_portfolio_ai/source_code.py`
+- Implementation: `return a * b`
+- Run `mise test` and observe GREEN phase (tests pass)
+- Verify that ALL tests pass (both `test_add_two` and `test_multiply_two`)
 
 **Success Criteria:**
-- Student can identify type hints in code
-- Student understands the pattern `parameter: type -> return_type`
+- Function exists with proper type hints
+- All assertions in test pass
+- Output shows: "2 passed"
+- Student can explain why the implementation works for all test cases
 
-### Phase 4: Writing and Testing Code (10-15 minutes)
-**Goal:** Create new functions and verify they work
+### Phase 4: Understanding Configuration (5 minutes)
+**Goal:** See how tests are executed under the hood
 
 **Key Concepts:**
-- Creating functions with proper signatures
-- Testing code in isolation
-- Reusing functions from other modules
+- `pyproject.toml` declares pytest as a test dependency
+- `mise.toml` defines the `test` task as a shortcut
+- `mise test` runs pytest on the `tests/` directory
+- Configuration enables reproducible test execution
 
 **Activities:**
-- Create a new function in `source_code.py` (e.g., `multiply_two`)
-- Write a test script to verify the function works
-- Import and execute the test
+- Review `pyproject.toml` to find pytest declaration
+- Review `mise.toml` to find the test task definition
+- Understand the chain: `mise test` → `.venv/bin/pytest tests`
 
 **Success Criteria:**
-- New function created with type hints
-- Test script runs without errors
-- Output matches expectations
+- Student can locate pytest in pyproject.toml
+- Student can locate test task in mise.toml
+- Student understands what `mise test` actually runs
 
 ## Teaching Strategies
 
-### Hands-On Learning
-- Every concept is paired with an executable example
-- Students immediately see results of their actions
-- Error messages guide learning when things go wrong
+### 1. The Red-Green-Refactor Cycle
+Make the TDD phases explicit:
+- **RED:** "Tests fail—that's good! The test is telling you what to build"
+- **GREEN:** "Write minimal code to pass—don't over-engineer"
+- **REFACTOR:** "Once all tests pass, you can safely improve the code"
 
-### Scaffolded Difficulty
-- Start with one-command environment setup
-- Progress to reading and understanding existing code
-- Finally, create and test own code
+### 2. Tests as Specification
+Emphasize that tests ARE the specification:
+- "Before you know HOW to code it, tests tell you WHAT to code"
+- "The test `assert multiply_two(3, 4) == 12` means: multiply_two MUST work this way"
 
-### Clear Connection to Real-World
-- `mise.toml` and `pyproject.toml` are real configuration files used in production projects
-- `uv` is a modern, industry-standard tool
-- Type hints are a best practice in professional Python development
+### 3. Edge Cases Matter
+Explain why multiple assertions in one test are important:
+- Normal case: `multiply_two(3, 4) == 12` (basic functionality)
+- Edge case zero: `multiply_two(5, 0) == 0` (boundary behavior)
+- Edge case negative: `multiply_two(-2, 3) == -6` (sign handling)
 
-## Common Student Challenges
+### 4. AI Verification Advantage
+Connect tests to AI workflows:
+- "AI can run tests and know if it broke something"
+- "You can ask AI to modify code, it runs `mise test`, and you see if it worked"
+- "Tests replace manual verification with automated confidence"
 
-### Challenge 1: "mise not found"
-**Likely Cause:** `mise` not installed or not in PATH
-**Solution:** Direct student to install mise via their package manager (brew, apt, etc.)
+## Common Student Misconceptions
 
-### Challenge 2: Import errors when running scripts
-**Likely Cause:** Virtual environment not activated or script run from wrong directory
-**Solution:** Verify `source .venv/bin/activate` was run, and script is in correct location
+### Misconception 1: "Tests are extra work that slow me down"
+**Reality:** Tests are upfront work that save debugging later
+- Without tests: AI modifies code, you wonder if it's correct
+- With tests: AI runs `mise test`, you know immediately if it broke
 
-### Challenge 3: Understanding why type hints matter
-**Likely Cause:** They seem optional in Python (they are!) so students might skip them
-**Solution:** Show how type hints help IDEs provide better autocomplete and catch bugs early
+**How to address:**
+- Show failing test → student manually tests → show passing test
+- Point out: "Manual testing takes longer and you forget cases"
+
+### Misconception 2: "I'll test after I code"
+**Reality:** TDD tests are written first, as specification
+- Test-first: "I know exactly what to build"
+- Test-after: "I might code the wrong thing and have to rewrite"
+
+**How to address:**
+- Show the RED phase: test fails because function missing
+- This is the whole point—tests guide development
+
+### Misconception 3: "One assert per test is better"
+**Reality:** Multiple related assertions in one test are good
+- Testing `multiply_two(3, 4) == 12` only covers one case
+- Testing `[3*4, 5*0, -2*3]` covers happy path + edge cases
+
+**How to address:**
+- Discuss edge cases explicitly
+- Show what breaks if you only test positive numbers
 
 ## Assessment Ideas
 
 ### Quick Checks (During Course)
-- Can student successfully activate the virtual environment?
-- Can student run the test script and interpret the output?
-- Can student identify type hints in the `add_two()` function?
+- Can student write the three test assertions correctly?
+- Can student explain what RED and GREEN phases mean?
+- Can student identify type hints in the function signature?
+- Can student run `mise test` and interpret the output?
 
 ### Challenge Task (End of Course)
-- Create a new function with type hints (e.g., `subtract_two`, `divide_two`)
-- Write a test script that imports and calls the new function
-- Verify the test produces expected output
+- Create a new function (e.g., `divide_two`, `subtract_two`, `power_two`)
+- Write tests first (RED phase)
+- Implement the function (GREEN phase)
+- Verify all tests pass and nothing else broke
 
 ### Stretch Goals (For Advanced Students)
-- Add multiple test cases to the test script
-- Create a new module in the package alongside `source_code.py`
-- Use a linter (ruff) to check code quality (available via `mise`)
+- Test more edge cases (division by zero, very large numbers)
+- Create multiple test functions in the same file
+- Understand pytest fixtures for more complex testing
+- Use type checking tools (mypy) to validate type hints
+
+## Common Student Errors & Solutions
+
+### Error 1: "ModuleNotFoundError: No module named multiply_two"
+**Cause:** Student forgot to import or function doesn't exist yet
+**Solution:** In RED phase, this is expected! Explains that the function must be created next
+
+### Error 2: "AssertionError: 12 != 11"
+**Cause:** Implementation has a bug
+**Solution:** Show that the test caught the bug. Fix the implementation and run `mise test` again
+
+### Error 3: "Tests pass but I changed add_two() function"
+**Cause:** Student didn't verify all tests still pass
+**Solution:** Emphasize running full test suite, not just new tests
 
 ## Expected Time Investment
-- Complete setup to testing: ~15-20 minutes for first-time students
-- Writing own functions: ~10-15 minutes
-- Total: ~30 minutes for full course completion
+- Understanding TDD cycle: 5 minutes
+- Writing tests: 10 minutes
+- Implementing function: 10 minutes
+- Understanding configuration: 5 minutes
+- **Total: 30 minutes for complete course**
+
+- Creating own function with TDD: 15-20 minutes
+- **Full mastery: 45-50 minutes**
+
+## Key Takeaway
+
+**"Tests are not validation; they are specification. In TDD, you write the specification (test) first, then code the solution."**
+
+This fundamental shift changes how students think about development and makes AI assistance powerful (AI can write code and verify it works).
 
 ## References for Instructors
 
-- **Virtual Environments:** https://docs.python.org/3/tutorial/venv.html
-- **Type Hints:** https://docs.python.org/3/library/typing.html
-- **uv Package Manager:** https://docs.astral.sh/uv/
-- **Packaging Best Practices:** https://packaging.python.org/
+- [Pytest Documentation](https://docs.pytest.org/)
+- [TDD Best Practices](https://martinfowler.com/bliki/TestDrivenDevelopment.html)
+- [Red-Green-Refactor Cycle](https://en.wikipedia.org/wiki/Test-driven_development#Red–green–refactor)
+- [Type Hints in Python](https://docs.python.org/3/library/typing.html)
+- [Edge Case Testing](https://en.wikipedia.org/wiki/Edge_case)
