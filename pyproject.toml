@@ -2,7 +2,16 @@
 name = "learn_personal_portfolio_ai"
 version = "0.1.1"
 requires-python = ">=3.12,<4.0"
+
+# Core Dependencies
 dependencies = [
+]
+
+[project.optional-dependencies]
+
+# (Unit/Coverage/Integration/Load) Test dependenceies
+test = [
+    "pytest>=8.2.2,<9.0.0", # Testing framework
 ]
 
 [tool.setuptools.packages.find]

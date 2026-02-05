@@ -20,6 +20,10 @@ run = "rm -r .venv"
 description = "💾 Install Python dependencies (dev, test, doc, etc.) via uv"
 run = "uv sync --all-extras"
 
+[tasks.export]
+description = "💾 Expore Core Python dependencies to requirements.txt via uv"
+run = "uv export --format requirements-txt --no-dev --no-emit-project > requirements.txt"
+
 [tasks.test]
 description = "🧪 Run tests with pytest"
 run = ".venv/bin/pytest tests"
