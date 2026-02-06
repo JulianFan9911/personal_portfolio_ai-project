@@ -1,512 +1,612 @@
-# 集成 Hardcoded AI 对话界面
+# 深入理解 AI SDK 与 Stream Protocol
 
-> 学习前后端分离的核心理念，并实现一个简化版的 AI 聊天功能。
+> 不写一行代码，彻底搞懂类 ChatGPT 聊天应用的底层原理。
 
 ![Chat Interface](./img/08-Add-Hardcoded-AI-Interaction/01-Hardcoded-Chat-Message.png)
 
-## Overview
+## 概述
 
-恭喜你走到了这一步！如果说前面的学习都是在打基础、熟悉工具，那么从今天开始，我们就要进入这个项目最核心、最激动人心的部分了——让你的个人主页"活"起来，能够与访客对话。
+上一节课，我们让聊天功能"跑起来"了，但你可能还有很多疑问：
 
-今天的学习，表面上看是在添加一个聊天界面，但实际上你将接触到一个极其重要的架构思维——**前后端分离**。这个概念看似简单，但它背后蕴含的"数据与逻辑分离"的哲学，几乎贯穿了整个科技行业。理解了这一点，你看待任何复杂系统的方式都会发生根本性的改变。
+- `useChat` 这个 hook 到底帮我们做了什么？
+- 为什么 AI 的回复是一个字一个字"吐"出来的，而不是一次性显示？
+- 前端和后端之间到底传了什么数据？
 
-## Learning Objectives
+今天这节课，我们不写代码。我们只做一件事：**读懂代码**。
 
-当你加入一个新团队或开始一个新项目时，你会发现现代 Web 应用几乎都采用前后端分离的架构。理解这种架构不仅能帮助你更快地上手新项目，更重要的是，它背后的"数据与逻辑分离"思想是一种通用的系统设计能力，无论你将来做什么方向，这种思维方式都会让你受益匪浅。
+这听起来可能有点奇怪——学编程不是应该多写代码吗？但事实是，在真实的工作中，你 70% 的时间都在读别人的代码，只有 30% 的时间在写。而且，很多初学者写不出好代码，恰恰是因为没有读过好代码。
 
-通过今天的学习，你将：
+今天，我们就来"读"一个生产级别的聊天应用。
 
-1. **深刻理解前后端分离的本质**——不仅仅是前端和后端的职责划分，更重要的是掌握"数据与逻辑分离"这个放之四海而皆准的思维方式
-2. **定位并理解聊天界面的关键代码**——学会在复杂项目中快速找到你需要的组件和功能
-3. **实践修改和测试 hardcoded 对话**——体验前后端通信的完整流程，虽然暂时是"假的 AI"，但数据流动是真实的
-4. **初步了解 AI SDK 的 Stream Protocol**——理解前后端如何约定接口进行通信（下一个教程会深入讲解）
+## 学习目标
 
-## Prerequisites
+完成本课程后，你将能够：
 
-- 你已经完成了前面的教程，能够成功运行 `mise run dev`
-- 你有一个浏览器，可以访问 http://localhost:3000
-- 你有一个 AI assistant 可用（Claude, ChatGPT 等）
+1. **读懂 import 语句** —— 看到 `import { X } from "Y"`，知道去哪里找 X 的定义
+2. **理解 AI SDK 的价值** —— 明白 `useChat` 这一个 hook 帮你省了多少工作
+3. **掌握 Stream Protocol 的核心** —— 理解 `text-start`、`text-delta`、`text-end` 这套"协议"
+4. **学会用 DevTools 观察数据流** —— 亲眼看到前后端之间传递的每一个字节
 
-## What You'll Build
+## 前置条件
 
-你将在现有的个人主页项目中集成一个聊天界面。虽然这个版本的 AI 回复是 hardcoded（写死的），但整个前后端通信流程是真实的：
+- 已完成上一节课，能够运行 `mise run dev` 并访问聊天页面
+- 有一个浏览器（推荐 Chrome）
+- 准备好你的 AI 助手（Claude、ChatGPT 等）帮你解答疑问
 
-- 用户在前端输入消息
-- 前端通过 API 发送请求到后端
-- 后端处理请求并返回流式响应
-- 前端接收并显示响应
+## 你将学到什么
 
-这为下一步接入真正的 AI 模型（如 AWS Bedrock）奠定了基础。
+这不是一个动手写代码的教程。你将学会如何**读懂**一个真实的聊天应用：
+
+- 追踪代码：从用户点击发送按钮，到消息出现在屏幕上，中间经历了什么
+- 理解协议：前端和后端之间的"通信语言"是怎么设计的
+- 建立全局观：不再迷失在 import 的海洋里
 
 ---
 
-## Key Concepts
+## 核心概念
 
-### 前后端分离：不仅仅是技术选型
+### 第一关：读懂 Import 语句
 
-你可能已经听说过"前后端分离"这个词无数次了。在网上搜索，你会看到各种技术实现：有人说要用 Node.js 做后端，有人说要用 React 做前端，还有人说现在流行全栈框架如 Next.js 又把前后端"合并"了... 这些讨论容易让人迷失在技术细节中，忘记了最根本的问题：**我们为什么需要前后端分离？**
+很多初学者看代码时，会被 `import` 语句搞晕。文件 A import 了文件 B，文件 B 又 import 了文件 C，跳来跳去就迷路了。
 
-答案其实非常简单，但又极其深刻：**数据和逻辑应该分离**。
+其实 import 语句只有三种形式，搞懂了就不再迷路：
 
-### 什么是数据？什么是逻辑？
+#### 形式一：npm 包（外部依赖）
 
-让我们从最简单的例子开始理解这个概念。
+```tsx
+import { useChat } from "@ai-sdk/react";
+```
 
-想象你要在个人主页上展示你的项目经历。你的项目**数据**可能是这样的：
+**特征**：路径不以 `.` 或 `/` 开头，通常是包名。
+
+**去哪里找**：`node_modules/@ai-sdk/react/` 目录。但通常你不需要去看这个目录——这是别人写好的库，你只需要看它的文档就行。
+
+**类比**：这就像你用手机，不需要知道芯片怎么制造的，看说明书就能用。
+
+#### 形式二：相对路径（同项目文件）
+
+```tsx
+import { PreviewMessage } from "./message";
+```
+
+**特征**：路径以 `.` 开头（`./` 表示当前目录，`../` 表示上级目录）。
+
+**去哪里找**：当前文件所在目录的 `message.tsx`（或 `message.ts`、`message/index.tsx`）。
+
+**类比**：这就像说"我桌上的那本书"，是相对于"我的位置"来描述的。
+
+#### 形式三：别名路径（项目约定）
+
+```tsx
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
+```
+
+**特征**：路径以 `@/` 开头（这是 Next.js 项目的约定）。
+
+**去哪里找**：项目根目录下的 `hooks/use-scroll-to-bottom.ts`。`@/` 就是项目根目录的别名。
+
+**类比**：这就像公司的工位编号，"A区3排5号"，只要知道规则，就能找到。
+
+#### 实战练习
+
+打开 [`components/chat/chat.tsx`](./components/chat/chat.tsx)，看看开头的 import 语句：
+
+```tsx
+import { PreviewMessage, ThinkingMessage } from "./message";     // 形式二：同目录下的 message.tsx
+import { MultimodalInput } from "./multimodal-input";            // 形式二：同目录下的 multimodal-input.tsx
+import { Overview } from "./overview";                           // 形式二：同目录下的 overview.tsx
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom"; // 形式三：根目录下的 hooks/
+import { useChat } from "@ai-sdk/react";                         // 形式一：npm 包
+import { toast } from "sonner";                                  // 形式一：npm 包
+import { useState, useEffect, useRef } from "react";             // 形式一：npm 包
+import FingerprintJS from '@fingerprintjs/fingerprintjs';        // 形式一：npm 包
+```
+
+现在你知道了：如果想看 `PreviewMessage` 是怎么实现的，就去 [`components/chat/message.tsx`](./components/chat/message.tsx)；如果想了解 `useChat` 怎么用，就去看 [AI SDK 的官方文档](https://ai-sdk.dev/docs/ai-sdk-ui/overview)。
+
+---
+
+### 第二关：AI SDK —— 帮你造好的轮子
+
+在讲 AI SDK 之前，我们先想象一下：如果没有 AI SDK，你需要自己实现什么？
+
+#### 没有 AI SDK 时，你需要做什么
+
+1. **管理消息状态**
+   ```tsx
+   const [messages, setMessages] = useState([]);
+
+   function addMessage(role, content) {
+     setMessages(prev => [...prev, { role, content, id: Date.now() }]);
+   }
+   ```
+
+2. **发送请求到后端**
+   ```tsx
+   async function sendMessage(text) {
+     const response = await fetch('/api/chat', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ messages: [...messages, { role: 'user', content: text }] })
+     });
+     // 然后呢？怎么处理流式响应？
+   }
+   ```
+
+3. **解析流式响应（SSE）**
+   ```tsx
+   const reader = response.body.getReader();
+   const decoder = new TextDecoder();
+
+   while (true) {
+     const { done, value } = await reader.read();
+     if (done) break;
+
+     const chunk = decoder.decode(value);
+     // 解析 "data: {...}\n\n" 格式
+     // 处理 text-start, text-delta, text-end...
+     // 更新 UI...
+   }
+   ```
+
+4. **处理各种边界情况**
+   - 用户在 AI 回复时又发了新消息怎么办？
+   - 网络断了怎么办？
+   - 用户点了"停止生成"怎么办？
+
+光是想想就头大。而这一切，AI SDK 的 `useChat` hook 都帮你做好了。
+
+#### 使用 AI SDK 后，你只需要
+
+打开 [`components/chat/chat.tsx`](./components/chat/chat.tsx)，找到第 128-156 行：
+
+```tsx
+const {
+  messages,      // 所有消息的数组，自动更新
+  setMessages,   // 手动修改消息（很少用）
+  sendMessage,   // 发送消息的函数，一行搞定
+  status,        // 当前状态："idle" | "submitted" | "streaming"
+  stop,          // 停止 AI 生成的函数
+} = useChat({
+  onError: (error) => {
+    // 错误处理
+  },
+});
+```
+
+就这么简单。一个 `useChat`，返回 5 个东西，覆盖了你需要的所有功能：
+
+| 返回值 | 作用 | 你原本需要多少代码 |
+|-------|------|------------------|
+| `messages` | 所有消息，自动更新 | ~30 行状态管理 |
+| `sendMessage` | 发送消息 | ~50 行 fetch + 解析逻辑 |
+| `status` | 当前状态 | ~20 行状态追踪 |
+| `stop` | 停止生成 | ~15 行中断逻辑 |
+
+AI SDK 帮你省了 100+ 行代码，而且这 100 行还是经过大量测试、处理了各种边界情况的代码。
+
+#### AI SDK 是怎么知道发送到哪里的？
+
+你可能注意到，`useChat()` 里没有指定 API 地址。那它怎么知道把请求发到 `/api/chat`？
+
+答案是：**约定优于配置**。AI SDK 默认就是发送到 `/api/chat`。如果你想改，可以传入 `api` 参数：
+
+```tsx
+useChat({ api: '/api/my-custom-chat' })
+```
+
+这种"约定优于配置"的设计理念在现代开发中非常常见。它的好处是：大部分情况下你不需要配置任何东西，直接就能用。
+
+---
+
+### 第三关：追踪数据流 —— 从按钮到后端
+
+现在，让我们追踪一个完整的数据流：用户输入 "hello" 并点击发送，到 AI 回复出现在屏幕上。
+
+#### Step 1：用户点击发送
+
+打开 [`components/chat/multimodal-input.tsx`](./components/chat/multimodal-input.tsx)，找到发送按钮的点击事件。当用户点击按钮或按下 Enter 键，会调用 `submitForm()` 函数，它最终调用 `handleSubmit()`。
+
+#### Step 2：handleSubmit 处理
+
+回到 [`components/chat/chat.tsx`](./components/chat/chat.tsx)，找到第 162-168 行：
+
+```tsx
+const handleSubmit = (e?: { preventDefault?: () => void }, options?: any) => {
+  e?.preventDefault?.();
+  if (input.trim()) {
+    sendMessage({ text: input });  // 关键！调用 AI SDK 的 sendMessage
+    setInput("");                   // 清空输入框
+  }
+};
+```
+
+`sendMessage({ text: input })` 这一行，就是把消息发送出去的关键。
+
+#### Step 3：AI SDK 发送请求
+
+`sendMessage` 被调用后，AI SDK 会：
+
+1. 把用户消息添加到 `messages` 数组
+2. 构造一个 POST 请求，发送到 `/api/chat`
+3. 请求体大概长这样：
 
 ```json
 {
-  "title": "AI 个人主页项目",
-  "description": "使用 Next.js 和 AWS Bedrock 构建的个人主页",
-  "tech_stack": ["Next.js", "Python", "AWS Bedrock"]
+  "messages": [
+    {
+      "role": "user",
+      "parts": [
+        {
+          "type": "text",
+          "text": "hello"
+        }
+      ]
+    }
+  ]
 }
 ```
 
-这就是**数据**——纯粹的信息，没有任何关于"如何展示"的逻辑。
+#### Step 4：后端接收请求
 
-而**逻辑**是什么呢？逻辑是："如何把这个数据变成用户看到的精美卡片？"这个过程包括：
-
-- 解析 JSON 数据
-- 提取 title, description, tech_stack 字段
-- 为每个技术标签添加不同的颜色
-- 将这些信息组装成 HTML 元素
-- 应用 CSS 样式让卡片好看
-
-你看，数据本身是静态的、客观的，而逻辑是动态的、可变的。**数据告诉你"是什么"，逻辑告诉你"怎么做"**。
-
-### 为什么要分离？
-
-现在关键问题来了：为什么不把数据和逻辑混在一起？
-
-想象如果我们不分离会怎样：你把项目数据直接写死在 HTML 代码里：
-
-```html
-<div class="project-card">
-  <h3>AI 个人主页项目</h3>
-  <p>使用 Next.js 和 AWS Bedrock 构建的个人主页</p>
-  <span class="tag-nextjs">Next.js</span>
-  <span class="tag-python">Python</span>
-  <span class="tag-aws">AWS Bedrock</span>
-</div>
-```
-
-看起来挺好的对吧？但问题来了：
-
-- **问题 1**：如果你要添加一个新项目，你需要复制粘贴整个 HTML，然后一个一个改里面的文字
-- **问题 2**：如果你想改变卡片的样式，你需要找到所有的卡片 HTML 并逐个修改
-- **问题 3**：如果你想让项目数据来自数据库或 API，现在根本做不到，因为数据是写死的
-- **问题 4**：如果你想在手机上显示不同的样式，你需要维护两套完全不同的 HTML
-
-这就是混在一起的痛苦。
-
-现在我们分离一下：
-
-**数据层（后端）：**
+打开 [`api/index.py`](./api/index.py)，找到第 30-47 行：
 
 ```python
-projects = [
-  {
-    "title": "AI 个人主页项目",
-    "description": "使用 Next.js 和 AWS Bedrock 构建的个人主页",
-    "tech_stack": ["Next.js", "Python", "AWS Bedrock"]
-  },
-  {
-    "title": "数据分析平台",
-    "description": "实时处理 TB 级数据的分析系统",
-    "tech_stack": ["Spark", "Kafka", "PostgreSQL"]
-  }
-]
+@app.post("/api/chat")
+async def handle_chat_data(request: Request, protocol: str = Query("data")):
+    # 解析请求体
+    request_body_data = await request.json()
+    messages = request_body_data.get('messages', [])
+
+    # 获取用户最后一条消息
+    user_message = messages[-1]['parts'][0]['text']  # "hello"
 ```
 
-**逻辑层（前端）：**
+后端通过 `@app.post("/api/chat")` 这个装饰器，接收发送到 `/api/chat` 的 POST 请求。
 
-```tsx
-function ProjectCard({ project }) {
-  return (
-    <div className="project-card">
-      <h3>{project.title}</h3>
-      <p>{project.description}</p>
-      {project.tech_stack.map(tech => (
-        <span className={`tag-${tech}`}>{tech}</span>
-      ))}
-    </div>
-  )
-}
+#### Step 5：后端返回流式响应
 
-// 使用：遍历所有项目数据
-projects.map(project => <ProjectCard project={project} />)
+继续看 [`api/index.py`](./api/index.py) 第 53-76 行：
+
+```python
+def ai_sdk_v5_message_generator():
+    id = str(uuid.uuid4())
+    yield f'data: {json.dumps({"type": "text-start", "id": id})}\n\n'
+    yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "Hello Alice"})}\n\n'
+    yield f'data: {json.dumps({"type": "text-end", "id": id})}\n\n'
+    yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+    yield "data: [DONE]\n\n"
+
+response = StreamingResponse(
+    ai_sdk_v5_message_generator(),
+    media_type="text/event-stream",
+)
 ```
 
-分离后的好处立刻显现：
+这里用了 Python 的 `yield` 关键字，它让函数变成一个"生成器"，可以一块一块地吐出数据，而不是一次性返回所有内容。
 
-- **添加新项目**：只需在数据数组中添加一个对象，界面自动更新
-- **修改样式**：只需修改 ProjectCard 组件一次，所有项目卡片都会改变
-- **数据来源灵活**：projects 可以来自数据库、API、本地文件，逻辑代码不需要改变
-- **响应式设计**：逻辑可以根据屏幕大小调整样式，数据保持不变
+#### Step 6：前端解析并显示
 
-### API：前后端通信的"SOP"
-
-API（Application Programming Interface）本质上就是一个最简单的 SOP（标准作业程序）：它定义了：
-
-- **输入数据的格式**（请求的参数）
-- **处理的逻辑**（后端要做什么）
-- **输出数据的格式**（返回的结果）
-
-在我们的聊天应用中，数据流动是这样的：
-
-1. 用户在聊天界面输入一个问题："你的项目经验有哪些？"
-2. 前端收集输入数据（用户的问题文本、历史聊天记录）
-3. 前端发送请求到后端 API：`POST /api/chat`
-4. 后端接收请求并处理（现在是返回 hardcoded 回复，将来是调用 AI 模型）
-5. 后端返回回复数据
-6. 前端接收回复并显示
-
-整个流程中：
-- **数据**：用户问题、历史记录、AI 回复
-- **逻辑**：前端的界面渲染、后端的 AI 调用
-
-它们通过 API 清晰地分离开来。
-
-### Stream Protocol：流式响应的高层理解
-
-我们的聊天应用有个特殊之处：AI 的回复不是一次性返回的，而是一个字一个字地流式输出，就像 ChatGPT 那样。
-
-**传统 API（一次性返回）：**
-
-```
-用户发送消息 → 等待 10 秒 → 一次性显示完整回复
-```
-
-用户体验：在这 10 秒里，界面没有任何反馈，用户会以为系统卡住了。
-
-**流式 API（Stream Protocol）：**
-
-```
-用户发送消息 → 0.5秒后显示"你" → 0.5秒后显示"你好" → 0.5秒后显示"你好！" → ...
-```
-
-用户体验：立刻就有反馈，感觉 AI 在"思考"和"打字"，体验类似和真人聊天。
-
-在我们的项目中，我们使用的是 **AI SDK 的 Stream Protocol**。你现在只需要知道：
-
-- 后端会按照特定格式一段一段发送数据
-- 前端的 AI SDK 会自动解析这些数据并更新界面
-- 下一个教程我们会深入讲解 Stream Protocol 的细节
-
-> **关键理解**：今天我们先跑通整个流程，理解数据如何从前端到后端再回到前端。Stream Protocol 的具体格式和工作原理，我们下一个教程再深入学习。
+AI SDK 自动监听这个流式响应，解析 `data: {...}` 格式的消息，把 `text-delta` 中的内容提取出来，更新到 `messages` 数组。React 检测到 `messages` 变化，重新渲染页面，用户就看到了 AI 的回复。
 
 ---
 
-## Exercises
+### 第四关：Stream Protocol —— 核心中的核心
 
-### Exercise 1: 启动项目并切换分支
+现在我们来到最重要的部分：**Stream Protocol**。
 
-**Goal:** 准备好开发环境，确保项目可以正常运行。
+你可能会想：这不就是个数据格式吗？有什么特别的？
 
-**What to do:**
+让我用一个类比来解释为什么协议如此重要：
 
-1. 在 Codespaces 中切换到包含聊天功能的分支：
+#### 协议 vs 库
 
-   ```bash
-   git checkout 08-Add-Hardcoded-AI-Interaction
-   ```
+**库**是一个具体的实现。比如 AI SDK 是一个 JavaScript 库，你只能在 JavaScript/TypeScript 项目中使用它。
 
-2. 安装依赖并启动开发服务器：
+**协议**是一个约定。只要你遵守这个约定，用什么语言实现都可以。
 
-   ```bash
-   mise run inst
-   mise run dev
-   ```
+想想 HTTP 协议：
+- Chrome 浏览器（C++ 写的）可以访问网页
+- Safari 浏览器（Swift 写的）可以访问网页
+- curl 命令行工具（C 写的）可以访问网页
+- Python 的 requests 库也可以访问网页
 
-3. 在浏览器中访问 http://localhost:3000，点击导航栏的 "Chat" 链接（或直接访问 http://localhost:3000/chat），你应该能看到一个聊天界面。
+它们之所以都能工作，是因为它们都遵守 HTTP 协议这个"约定"。
 
-**What you'll notice:**
+Stream Protocol 也是这样。AI SDK 的前端可以和任何遵守 Stream Protocol 的后端通信：
+- Python（FastAPI）写的后端 ✓
+- Go 写的后端 ✓
+- Rust 写的后端 ✓
+- Node.js 写的后端 ✓
 
-聊天界面已经有了完整的 UI：输入框、发送按钮、消息显示区域。但现在发送消息还不会有真正的 AI 回复——这正是我们要实现的。
+只要后端返回的数据格式符合 Stream Protocol，前端就能正确解析。
 
-> **Key insight:** 我们要实现的是"假的 AI"（hardcoded 回复），但整个前后端通信流程是真实的。这让我们可以先专注于理解架构，而不是 AI 调用的细节。
+#### Stream Protocol 的三个核心消息类型
 
----
+打开 [`api/index.py`](./api/index.py)，看看后端返回的数据：
 
-### Exercise 2: 定位聊天界面的关键组件
+```python
+yield f'data: {json.dumps({"type": "text-start", "id": id})}\n\n'
+yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "Hello Alice"})}\n\n'
+yield f'data: {json.dumps({"type": "text-end", "id": id})}\n\n'
+```
 
-**Goal:** 学会在项目代码中找到聊天界面的关键文件，理解组件结构。
+这里有三种消息类型，我们一个个拆解：
 
-**What to do:**
+#### 1. `text-start`：文本开始
 
-1. 打开 VS Code，找到以下关键文件：
+```json
+{"type": "text-start", "id": "550e8400-e29b-41d4-a716-446655440000"}
+```
 
-   - `app/chat/page.tsx` - 聊天页面的入口
-   - `components/chat/chat.tsx` - 聊天功能的核心组件
-   - `components/chat/multimodal-input.tsx` - 输入框和发送按钮
-   - `components/chat/message.tsx` - 单条消息的渲染
+| 字段 | 含义 |
+|-----|------|
+| `type` | 消息类型，这里是 "text-start" |
+| `id` | 这段文本的唯一标识符（UUID） |
 
-2. 在 `components/chat/chat.tsx` 中，找到 `useChat` hook：
+**作用**：告诉前端"我要开始发送一段文本了，这段文本的 ID 是 xxx"。
 
-   ```tsx
-   const {
-     messages,       // 消息数组
-     sendMessage,    // 发送消息的函数
-     status,         // 当前状态
-     stop,           // 停止 AI 回复的函数
-   } = useChat({
-     // 配置...
-   });
-   ```
+**为什么需要 ID？** 因为 AI 可能同时生成多段内容（比如思考过程和最终答案），需要用 ID 区分哪些 delta 属于哪段文本。
 
-3. 找到 `handleSubmit` 函数，理解当用户点击发送时发生了什么：
+#### 2. `text-delta`：文本内容（增量）
 
-   ```tsx
-   const handleSubmit = () => {
-     if (input.trim()) {
-       sendMessage({ text: input });  // 调用 AI SDK 的发送函数
-       setInput("");                   // 清空输入框
-     }
-   };
-   ```
+```json
+{"type": "text-delta", "id": "550e8400-e29b-41d4-a716-446655440000", "delta": "Hello Alice"}
+```
 
-**What you'll notice:**
+| 字段 | 含义 |
+|-----|------|
+| `type` | 消息类型，这里是 "text-delta" |
+| `id` | 这段文本的 ID，和 text-start 中的一致 |
+| `delta` | 增量内容，这次新增的文字 |
 
-- `useChat` 是 AI SDK 提供的 hook，封装了消息状态管理、API 请求等复杂逻辑
-- 前端开发者不需要手动写 fetch 请求，AI SDK 帮我们处理了
-- `messages` 数组包含所有聊天记录，每次更新时 React 会自动重新渲染
+**作用**：发送实际的文本内容。
 
-> **Key insight:** AI SDK 帮我们封装了大量复杂逻辑。我们只需要调用 `sendMessage`，SDK 会自动向 `/api/chat` 发送请求并处理响应。
+**为什么叫 delta 而不是 content？** 因为这是"增量"——每次只发送新增的部分，不是完整内容。比如 AI 回复 "Hello World"，可能会分成两次发送：
 
----
+```
+{"type": "text-delta", "id": "...", "delta": "Hello "}
+{"type": "text-delta", "id": "...", "delta": "World"}
+```
 
-### Exercise 3: 找到后端 API 代码
+前端收到后，把这些 delta 拼接起来，就得到完整的 "Hello World"。
 
-**Goal:** 理解后端是如何处理聊天请求的。
+#### 3. `text-end`：文本结束
 
-**What to do:**
+```json
+{"type": "text-end", "id": "550e8400-e29b-41d4-a716-446655440000"}
+```
 
-1. 打开 `api/index.py`，找到处理聊天请求的函数：
+| 字段 | 含义 |
+|-----|------|
+| `type` | 消息类型，这里是 "text-end" |
+| `id` | 这段文本的 ID |
 
-   ```python
-   @app.post("/api/chat")
-   async def handle_chat_data(request: Request):
-       # 解析请求
-       request_body_data = await request.json()
-       messages = request_body_data.get('messages', [])
-       user_message = messages[-1]['parts'][0]['text'] if messages else ""
+**作用**：告诉前端"这段文本发送完了"。
 
-       # 生成回复（目前是 hardcoded）
-       hardcoded_reply = f"你好！我收到了你的消息：「{user_message}」"
+#### 完整的流程
 
-       # 返回流式响应
-       return StreamingResponse(...)
-   ```
+把三个消息类型连起来看：
 
-2. 注意 `StreamingResponse` 的使用——这就是让 AI 回复可以"一个字一个字"显示的关键。
+```
+text-start  → "我要开始说话了，我的 ID 是 abc123"
+text-delta  → "Hello "（ID: abc123）
+text-delta  → "World"（ID: abc123）
+text-end    → "ID 为 abc123 的话说完了"
+```
 
-3. 找到生成 Stream Protocol 格式的代码：
+前端收到 `text-start` 后，创建一个空的消息框；收到 `text-delta` 后，把 delta 内容追加到消息框；收到 `text-end` 后，知道这条消息完成了。
 
-   ```python
-   def ai_sdk_v5_message_generator():
-       id = str(uuid.uuid4())
-       yield f'data: {json.dumps({"type": "text-start", "id": id})}\n\n'
-       yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": hardcoded_reply})}\n\n'
-       yield f'data: {json.dumps({"type": "text-end", "id": id})}\n\n'
-       yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
-       yield "data: [DONE]\n\n"
-   ```
+#### SSE 格式的细节
 
-**What you'll notice:**
+你可能注意到每一行都有一些固定的格式：
 
-- 后端使用 Python 的 generator（`yield`）来逐步发送数据
-- 每行数据都以 `data: ` 开头，这是 SSE（Server-Sent Events）的标准格式
-- AI SDK 会在前端自动解析这些数据
+```
+data: {"type":"text-start","id":"..."}\n\n
+```
 
-> **Key insight:** 虽然 Stream Protocol 的格式看起来有点复杂，但你现在只需要知道：后端发送的每一段数据，前端都能实时接收到。具体的格式细节，我们下一个教程会深入学习。
+这是 **SSE（Server-Sent Events）** 格式的要求：
 
----
+| 部分 | 含义 |
+|-----|------|
+| `data: ` | 前缀，表示这是数据行（不是注释或其他类型） |
+| `{...}` | JSON 格式的实际内容 |
+| `\n\n` | 双换行，表示一个事件结束 |
 
-### Exercise 4: 修改 Hardcoded 回复
+为什么用 SSE 而不是普通的 HTTP 响应？因为 SSE 是专门为"服务器向客户端推送"设计的协议，浏览器原生支持，不需要 WebSocket 那么复杂。
 
-**Goal:** 动手修改代码，验证整个前后端通信流程。
+#### 其他消息类型（了解即可）
 
-**What to do:**
+除了 `text-start`、`text-delta`、`text-end`，Stream Protocol 还支持很多其他类型：
 
-1. 打开 `api/index.py`，找到 `hardcoded_reply` 这一行
+```python
+yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+yield "data: [DONE]\n\n"
+```
 
-2. 修改回复内容，比如：
+| 类型 | 含义 |
+|-----|------|
+| `finish-message` | 整条消息完成，`finishReason` 说明原因（stop=正常结束） |
+| `[DONE]` | 整个流结束 |
 
-   ```python
-   hardcoded_reply = f"""你好！我收到了你的消息：「{user_message}」
-
-   我是一个 hardcoded 的 AI 回复。目前我还在开发中，很快就能真正回答你的问题了！
-
-   你可以问我关于：
-   - 我的技能和项目经验
-   - 我的学习背景
-   - 我的联系方式
-   """
-   ```
-
-3. 保存文件，后端会自动重启
-
-4. 在浏览器中发送一条消息，比如"你好"，观察 AI 的回复
-
-**What you'll notice:**
-
-你修改的内容立刻就生效了！这说明：
-- 前端正确地发送了请求到后端
-- 后端正确地处理了请求并返回了你的 hardcoded 回复
-- 前端正确地显示了后端返回的内容
-
-![Hardcoded Response](./img/08-Add-Hardcoded-AI-Interaction/02-Hardcoded-Chat-Message.png)
-
-> **Key insight:** 虽然 AI 是"假的"，但整个数据流动是真实的。当我们将来替换成真正的 AI 调用时，前端代码几乎不需要改动——这就是分离的力量！
+更复杂的类型（如 `tool-input-*`、`reasoning-*`）用于 AI 调用工具或展示思考过程，我们这里不深入讲解。有兴趣的同学可以阅读 [AI SDK Stream Protocol 官方文档](https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol)。
 
 ---
 
-### Exercise 5: 在浏览器 DevTools 中观察网络请求
+## 练习
 
-**Goal:** 亲眼看到前后端通信的数据。
+### 练习 1：用 DevTools 观察 Stream Protocol
 
-**What to do:**
+**目标**：亲眼看到前后端之间传递的数据。
 
-1. 打开浏览器的开发者工具（F12）
+**步骤**：
 
-2. 切换到 "Network"（网络）标签
+1. 打开浏览器，访问 http://localhost:3000/chat
 
-3. 在聊天界面发送一条消息
+2. 按 F12 打开开发者工具，切换到 **Network**（网络）标签
 
-4. 在 Network 标签中，找到 `chat` 这个请求，点击它
+3. 在聊天框输入任意内容，点击发送
 
-5. 查看：
-   - **Headers**：请求头信息
-   - **Payload**：前端发送的数据（你的消息）
-   - **Response**：后端返回的流式数据
+4. 在 Network 列表中找到 `chat` 请求，点击它
 
-**What you'll notice:**
-
-在 Response 中，你会看到类似这样的内容：
+5. 查看 **Response**（响应）标签，你应该能看到类似这样的内容：
 
 ```
 data: {"type":"text-start","id":"..."}
-data: {"type":"text-delta","id":"...","delta":"你好！我收到了..."}
+data: {"type":"text-delta","id":"...","delta":"Hello Alice"}
 data: {"type":"text-end","id":"..."}
 data: {"type":"finish-message","finishReason":"stop"}
 data: [DONE]
 ```
 
-这就是 Stream Protocol！每一行以 `data: ` 开头，后面跟一个 JSON 对象。
+**你观察到了什么？**
 
-> **Key insight:** DevTools 是你的"X 光眼"。通过观察网络请求，你可以清楚地看到前端发送了什么、后端返回了什么。这是调试问题的重要技能。
+这就是 Stream Protocol！后端就是用这种格式把数据"流"给前端的。
 
 ---
 
-### Exercise 6: 根据关键词返回不同回复（扩展练习）
+### 练习 2：追踪 Import 链
 
-**Goal:** 让 hardcoded AI 更"智能"一点。
+**目标**：练习根据 import 语句找到源文件。
 
-**What to do:**
+**任务**：
 
-1. 修改 `api/index.py` 中的回复逻辑：
+1. 打开 [`components/chat/chat.tsx`](./components/chat/chat.tsx)
 
-   ```python
-   user_message = messages[-1]['parts'][0]['text'] if messages else ""
-
-   if "项目" in user_message:
-       reply = """我有三个主要项目：
-
-   1. **AI 个人主页** - 使用 Next.js + AWS Bedrock 构建
-   2. **数据分析平台** - 实时处理 TB 级数据
-   3. **机器学习模型部署** - MLOps 最佳实践
-
-   你想了解哪个项目的详情？"""
-
-   elif "技能" in user_message:
-       reply = """我掌握的技能包括：
-
-   - **编程语言**：Python, JavaScript, TypeScript
-   - **框架**：React, Next.js, FastAPI
-   - **云服务**：AWS (Bedrock, Lambda, S3)
-   - **AI/ML**：TensorFlow, PyTorch, LangChain"""
-
-   elif "联系" in user_message:
-       reply = "你可以通过邮件联系我：your@email.com"
-
-   else:
-       reply = f"收到你的消息：「{user_message}」\n\n请问关于我的**项目**、**技能**或**联系方式**？"
+2. 找到这行 import：
+   ```tsx
+   import { PreviewMessage, ThinkingMessage } from "./message";
    ```
 
-2. 保存并测试不同的问题
+3. 根据这个 import，找到 `PreviewMessage` 的定义文件
 
-**What you'll notice:**
+4. 在那个文件中，找到 `PreviewMessage` 组件是怎么渲染 AI 消息的
 
-现在你的 AI 会根据关键词返回不同的回复！虽然这还不是真正的 AI，但它展示了一个重要的模式：**后端可以根据输入数据执行不同的逻辑**。
-
-> **Key insight:** 这个练习展示了"数据驱动逻辑"的思想。当我们将来接入真正的 AI 时，只需要把 `if-else` 逻辑替换成 AI 调用即可，整体架构不变。
+**提示**：`./message` 表示当前目录下的 `message.tsx`（或 `message/index.tsx`）。
 
 ---
 
-## Reflection: What Did We Learn?
+### 练习 3：理解 yield 的作用
 
-完成这些练习后，你学到了：
+**目标**：理解为什么后端用 `yield` 而不是 `return`。
 
-**前后端分离的本质**
-- 数据与逻辑分离是核心思想
-- 前端负责界面展示和用户交互
-- 后端负责数据处理和业务逻辑
-- 它们通过 API 进行通信
+**思考题**：
 
-**聊天应用的架构**
-- `useChat` hook 封装了消息状态管理
-- 前端发送 POST 请求到 `/api/chat`
-- 后端使用 StreamingResponse 返回流式数据
-- AI SDK 自动处理流式响应的解析和显示
+打开 [`api/index.py`](./api/index.py)，看这段代码：
 
-**关键文件定位**
-- `app/chat/page.tsx` - 聊天页面入口
-- `components/chat/chat.tsx` - 核心聊天逻辑
-- `components/chat/multimodal-input.tsx` - 输入组件
-- `components/chat/message.tsx` - 消息渲染组件
-- `api/index.py` - 后端 API 处理
+```python
+def ai_sdk_v5_message_generator():
+    yield f'data: ...\n\n'  # 第一行
+    yield f'data: ...\n\n'  # 第二行
+    yield f'data: ...\n\n'  # 第三行
+```
 
-**最重要的是**
-- 理解"为什么这样设计"比记住"代码在哪里"更有价值
-- Hardcoded 回复虽然是"假的"，但架构是真实的
-- 当我们替换成真正的 AI 时，前端几乎不需要改动
+如果把 `yield` 换成 `return`，会发生什么？
+
+**答案**：
+
+`return` 会立即结束函数，只返回第一行。
+
+`yield` 让函数变成"生成器"，每次调用返回一行，函数不会结束，下次调用继续从上次的位置执行。
+
+这就是为什么 AI 的回复可以"一行一行"发送，而不是等全部生成完才发送。
+
+---
+
+### 练习 4：修改 delta 内容
+
+**目标**：验证你对 Stream Protocol 的理解。
+
+**任务**：
+
+1. 打开 [`api/index.py`](./api/index.py)
+
+2. 找到 `text-delta` 那一行：
+   ```python
+   yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "Hello Alice"})}\n\n'
+   ```
+
+3. 把它改成发送两次 delta：
+   ```python
+   yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "Hello "})}\n\n'
+   yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "World"})}\n\n'
+   ```
+
+4. 保存文件，刷新页面，发送消息
+
+5. 观察：前端显示的是 "Hello World"，说明两个 delta 被正确拼接了
+
+6. 用 DevTools 的 Network 标签查看响应，你会看到两个 `text-delta` 事件
+
+---
+
+## 总结：你学到了什么
+
+经过这节课的学习，你应该能够：
+
+**读懂 import 语句**
+- `"@ai-sdk/react"` → npm 包，看文档
+- `"./message"` → 相对路径，看同目录下的文件
+- `"@/hooks/..."` → 别名路径，看项目根目录
+
+**理解 AI SDK 的价值**
+- `useChat` 封装了消息管理、请求发送、流式解析
+- 你只需要调用 `sendMessage`，剩下的都不用管
+- "约定优于配置"：默认发送到 `/api/chat`
+
+**掌握 Stream Protocol**
+- `text-start`：开始一段文本，带 ID
+- `text-delta`：增量内容，追加到文本
+- `text-end`：文本结束
+- SSE 格式：`data: {...}\n\n`
+
+**追踪数据流**
+- 用户输入 → `handleSubmit` → `sendMessage` → `/api/chat`
+- 后端 `yield` → `StreamingResponse` → 前端解析 → 更新 UI
 
 ---
 
 ## Mentor's Note
 
-**Why this exercise matters:**
+**为什么这节课不写代码？**
 
-今天的内容信息量很大，你可能会觉得有点累。但我要恭喜你——因为你已经迈过了一个重要的门槛。
+我见过太多初学者，拿到一个项目就开始改代码，改着改着就把项目改坏了，然后不知道怎么恢复。
 
-大多数初学者学编程时，只关注"这行代码是什么意思？""怎么改这个功能？"他们是 **Doer**——执行者，按照教程一步步操作。
+其实，**读代码的能力比写代码的能力更基础**。你得先看懂别人的代码，才能在正确的地方做修改。
 
-但今天，你不仅学会了"怎么做"，更重要的是理解了"为什么这样做"。你开始思考：
-- 为什么要前后端分离？
-- 为什么需要 API？
-- 为什么要用流式响应？
+今天我们练习的"追踪数据流"——从按钮到后端再到页面——这是一个非常重要的技能。在真实的工作中，你经常需要回答这样的问题：
 
-你开始成为 **Thinker**——思考者，理解背后的原理和设计思想。
+- "这个数据是从哪里来的？"
+- "这个按钮点击后发生了什么？"
+- "为什么这个功能不工作？"
 
-**Key insights:**
+这些问题的答案，都藏在代码的调用链中。
 
-- **框架会过时，思维方式不会**。5 年前流行 Angular，现在流行 React，5 年后可能又是新东西。但"数据与逻辑分离"的思想永远不会过时。
+**协议的重要性**
 
-- **分离的力量**。当你把系统设计好了，未来的扩展会非常简单。今天我们用 hardcoded 回复，明天换成 AWS Bedrock，前端代码几乎不用改。
+今天我们花了很多时间讲 Stream Protocol。你可能会想：我只是想做个聊天应用，为什么要了解这么底层的东西？
 
-- **先跑通，再理解**。你可能还不完全理解 Stream Protocol 的每个细节——这完全没问题。下一个教程我们会深入学习。今天的目标是理解整体架构，看到数据如何流动。
+原因是：**理解协议，你才能理解系统的边界**。
 
-**Next steps:**
+比如，如果你以后想换一个 AI 模型（从 OpenAI 换到 Claude），你只需要问自己一个问题：新的 API 返回的格式符合 Stream Protocol 吗？如果符合，前端代码一行都不用改。如果不符合，你只需要在后端做一层转换。
 
-1. 下一个教程：深入学习 Stream Protocol 的工作原理
-2. 然后：配置 AWS Bedrock，接入真正的 AI
-3. 最后：构建个人知识库，让 AI 成为你的专属助手
+这就是"协议思维"的力量。它让你在面对变化时，知道哪些是不变的（协议），哪些是可变的（具体实现）。
 
-你已经打好了架构的基础。接下来的学习会越来越有意思！
+**一个库不牛逼，一个协议可以影响一个行业**
+
+HTTP 协议让全世界的网站可以互联。HTML 协议让任何浏览器都能渲染网页。Stream Protocol 虽然还很年轻，但它正在成为 AI 应用前后端通信的事实标准。
+
+当你理解了协议，你就不再是一个只会用某个库的开发者，而是一个理解整个生态系统的工程师。
+
+**下一步**
+
+现在你已经理解了整个聊天应用的架构和数据流。下一节课，我们将接入真正的 AI 模型（AWS Bedrock），让你的聊天应用真正"活"起来。
+
+由于你已经理解了 Stream Protocol，接入真正 AI 的改动量会非常小——只需要在后端把 hardcoded 的回复换成真正的 AI 调用即可。前端代码？一行都不用改。
 
 ---
 
-## Quick Reference
+## 快速参考
 
 **启动开发服务器：**
 
@@ -514,39 +614,38 @@ data: [DONE]
 mise run dev
 ```
 
-**切换到本教程的分支：**
-
-```bash
-git checkout 08-Add-Hardcoded-AI-Interaction
-```
-
 **关键文件：**
 
-- `app/chat/page.tsx` - 聊天页面入口
-- `components/chat/chat.tsx` - 核心聊天组件，包含 `useChat` hook
-- `components/chat/multimodal-input.tsx` - 输入框和发送按钮
-- `components/chat/message.tsx` - 单条消息的渲染逻辑
-- `api/index.py` - 后端 API，处理 `/api/chat` 请求
+| 文件 | 作用 |
+|-----|------|
+| [`components/chat/chat.tsx`](./components/chat/chat.tsx) | 核心逻辑，`useChat` hook |
+| [`components/chat/multimodal-input.tsx`](./components/chat/multimodal-input.tsx) | 输入框和发送按钮 |
+| [`components/chat/message.tsx`](./components/chat/message.tsx) | 消息渲染 |
+| [`api/index.py`](./api/index.py) | 后端 API |
 
-**数据流动路径：**
+**Stream Protocol 消息类型：**
 
-1. 用户在 `multimodal-input.tsx` 输入消息
-2. `chat.tsx` 的 `handleSubmit` 调用 `sendMessage`
-3. AI SDK 自动发送 POST 请求到 `/api/chat`
-4. `api/index.py` 处理请求，返回 StreamingResponse
-5. AI SDK 解析流式响应，更新 `messages` 状态
-6. `message.tsx` 渲染每条消息
+| 类型 | 格式 | 作用 |
+|-----|------|------|
+| `text-start` | `{"type":"text-start","id":"..."}` | 开始一段文本 |
+| `text-delta` | `{"type":"text-delta","id":"...","delta":"..."}` | 发送增量内容 |
+| `text-end` | `{"type":"text-end","id":"..."}` | 结束一段文本 |
+
+**参考文档：**
+
+- [AI SDK UI Overview](https://ai-sdk.dev/docs/ai-sdk-ui/overview)
+- [AI SDK Stream Protocol](https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol)
 
 ---
 
-## Reference Implementation
+## 参考实现
 
-本教程对应的分支是 `08-Add-Hardcoded-AI-Interaction`。
+本教程对应分支 `09-AI-SDK-And-Stream-Protocol`。
 
-验证你的环境是否正确：
+验证你的环境正确：
 
 ```bash
-git checkout 08-Add-Hardcoded-AI-Interaction
+git checkout 09-AI-SDK-And-Stream-Protocol
 mise run inst
 mise run dev
 ```
