@@ -31,3 +31,9 @@
 面对远超能力的复杂项目，没有退缩去"先学完再做"，而是用手术刀从中砍出最小可运行骨架，让行动本身产生信息。
 
 📄 [04-Cut-It-Down-Make-It-Run-CN.md](04-Cut-It-Down-Make-It-Run-CN.md)
+
+## 05 - From Localhost to the World
+
+代码在本地跑通只是半成品。点下 Deploy，三分钟后拿到一个全球可访问的 URL——这才叫 Deliver Results。
+
+📄 [05-From-Localhost-to-the-World-CN.md](05-From-Localhost-to-the-World-CN.md)
