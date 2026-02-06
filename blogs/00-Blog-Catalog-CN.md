@@ -8,4 +8,4 @@
 
 什么都还没有，只有一个空 repo 和一颗跃跃欲试的心。确定了 Next.js + FastAPI + Vercel 的技术栈，决定边做边学，先行动再说。
 
-📄 [00-The-Beginning-of-Everything.md](00-The-Beginning-of-Everything.md)
+📄 [00-The-Beginning-of-Everything-CN.md](00-The-Beginning-of-Everything-CN.md)
