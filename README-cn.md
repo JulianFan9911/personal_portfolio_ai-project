@@ -2,6 +2,8 @@
 
 > 学习前后端分离的核心理念，并实现一个简化版的 AI 聊天功能。
 
+![Chat Interface](./img/08-Add-Hardcoded-AI-Interaction/01-Hardcoded-Chat-Message.png)
+
 ## Overview
 
 恭喜你走到了这一步！如果说前面的学习都是在打基础、熟悉工具，那么从今天开始，我们就要进入这个项目最核心、最激动人心的部分了——让你的个人主页"活"起来，能够与访客对话。
@@ -352,6 +354,8 @@ API（Application Programming Interface）本质上就是一个最简单的 SOP�
 - 前端正确地发送了请求到后端
 - 后端正确地处理了请求并返回了你的 hardcoded 回复
 - 前端正确地显示了后端返回的内容
+
+![Hardcoded Response](./img/08-Add-Hardcoded-AI-Interaction/02-Hardcoded-Chat-Message.png)
 
 > **Key insight:** 虽然 AI 是"假的"，但整个数据流动是真实的。当我们将来替换成真正的 AI 调用时，前端代码几乎不需要改动——这就是分离的力量！
 

@@ -2,6 +2,8 @@
 
 > Learn the core concept of frontend-backend separation and implement a simplified AI chat feature.
 
+![Chat Interface](./img/08-Add-Hardcoded-AI-Interaction/01-Hardcoded-Chat-Message.png)
+
 ## Overview
 
 Congratulations on making it this far! If the previous lessons were about building foundations and getting familiar with tools, today we're entering the most exciting part of this project—making your portfolio website "come alive" by enabling conversations with visitors.
@@ -352,6 +354,8 @@ Your modifications take effect immediately! This shows:
 - Frontend correctly sent request to backend
 - Backend correctly processed request and returned your hardcoded response
 - Frontend correctly displayed the content returned by backend
+
+![Hardcoded Response](./img/08-Add-Hardcoded-AI-Interaction/02-Hardcoded-Chat-Message.png)
 
 > **Key insight:** Although the AI is "fake", the entire data flow is real. When we later replace it with real AI calls, the frontend code barely needs to change—that's the power of separation!
 
