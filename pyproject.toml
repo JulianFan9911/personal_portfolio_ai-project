@@ -8,6 +8,8 @@ dependencies = [
     "fastapi>=0.118.0,<1.0.0",      # Web framework
     "uvicorn>=0.38.0,<1.0.0",       # ASGI server
     "boto3>=1.42.0,<2.0.0",         # AWS SDK for Python
+#    "google-genai>=1.0.0,<2.0.0",   # Google Gemini SDK
+#    "zhipuai>=2.0.0,<3.0.0",        # Zhipu GLM SDK
 ]
 
 [project.optional-dependencies]
