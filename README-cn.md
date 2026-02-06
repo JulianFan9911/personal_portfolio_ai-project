@@ -1,521 +1,572 @@
-# 把 Next.js + FastAPI 应用部署到 Vercel
+# AI 辅助编程：添加卡片组件与个人信息展示
 
-> 建立部署流水线，让你能即时验证代码改动是否能成功构建和部署。
+> 学习如何在 AI 辅助下为 personal portfolio 网站添加自定义 UI 组件。
+
+![Screenshot](./img/07-Add-Card-Components-And-Hero-Section/01-personal-info-and-card.png)
 
 ## Overview
 
-你已经在本地成功运行了 Next.js + FastAPI 的 full-stack application。现在，是时候把它部署到云端了。
+你已经学会了如何探索代码库、找到 UI 元素对应的源码。现在，是时候亲手创造一些东西了。
 
-**Vercel** 是一个专门为 Next.js 优化的云平台。它的特点是：
-- 部署极其简单（连接 GitHub，自动部署）
-- 免费额度足够个人项目使用
-- 每次 push 代码自动重新部署
+但这不是传统意义上的"写代码"——在 AI 时代，编程的核心技能变了。不再是记住语法、背诵 API，而是**学会如何清晰地向 AI 描述你想要什么**。
 
-这个教程会带你走完整个部署流程。你不需要改任何代码，只需要在 Vercel 的界面上点点鼠标。
+这节课，你会体验一种全新的工作方式：**看到喜欢的设计 → 描述给 AI → 让 AI 帮你实现 → 理解代码如何工作**。这个技能将陪伴你整个职业生涯。
 
----
+**关于技术栈：** 这个项目使用 React 组件和 Tailwind CSS。如果你不知道这些是什么，没关系——我们采用**先动手，后理解**的学习方式。先把东西做出来，看到效果，然后再回头理解原理。详细的概念介绍放在练习之后。
 
 ## Learning Objectives
 
-部署是软件开发中的关键一环。写代码只是开始，**让用户能够访问你的应用**才是真正的价值所在。
+为什么这很重要？
 
-很多初学者会把"部署"想象得很复杂：需要买服务器、配置域名、设置 SSL 证书、管理数据库... 但现代 SaaS 平台（比如 Vercel）把这些全部自动化了。你只需要把 GitHub repo 连接上去，剩下的它帮你搞定。
+当你浏览其他人的 portfolio 网站时，你会看到很多炫酷的设计——渐变按钮、悬浮卡片、动态图标。以前，你需要花几周时间学习 CSS 和 React 才能实现这些效果。现在，有了 AI，几分钟就能完成。
 
-学会使用这类平台，意味着你可以快速把想法变成现实——写完代码，几分钟后全世界就能访问。
+但关键不是"让 AI 帮你写代码"这么简单。关键是：
 
-By the end of this exercise, you will:
+1. **你要能描述清楚你想要什么** — 模糊的描述只会得到模糊的结果
+2. **你要能理解 AI 给你的代码** — 不理解就无法调试、修改、扩展
+3. **你要能把学到的知识迁移到新场景** — 这才是真正的学习
 
-1. 理解 Vercel 如何与 GitHub 集成
-2. 完成 Vercel 账号与 GitHub 账号的授权绑定
-3. 成功把 Next.js 应用部署到云端
-4. 学会查看 deployment 状态和访问部署好的网站
-5. 知道部署失败时如何 debug
+这三点，才是 AI 时代最重要的编程技能。
+
+完成这节课后，你将：
+
+1. 学会如何从设计灵感到代码实现的完整流程
+2. 理解 React 组件和 Tailwind CSS 的基本工作原理
+3. 掌握向 AI 提需求的正确姿势——提供充足的 context
+4. 能够独立为自己的 portfolio 添加新的 UI 元素
 
 ## Prerequisites
 
-- 你已经有一个包含 Next.js 代码的 GitHub repository
-- 你已经注册了 Vercel 账号（如果没有，去 [vercel.com](https://vercel.com) 注册）
-- 你的代码在本地已经能正常运行（`mise run dev` 能启动）
+- 你已完成前面的教程，能运行 `mise run dev`
+- 浏览器可以访问 http://localhost:3000
+- 你有一个 AI assistant (Claude, ChatGPT 等)
 
 ## What You'll Build
 
-完成这个教程后，你会拥有一个可用的部署流水线：
-- 每次你 push 代码到你的 branch，Vercel 自动构建和部署
-- 你可以点击 "Visit" 查看 preview deployment，验证它是否正常工作
-- 这**不是** production（我们没有 promote 到 main）——这是你个人验证代码能否正确部署的工具
+你将为 personal portfolio 网站添加自己喜欢的 UI 效果。
 
-把它想成 **部署的 TDD**：push → 看能不能 build → 有问题就修 → 重复。这种快速反馈循环是现代开发的核心。
+可能是一个炫酷的按钮、一个卡片悬浮效果、一个图标动画——具体是什么，由你决定。
+
+这节课的核心不是完成某个特定功能，而是**掌握从"我想要这个效果"到"代码跑起来了"的完整流程**。
 
 ---
 
-## Key Concepts
+## Key Concepts（简要版）
 
-### Vercel 是什么？
+> 这里只做简单介绍，让你知道有这些东西。详细的概念讲解在练习之后，我们先动手！
 
-Vercel 是一个 **cloud platform**，专门用来部署 web applications。它的创始人就是 Next.js 的作者，所以 Vercel 对 Next.js 的支持特别好。
+### Context Engineering
 
-**工作原理：**
-1. 你把代码 push 到 GitHub
-2. Vercel 检测到代码更新
-3. Vercel 自动 build 你的项目
-4. Build 成功后，自动部署到它的服务器
-5. 你的网站就上线了
+**Context**（上下文）是和 AI 协作时最重要的技能。简单说，就是**给 AI 足够的背景信息**，让它能准确理解你的需求。
 
-这个流程叫做 **CI/CD（Continuous Integration / Continuous Deployment）**——代码一提交，自动构建部署。
+后面的练习会教你怎么做。
 
-### GitHub App 授权
+### React 组件
 
-为了让 Vercel 能读取你的 GitHub repo，你需要授权。这是通过安装一个 **GitHub App** 实现的。
+React 组件就是**可复用的 UI 模块**，像乐高积木一样可以拼装。
 
-这个授权过程会让你选择：
-- **All repositories** - Vercel 可以访问你账号下所有的 repo
-- **Only select repositories** - 只允许访问你选择的特定 repo
+你会在代码里看到类似这样的东西：
+```tsx
+<Hero />
+<StatsSection />
+<ContactSection />
+```
 
-出于安全考虑，建议选择 **Only select repositories**，只授权需要部署的项目。
+每一个都是一个组件。先知道这个概念就够了，详细介绍在后面。
 
-### Branch 和 Deployment 的关系
+### Tailwind CSS
 
-Vercel 会监听你 GitHub repo 的所有 branch：
-- **main branch** - 通常作为 Production 环境
-- **其他 branch** - 作为 Preview 环境
+Tailwind CSS 是一种**用 class 名直接写样式**的方式：
+```tsx
+<button className="bg-blue-500 p-2 rounded">
+  点击我
+</button>
+```
 
-每当你 push 代码到任何 branch，Vercel 都会自动创建一个新的 deployment。这意味着你可以在 push 之前先在 Preview 环境测试，确认没问题再 merge 到 main。
-
-### Framework Detection
-
-第一次导入项目时，Vercel 会尝试自动检测你使用的 framework（Next.js、React、Vue 等）。如果检测成功，它会自动配置正确的 build 命令和输出目录。
-
-如果检测失败（比如你的 main branch 代码不完整），你需要手动在 Settings 里设置 Framework Preset。
+`bg-blue-500` 是蓝色背景，`p-2` 是内边距，`rounded` 是圆角。先知道这个概念就够了。
 
 ---
 
 ## Exercises
 
-### Exercise 1: 创建新项目并导入 Repository
+### Exercise 1: 启动项目，观察现有组件
 
-**Goal:** 在 Vercel 上创建一个新项目，并连接到你的 GitHub repo。
-
-**What to do:**
-
-1. 登录你的 Vercel Dashboard（[vercel.com/dashboard](https://vercel.com/dashboard)）
-
-2. 在页面右上角，找到 **"Add New..."** 按钮，点击它，然后选择 **"Project"**
-
-   ![Step 1: Add New Project](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/01-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   如图所示，点击 "Add New..." 下拉菜单后，选择 "Project"。
-
-3. 你会看到 **"Let's build something new"** 页面。这里有两种方式导入 repo：
-
-   ![Step 2: Import Git Repository](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/02-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   **方式一：从已绑定的 GitHub 账号导入**
-
-   如果你之前已经绑定过 GitHub 账号，你会在 "Import Git Repository" 区域看到一个下拉菜单，列出你的 GitHub 账号。展开下拉菜单，找到你要部署的 repo，点击旁边的 **"Import"** 按钮。
-
-   **方式二：如果没有看到你的账号**
-
-   点击下拉菜单中的 **"+ Add GitHub Account"** 来添加你的 GitHub 账号。
-
-   **方式三：直接输入 URL**
-
-   如果你的 repo 是 public 的，也可以在上方的输入框 "Enter a Git repository URL to deploy..." 直接粘贴你的 GitHub repo URL，然后点击 "Continue"。
-
-**What you'll notice:**
-
-- Vercel 界面设计得很简洁，核心操作都很明显
-- 右侧的 "Clone Template" 区域是给想用模板快速开始的人用的，我们不需要用它
-
-> **Key insight:** Vercel 的设计理念是"把 GitHub repo 变成一个活着的网站"。你把代码放在 GitHub，Vercel 帮你把它变成可访问的服务。
-
----
-
-### Exercise 2: 授权 Vercel 访问你的 GitHub（首次绑定）
-
-**Goal:** 如果是第一次使用，需要授权 Vercel 访问你的 GitHub 账号。
+**Goal:** 熟悉项目当前的 UI 结构。
 
 **What to do:**
 
-1. 当你点击 "Add GitHub Account" 后，会跳转到 GitHub 的授权页面。页面标题是 **"Install Vercel"**。
-
-   ![Step 3: Install Vercel on GitHub](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/03-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   这个页面问的是：**"你想把 Vercel 安装到哪个 GitHub 账号/组织？"**
-
-   如图所示，你可能会看到多个选项——你自己的个人账号，以及你加入的 GitHub Organizations。
-
-   **重要：选对账号！** 如果你要部署的 repo 在你个人账号下，就选你的个人账号。如果在某个 Organization 下，就选那个 Organization。图中红色标注提醒你 "pick the right github account"。
-
-2. 点击你要授权的账号右边的 **"Configure >"** 按钮。
-
-3. 接下来，GitHub 会问你要授权哪些 repositories：
-
-   ![Step 4: Select Repositories](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/04-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   你会看到两个选项：
-   - **All repositories** - 授权所有 repo（方便但安全性较低）
-   - **Only select repositories** - 只授权特定的 repo（推荐）
-
-   如图所示，建议选择 **"Only select repositories"**，然后点击 "Select repositories" 下拉菜单，找到你要部署的 repo，点击选中它。
-
-   **为什么选 "Only select repositories"？**
-
-   出于安全考虑，最小权限原则。大公司的项目通常不会授权第三方服务访问所有代码。虽然对个人项目来说选 "All repositories" 也没什么问题，但养成好习惯是值得的。
-
-4. 选好 repo 后，向下滚动，你会看到 Vercel 请求的权限说明：
-
-   ![Step 5: Review Permissions and Request](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/05-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   权限包括：
-   - **Read** access to members and metadata
-   - **Read and write** access to administration, checks, code, commit statuses, deployments, issues, pull requests, and repository hooks
-
-   这些权限让 Vercel 可以：
-   - 读取你的代码来 build
-   - 在你的 repo 上报告 deployment 状态
-   - 自动在 PR 上添加 preview 链接
-
-   确认无误后，点击绿色的 **"Request"** 按钮。
-
-5. **等待审批（如果是 Organization）**
-
-   如果你授权的是个人账号，授权会立即生效。
-
-   但如果你授权的是 Organization（比如公司或学校的账号），Organization 的管理员可能需要审批。这种情况下：
-   - 你会收到一封邮件通知
-   - 管理员会收到审批请求
-   - 管理员同意后，授权才会生效
-
-   如果你自己就是管理员，去你的 GitHub Settings > Applications > Authorized OAuth Apps 或者 GitHub Apps 里同意就行。
-
-**What you'll notice:**
-
-- GitHub 的授权页面解释得很清楚，每个权限是什么用途
-- 授权是可以随时撤销的（在 GitHub Settings 里）
-
-> **Key insight:** 这个授权过程其实是在安装一个 "GitHub App"。Vercel 通过这个 App 来监听你的代码变化并触发自动部署。
-
----
-
-### Exercise 3: 回到 Vercel 完成导入
-
-**Goal:** 授权完成后，回到 Vercel 正式导入你的 repo。
-
-**What to do:**
-
-1. 授权完成后，回到 Vercel 的 "Let's build something new" 页面。
-
-   ![Step 6: Import the Repository](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/06-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   现在你应该能在 "Import Git Repository" 区域看到你刚才授权的 repo 了。
-
-   **注意：** 授权只是让 Vercel "能看到" 你的 repo，但还没有真正导入。你需要点击 repo 旁边的 **"Import"** 按钮才会开始导入流程。
-
-2. 点击 **"Import"** 按钮。
-
-**What you'll notice:**
-
-- 如果你刚完成授权但看不到 repo，刷新一下页面
-- 如果还是看不到，可能授权还没生效，稍等片刻或检查 GitHub 邮箱是否有审批请求
-
-> **Key insight:** "看到 repo" 和 "导入 repo" 是两步。很多人授权完就以为搞定了，其实还要回来点 Import。
-
----
-
-### Exercise 4: 配置项目并部署
-
-**Goal:** 设置项目配置，然后触发第一次部署。
-
-**What to do:**
-
-1. 点击 Import 后，你会看到 **"New Project"** 配置页面：
-
-   ![Step 7: Configure and Deploy](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/07-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   这个页面让你配置几个关键选项：
-
-   **Importing from GitHub**
-   - 显示你正在导入的 repo 名称
-   - 注意右边显示的 branch（比如 `main`）。首次导入默认从 main branch 部署。
-
-   **Vercel Team**
-   - 选择项目要部署到哪个 team。如果你只有一个个人账号，这里只会显示一个选项。如果你加入了多个 team（比如个人账号 + 公司账号），选择正确的那个。
-
-   **Project Name**
-   - 你的项目在 Vercel 上的名称。这会影响你的默认 URL（`https://[project-name].vercel.app`）。
-
-   **Application Preset** / **Framework Preset**
-   - Vercel 会尝试自动检测你使用的 framework。如果检测到是 Next.js，这里会显示 "Next.js"。
-
-   **其他选项**（通常不需要改）
-   - Root Directory - 默认是 `./`
-   - Build and Output Settings - Vercel 会根据 framework 自动配置
-   - Environment Variables - 如果你的项目需要环境变量，在这里添加
-
-2. 确认配置无误后，点击底部的 **"Deploy"** 按钮。
-
-3. Vercel 会开始 build 你的项目。这个过程通常需要 1-3 分钟。你可以在页面上看到实时的 build log。
-
-**What you'll notice:**
-
-- Deploy 按钮点了之后会变成 "Deploying..."
-- 你会看到 build 的进度和日志
-- 如果一切顺利，最后会显示 "Congratulations!" 和你的网站 URL
-
-> **Key insight:** 第一次部署会从 main branch 开始。如果你的 main branch 代码还不完整，部署可能会失败。别担心，我们接下来会处理这种情况。
-
----
-
-### Exercise 5: 查看 Deployment 状态并访问网站
-
-**Goal:** 学会查看 deployment 列表，以及如何访问部署好的网站。
-
-**What to do:**
-
-1. 部署完成后，进入你的项目 Dashboard。点击顶部导航栏的 **"Deployments"** tab。
-
-   ![Step 8: View Deployments](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/08-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   这里列出了所有的 deployments。每行代表一次部署，包含以下信息：
-
-   - **Preview ID**（比如 "6XqAxLBoQ"）- 这次部署的唯一标识
-   - **Status**（比如绿色的 "Ready"）- 部署状态。绿色 Ready 表示成功，红色 Error 表示失败
-   - **Branch name**（比如 "05-Deploy-Hello-World-NextJs-App-to-Vercel"）- 这次部署来自哪个 branch
-   - **Commit message**（比如 "Update chore.txt"）- 触发这次部署的 commit
-
-2. **访问部署好的网站：**
-
-   在任意一行的右边，点击 **三个点（"..."）** 按钮，会弹出一个菜单。选择 **"Visit"** 就可以在新窗口打开你部署好的网站。
-
-   你也可以点击 "Copy URL" 把链接复制下来分享给别人。
-
-3. **理解不同的 branch 部署：**
-
-   注意看图中高亮的部分：
-   - branch 是 `05-Deploy-Hello-World-NextJs-App-to-Vercel`
-   - 类型是 "Preview"
-
-   这意味着这不是 main branch（Production），而是一个 preview deployment。每个非 main 的 branch 都会生成自己的 preview URL。
-
-**What you'll notice:**
-
-- 每次你 push 代码到 GitHub，Vercel 都会自动创建新的 deployment
-- Status 会从 "Building..." 变成 "Ready" 或 "Error"
-- 一个项目可以有很多 deployments，它们都会保留在历史记录里
-
-> **Key insight:** Vercel 的自动部署机制让你可以快速迭代。改代码 → push → 等几分钟 → 新版本上线。这就是现代开发的节奏。
-
----
-
-### Exercise 6: 触发新的部署
-
-**Goal:** 学会如何手动触发一次新的部署。
-
-**What to do:**
-
-我们现在要验证 Vercel 的自动部署机制。方法很简单：修改一个文件，push 到 GitHub，然后看 Vercel 是否自动部署。
-
-1. **确保你在正确的 branch 上：**
-
+1. 启动开发服务器：
    ```bash
-   git checkout 05-Deploy-Hello-World-NextJs-App-to-Vercel
+   mise run dev
    ```
 
-   （或者你当前正在开发的 branch）
+2. 打开 http://localhost:3000
 
-2. **修改 `chore.txt` 文件：**
+3. 观察页面上的这些元素：
+   - Hero section（头像、名字、简介）
+   - Social icons（GitHub、LinkedIn、Blog 图标）
+   - Stats cards（成就卡片 grid）
+   - Contact section（联系按钮）
 
-   这个项目里有一个 `chore.txt` 文件，它的内容不重要，专门用来触发部署。打开它，随便改点内容（比如加一行时间戳），然后保存。
-
-   ```bash
-   echo "Trigger deployment: $(date)" >> chore.txt
-   ```
-
-3. **Commit 并 push：**
-
-   ```bash
-   git add chore.txt
-   git commit -m "Trigger deployment"
-   git push
-   ```
-
-4. **回到 Vercel Dashboard 的 Deployments tab，**等几秒钟，你会看到一个新的 deployment 出现，状态是 "Building..."。
-
-5. **等待 build 完成：**
-   - 如果成功，状态会变成绿色的 "Ready"
-   - 如果失败，状态会变成红色的 "Error"
-
-6. **成功后，点击 "Visit" 访问你的网站。**
+4. 用前一节课学的技能，尝试找到每个元素对应的代码文件。
 
 **What you'll notice:**
 
-- 从 push 到部署完成通常只需要 1 分钟
-- 不需要任何手动操作，Vercel 自动检测到 GitHub 的变化
-- 每个 branch 的每次 push 都会触发一个独立的 deployment
+页面由多个组件构成：
+- `Hero.tsx` — 头像、名字、简介、社交图标
+- `StatsSection.tsx` — 成就卡片 grid
+- `ContactSection.tsx` — 联系区域
 
-> **Key insight:** `chore.txt` 这个文件的意义在于：当你只是想测试部署流程，但不想改动正经代码时，可以改它来触发部署。这是一个常见的技巧。
+这些组件在 `HomePageContent.tsx` 中被组合使用。
 
----
-
-### 概念补充：什么是 CI/CD？
-
-你刚才体验的"push 代码 → Vercel 自动部署"，在行业里有个专业名词：**CI/CD**。
-
-- **CI（Continuous Integration，持续集成）**：每次你 push 代码，系统自动运行测试、检查错误、尝试构建。有问题立刻告诉你，不用等到部署时才发现。
-
-- **CD（Continuous Deployment，持续部署）**：代码通过检查后，自动部署到服务器，网站立刻更新。
-
-传统流程需要手动测试、手动构建、手动上传服务器，可能花几个小时还容易出错。现在有了 CI/CD，整个过程不到 2 分钟，全自动。
-
-**这就是为什么 GitHub 一有改动，Vercel 就有反应**——它在帮你自动完成以前需要手动做的所有事情。
+> **Key insight:** 大的页面由小的组件拼装而成。理解这种结构，你就能知道该在哪里修改代码。
 
 ---
 
-### Exercise 7: 处理 Framework Detection 失败（可选）
+### Exercise 2: 寻找设计灵感
 
-**Goal:** 学会在 Vercel 没有自动检测到 framework 时，如何手动配置。
-
-**背景说明：**
-
-首次导入项目时，Vercel 会从 main branch 读取代码来检测 framework。但如果你的 main branch：
-- 代码还不完整
-- 没有 Next.js 的标准结构
-- 或者根本是空的
-
-Vercel 就可能检测不出来这是一个 Next.js 项目。这时候，build 会失败。
+**Goal:** 找到你想添加到 portfolio 的 UI 效果。
 
 **What to do:**
 
-1. 进入你的项目 Dashboard，点击顶部导航栏的 **"Settings"** tab。
+1. 打开 https://www.pinterest.com/（需要注册账号）
 
-   ![Step 9: Framework Settings](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/09-Deploy-Hello-World-NextJs-App-to-Vercel.png)
+2. 搜索 "personal portfolio website"
 
-2. 在左侧菜单中，找到并点击 **"Build and Deployment"**。
+3. 你会看到很多设计灵感：
 
-3. 在右侧找到 **"Framework Settings"** 区域。
+![Pinterest Ideas](./img/07-Add-Card-Components-And-Hero-Section/02-personal-portfolio-ideas.png)
 
-4. 点击 **"Framework Preset"** 下拉菜单，从列表中选择 **"Next.js"**。
+4. 浏览设计图，找到一个你喜欢的**小元素**：
+   - 一个有趣的按钮样式
+   - 一个卡片的悬浮效果
+   - 一个 skill bar 的设计
+   - 一个 timeline 组件
+   - 一个 icon 的动画效果
 
-5. 点击底部的 **"Save"** 按钮保存配置。
+5. **截图保存**，把你喜欢的那个小部分圈出来
 
-6. 回到 Deployments tab，找到之前失败的 deployment，点击三个点菜单，选择 **"Redeploy"**。或者用 Exercise 6 的方法，修改 `chore.txt` push 一次来触发新部署。
-
-7. 这次应该能成功了。
+**Important:** 选择一个**小而具体**的元素，不要选整个页面。小元素更容易实现，更容易理解。
 
 **What you'll notice:**
 
-- Settings 页面有很多选项，大部分情况下不需要改
-- Framework Preset 决定了 Vercel 用什么方式来 build 你的项目
-- 一旦设置了正确的 framework，后续的部署都会使用这个配置
+好的 portfolio 设计通常有这些共同点：
+- 简洁的布局
+- 吸引眼球的交互效果（悬浮、点击反馈）
+- 一致的配色方案
+- 适当的留白
 
-> **Key insight:** 这种问题通常只在首次导入时出现。一旦配置好了，后续就不用管了。关键是要会看 build log，它会告诉你哪里出错了。
+> **Key insight:** 设计灵感要具体化。"我想让网站更好看"太模糊；"我想要这个按钮的渐变效果"可以执行。
+
+---
+
+### Exercise 3: 向 AI 描述你想要的效果
+
+**Goal:** 学习如何清晰地向 AI 提需求。
+
+**What to do:**
+
+1. 打开你的 AI assistant (Claude, ChatGPT 等)
+
+2. 使用以下 prompt 模板，把 `[...]` 替换成你的具体内容：
+
+```
+我想将这张图片中的 [具体描述你圈出的那个元素] 加入到我的 personal portfolio 网站。
+
+【项目背景】
+- 技术栈：Next.js + React + Tailwind CSS
+- 我想把这个元素添加到 [具体位置，比如"Hero section 的社交图标下方"]
+- 当前相关代码在 [文件路径，比如 app/(marketing)/_components/Hero.tsx]
+
+【我想要的效果】
+- 形状：[描述形状]
+- 颜色：[描述颜色]
+- 文字/图标：[描述内容]
+- 交互效果：[比如悬浮时放大/变色]
+
+【我的要求】
+请使用对于新手最容易懂、代码量尽量少的方式实现。
+完成基础的设计功能即可，不需要过于复杂。
+请详细解释：
+1. 改了哪些代码
+2. 每段代码的作用是什么
+3. 为什么这样写能实现这个效果
+```
+
+3. 把截图一起发给 AI
+
+4. 仔细阅读 AI 的回复，确保你理解了每个步骤
+
+**Example prompt:**
+
+```
+我想将这张图片中的"带图标的技能进度条"加入到我的 personal portfolio 网站。
+
+【项目背景】
+- 技术栈：Next.js + React + Tailwind CSS
+- 我想把这个元素添加到 StatsSection 下方
+- 当前相关代码在 app/(marketing)/HomePageContent.tsx
+
+【我想要的效果】
+- 每个进度条有一个技能名称和一个图标
+- 进度条是渐变色的，从蓝色到紫色
+- 鼠标悬浮时进度条会轻微发光
+
+【我的要求】
+请使用对于新手最容易懂、代码量尽量少的方式实现。
+完成基础的设计功能即可，不需要过于复杂。
+请详细解释：
+1. 改了哪些代码
+2. 每段代码的作用是什么
+3. 为什么这样写能实现这个效果
+```
+
+> **Key insight:** 描述越具体，AI 给的代码越准确。如果结果不满意，补充更多 context 再问一次。
+
+---
+
+### Exercise 4: 应用代码并理解
+
+**Goal:** 把 AI 给的代码加入项目，并理解它是如何工作的。
+
+**What to do:**
+
+1. **仔细阅读 AI 的解释**，不要急着复制代码
+
+2. **确认修改位置**：AI 应该告诉你要修改哪个文件的哪个位置
+
+3. **应用代码**：
+   - 打开对应的文件
+   - 按照 AI 的指示添加或修改代码
+   - 保存文件
+
+4. **查看效果**：刷新浏览器 http://localhost:3000
+
+5. **理解代码**：如果有任何不理解的地方，问 AI：
+
+```
+你给的代码中，这一行是什么意思？
+[粘贴那一行代码]
+```
+
+6. **使用 Git 查看改动**：
+   ```bash
+   git diff
+   ```
+
+   这会显示你修改了哪些文件、哪些行。
+
+**What you'll notice:**
+
+- 大多数 UI 效果只需要修改几十行代码
+- Tailwind CSS 的 class 名通常很直观
+- 组件的结构是嵌套的，大组件包含小组件
+
+> **Key insight:** "先做再理解"比"完全理解再做"更有效。看到效果后再去理解代码，印象更深刻。
+
+---
+
+### Exercise 5: 微调和迭代
+
+**Goal:** 学会根据效果微调代码。
+
+**What to do:**
+
+1. 看着浏览器中的效果，思考：
+   - 颜色满意吗？
+   - 大小合适吗？
+   - 间距好看吗？
+   - 交互效果自然吗？
+
+2. 如果想调整，问 AI：
+
+```
+效果基本是我想要的，但我想做一些调整：
+- [具体调整，比如"按钮颜色从蓝色改成绿色"]
+- [具体调整，比如"悬浮时的放大效果减小一点"]
+
+请告诉我需要修改代码的哪个部分。
+```
+
+3. 应用 AI 的建议，再次查看效果
+
+4. 重复这个过程，直到满意为止
+
+**Iteration tips:**
+
+- 每次只改一件事，这样容易定位问题
+- 保存每次满意的状态（可以用 Git commit）
+- 不用追求完美，"差不多了"就行
+
+> **Key insight:** 编程是一个迭代过程。没有人能一次写出完美的代码。调试和微调是正常的工作流程。
+
+---
+
+## Key Concepts（详细版）
+
+> 现在你已经动手做了，回过头来理解这些概念会更有感觉。
+
+### Context Engineering: AI 时代最重要的技能
+
+**Context**（上下文）是什么？
+
+想象你请朋友帮你做一件事。你不会只说"帮我做这个"，而是会告诉他：
+- 背景是什么？
+- 为什么要做？
+- 现在有什么资源？
+- 之前试过什么方法？
+
+这些信息就是 context。人类天生会收集和理解 context，但 AI 需要你**明确地提供**。
+
+**为什么 Context Engineering 这么重要？**
+
+同样一个需求，不同的描述方式会得到完全不同的结果：
+
+**糟糕的描述：**
+```
+帮我把卡片改成蓝色
+```
+
+AI 不知道：你在说哪个卡片？项目结构是什么？用的什么技术栈？
+
+**好的描述：**
+```
+我在做 personal portfolio 网站，使用 React + Tailwind CSS。
+卡片组件在 app/(marketing)/_components/StatsSection.tsx。
+现在卡片背景是深色的，我想把它改成浅蓝色。
+请告诉我应该修改哪里，改成什么代码。
+```
+
+看到区别了吗？好的描述包含：
+- **项目背景**（我在做什么）
+- **技术栈**（用什么工具）
+- **具体位置**（代码在哪）
+- **当前状态**（现在是什么样）
+- **目标需求**（我想要什么）
+
+这个技能不仅用于 AI 编程，也适用于你未来的工作沟通、团队协作、甚至日常生活中的问题解决。
+
+### React 组件：可复用的 UI 模块
+
+**什么是组件？用乐高来类比**
+
+想象你在搭乐高。每个乐高积木都是一个独立的单元——你可以把它用在城堡上，也可以用在汽车上。
+
+React 组件就是代码世界的乐高积木：
+
+```tsx
+// 这是一个"卡片"积木
+function Card({ title, description }) {
+  return (
+    <div className="border rounded-lg p-4">
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
+  )
+}
+```
+
+写一次，到处复用：
+
+```tsx
+<Card title="项目A" description="这是项目A的描述" />
+<Card title="项目B" description="这是项目B的描述" />
+<Card title="项目C" description="这是项目C的描述" />
+```
+
+**如何识别 React 组件？**
+
+- 它是一个函数（function）
+- 函数名是大写开头（如 `Card`、`Button`、`Hero`）
+- 函数返回 JSX（看起来像 HTML 的东西）
+
+**框架化思考：学习任何新组件的三个步骤**
+
+1. **分类体系** — 先知道有哪些类型的组件（按钮、卡片、表单、布局...）
+2. **建立概念** — 去组件库网站看看实际效果，点击、悬停、感受交互
+3. **动手实践** — 先模仿（从 1 到 10），再创造（从 0 到 1）
+
+**去哪里看组件效果？**
+
+问 AI："有哪些优秀的 React 组件库网站？我想看看常见组件的效果。"
+
+AI 会推荐一些网站，你可以去浏览 5-10 分钟，感受一下"组件"是什么样的。
+
+> **注意：** 组件库这个话题可以讲一个月。这里你只需要理解**组件是什么**、**设计理念是什么**就够了。具体的组件 API、属性配置，需要时再查文档或问 AI。
+
+### Tailwind CSS：用 class 直接写样式
+
+传统 CSS 需要在单独的文件里写样式：
+
+```css
+/* styles.css */
+.my-button {
+  background-color: blue;
+  padding: 10px;
+  border-radius: 5px;
+}
+```
+
+Tailwind CSS 让你直接在 HTML 里用 class 组合样式：
+
+```tsx
+<button className="bg-blue-500 p-2 rounded">
+  点击我
+</button>
+```
+
+每个 class 做一件事：
+- `bg-blue-500` — 蓝色背景（50-900 共 9 个色阶）
+- `text-white` — 白色文字
+- `p-2` — 内边距
+- `px-4` — 水平内边距
+- `py-2` — 垂直内边距
+- `m-4` — 外边距
+- `rounded` — 圆角
+- `shadow` — 阴影
+- `hover:bg-blue-600` — 鼠标悬停时的效果
+- `transition` — 过渡动画
+
+**为什么用 Tailwind？**
+
+1. **快** — 不用在文件之间跳转
+2. **直观** — 看 class 名就知道效果
+3. **一致性** — 提供统一的设计系统（颜色、间距、字号）
+4. **响应式** — 轻松适配不同屏幕（`md:text-lg` 表示中等屏幕时用大字）
+
+**常用的 Tailwind 类速查：**
+
+布局：`flex`、`grid`、`justify-center`、`items-center`
+间距：`p-4`、`m-4`、`space-x-4`、`gap-4`
+尺寸：`w-full`、`h-screen`、`max-w-4xl`
+颜色：`bg-blue-500`、`text-gray-700`、`border-gray-300`
+文字：`text-xl`、`font-bold`、`text-center`
+效果：`shadow`、`rounded`、`hover:scale-105`、`transition`
+
+> **注意：** Tailwind CSS 也可以讲一个月。这里你只需要理解**它是什么**、**设计理念是什么**就够了。具体的 class 名，需要时查文档（https://tailwindcss.com/docs）或问 AI。
 
 ---
 
 ## Reflection: What Did We Learn?
 
-完成这个教程后，你学会了：
+完成这些练习后，你学会了：
 
-**Vercel 的核心工作流程：**
-- GitHub repo → Vercel import → 自动 build → 网站上线
-- 每次 push 代码 → 自动触发新的 deployment
-- main branch → Production，其他 branch → Preview
+**AI 辅助编程的完整流程：**
+1. 找到设计灵感（具体化你想要什么）
+2. 向 AI 描述需求（提供充足的 context）
+3. 应用代码并理解（先做再学）
+4. 迭代微调（小步快跑）
 
-**关键操作：**
-- 如何在 Vercel 上创建新项目
-- 如何授权 Vercel 访问你的 GitHub
-- 如何查看 deployment 状态和 build log
-- 如何访问部署好的网站
-- 如何手动设置 Framework Preset
+**Context Engineering 的核心要素：**
+- 说明项目背景和技术栈
+- 指出具体的文件位置
+- 描述当前状态和目标状态
+- 明确你的约束和要求
 
-**Debug 思路：**
-- 部署失败时，首先看 build log
-- 检查 Framework Preset 是否正确
-- 可以把错误信息截图或复制给 AI 帮你分析
+**React 和 Tailwind 的基本概念：**
+- 组件是可复用的 UI 模块
+- Tailwind 用 class 组合样式
+- 大页面由小组件拼装而成
+
+**最重要的是：**
+- 你不需要记住所有代码——需要时问 AI
+- 你需要能清晰描述你想要什么
+- 你需要能理解 AI 给你的代码
+- 这个技能适用于任何编程任务
 
 ---
 
 ## Mentor's Note
 
-**Why this exercise matters:**
+**为什么这个练习如此重要：**
 
-部署是把想法变成现实的最后一步。很多优秀的项目因为没有部署而永远只存在于开发者的电脑上。
+我见过太多人这样学编程：看视频、记语法、背 API、做习题。学了很久，还是不会做东西。
 
-我见过太多学生花了几周甚至几个月写代码，但从来没有让任何人真正用过。代码只有跑起来、被人使用，才有价值。部署就是连接"写代码"和"产生价值"的桥梁。
+真正的编程能力不是记忆，是**创造**——把脑子里的想法变成能运行的代码。
 
-Vercel 这类平台把部署简化到了极致。以前需要运维工程师花几天配置的事情，现在几分钟就能搞定。这意味着作为开发者，你可以把更多时间放在写代码和创造价值上，而不是折腾服务器。
+AI 改变了这个游戏。以前，从"想法"到"代码"需要几年的学习。现在，AI 帮你跨越了这道鸿沟。但 AI 不能替你做的是：
+
+1. **知道自己想要什么** — 这需要你去看、去想、去选择
+2. **清晰地表达需求** — 这需要你练习 context engineering
+3. **理解代码为什么工作** — 这需要你追问、思考、验证
+
+这三件事，才是 AI 时代的核心编程技能。
 
 **Key insights:**
 
-- **部署不是终点，是起点** - 部署上线只是开始。用户反馈、bug 修复、新功能迭代，这些才是真正的工作
-- **Preview deployments 是神器** - 每个 branch 都有自己的 preview URL，这让你可以在 merge 之前先让别人看看效果
-- **自动化是生产力倍增器** - CI/CD 看起来是"自动部署"，实际上它解放了你的精力，让你专注于创造
+- **从模仿开始，不丢人。** 所有大师都是从模仿开始的。看到好的设计，想办法复现它，这是最好的学习方式。
+
+- **完成比完美重要。** 一个"能用"的功能，比一个"完美但没做完"的功能有价值一万倍。先做出来，再慢慢改。
+
+- **理解是渐进的。** 今天你可能只理解 50%，没关系。明天做另一个功能时，你会理解 60%。编程能力是这样一点点积累的。
+
+- **深入学习可以持续很久。** 组件库、Tailwind CSS 这些话题，每个都可以学一个月。但现在，你只需要理解它们是什么、设计理念是什么。具体细节，在你需要的时候再深入。
 
 **Next steps:**
 
-1. 尝试修改一些页面内容，push 上去，看看 Vercel 是否正确更新
-2. 学习如何添加 Environment Variables（环境变量），这是部署真实应用必须的
-3. 探索 Vercel 的 Analytics 和 Logs 功能，了解你的网站的访问情况
-4. 考虑绑定自己的域名（Custom Domain）
+1. 继续给你的 portfolio 添加新元素——每做一个，你的技能就提升一点
+2. 尝试修改颜色、大小、间距——感受 Tailwind 的工作方式
+3. 当你做了 3-5 个小功能后，回头看第一个，你会发现自己进步了多少
 
 ---
 
 ## Quick Reference
 
-**Vercel Dashboard URL:**
-```
-https://vercel.com/dashboard
-```
-
-**触发新部署（不改代码）：**
+**启动开发服务器：**
 ```bash
-echo "$(date)" >> chore.txt
-git add chore.txt && git commit -m "Trigger deployment" && git push
+mise run dev
 ```
 
-**查看当前 branch：**
+**查看代码改动：**
 ```bash
-git branch --show-current
+git diff
 ```
 
-**Key files:**
-- `chore.txt` - 用于触发部署的占位文件，内容不重要
+**AI Prompt 模板：**
+```
+我想将这张图片中的 [元素描述] 加入到我的 personal portfolio 网站。
 
----
+【项目背景】
+- 技术栈：Next.js + React + Tailwind CSS
+- 位置：[目标位置]
+- 相关文件：[文件路径]
 
-## Troubleshooting
+【效果描述】
+- 形状：[...]
+- 颜色：[...]
+- 交互：[...]
 
-**问题：授权完成后看不到 repo**
-- 刷新 Vercel 页面
-- 检查是否授权给了正确的 GitHub 账号/Organization
-- 如果是 Organization，检查管理员是否已经审批
+【要求】
+请用最简单的方式实现，并详细解释代码的作用。
+```
 
-**问题：Build 失败**
-- 点击失败的 deployment，查看 Build Log
-- 检查 Settings > Build and Deployment > Framework Preset 是否设置为 Next.js
-- 把 error log 截图或复制，让 AI 帮你分析
+**项目关键文件：**
+- `app/(marketing)/HomePageContent.tsx` — 主页内容组装
+- `app/(marketing)/_components/Hero.tsx` — 头像、名字、简介
+- `app/(marketing)/_components/StatsSection.tsx` — 成就卡片
+- `app/(marketing)/_components/ContactSection.tsx` — 联系区域
+- `data/achievement-stats.ts` — 成就卡片数据
 
-**问题：部署成功但页面显示不对**
-- 确认你 push 的是正确的 branch
-- 检查 preview URL 是否对应正确的 deployment
-- 查看 Browser Console（F12）是否有错误
+**设计灵感来源：**
+- https://www.pinterest.com/ — 搜索 "personal portfolio website"
+- https://dribbble.com/ — 高质量设计作品
+- https://awwwards.com/ — 获奖网站设计
 
-**问题：不知道怎么回到 Vercel 页面**
-- 直接访问 https://vercel.com/dashboard
-- 你的所有项目都在这里
+**Tailwind CSS 文档：**
+- https://tailwindcss.com/docs — 官方文档，需要什么 class 就去查
 
 ---
 
 ## Reference Implementation
 
-这个教程对应的完整代码在 `05-Deploy-Hello-World-NextJs-App-to-Vercel` branch。
+本教程对应 `07-Add-Card-Components-And-Profile-Display` branch。
 
-要在本地测试：
+确认环境正常：
 
 ```bash
-git checkout 05-Deploy-Hello-World-NextJs-App-to-Vercel
+git checkout 07-Add-Card-Components-And-Profile-Display
 mise run inst
 mise run dev
 ```
 
-然后打开 http://localhost:3000 确认本地能正常运行，再按照本教程部署到 Vercel。
+然后打开 http://localhost:3000 查看效果。

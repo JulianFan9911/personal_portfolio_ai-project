@@ -37,3 +37,15 @@
 代码在本地跑通只是半成品。点下 Deploy，三分钟后拿到一个全球可访问的 URL——这才叫 Deliver Results。
 
 📄 [05-From-Localhost-to-the-World-CN.md](05-From-Localhost-to-the-World-CN.md)
+
+## 06 - Learn From The Giants
+
+GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起。Top-Down + AI，终于让"从牛人那里偷师"变得可行。
+
+📄 [06-Learn-From-The-Giants-CN.md](06-Learn-From-The-Giants-CN.md)
+
+## 07 - Steal Like an Artist
+
+不会设计？没关系。去 Pinterest 偷一个，让 AI 帮你实现。模仿不是终点，是起点。
+
+📄 [07-Steal-Like-An-Artist-CN.md](07-Steal-Like-An-Artist-CN.md)

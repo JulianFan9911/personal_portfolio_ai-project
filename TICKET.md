@@ -1,46 +1,50 @@
-# Task Card: Deploy Your Next.js App to Vercel
+# Task Card: AI-Assisted Programming - Add Your Own UI Element
 
 ## Objective
 
-Set up Vercel deployment for your Next.js application so you can instantly verify if your code changes deploy successfully—a key part of your development workflow.
+Learn to collaborate with AI to add custom UI elements to your personal portfolio website.
 
-This is a **preview deployment** (not production). The goal is to establish the deployment pipeline so that every time you push code, you can immediately see if it builds and deploys correctly. Think of it as TDD for deployment: push → see result → fix if needed → repeat.
+This exercise teaches **AI-assisted programming skills**. You will find a design you like, describe it to AI, implement it in your codebase, and understand how it works. This is the core workflow of modern AI-assisted development.
 
-Read the tutorial: [Deploying Next.js App to Vercel](https://github.com/sanhehu/learn_personal_portfolio_ai-project/tree/05-Deploy-Hello-World-NextJs-App-to-Vercel)
+Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/07-Add-Card-Components-And-Hero-Section/)
 
 ## Actionable Items
 
-1. **Create a Vercel account** (if you don't have one) at [vercel.com](https://vercel.com)
+1. **Run the application and observe existing components**
+   - Execute `mise run dev`
+   - Open http://localhost:3000
+   - Identify the existing components: Hero, StatsSection, ContactSection
 
-2. **Authorize Vercel to access your GitHub**
-   - Add your GitHub account in Vercel
-   - Grant access to the repository you want to deploy
-   - Use "Only select repositories" for security best practice
+2. **Find design inspiration on Pinterest**
+   - Go to https://www.pinterest.com/
+   - Search "personal portfolio website"
+   - Find ONE small UI element you like (button, card, icon, progress bar, etc.)
+   - Screenshot and circle the specific element
 
-3. **Import and deploy your project**
-   - Click "Import" on your repository
-   - Configure project settings (most defaults are fine)
-   - Click "Deploy" and wait for build to complete
+3. **Describe your desired element to AI**
+   - Use the prompt template from the tutorial
+   - Include: project background, tech stack, target location, desired effect
+   - Ask AI to explain the code in detail
 
-4. **Verify deployment success**
-   - Check that deployment status shows green "Ready"
-   - Click "Visit" to open your deployed website
-   - Confirm your application loads correctly
+4. **Apply the code and verify**
+   - Follow AI's instructions to modify the code
+   - Check the result in browser
+   - Use `git diff` to see what changed
 
-5. **Trigger a new deployment** (to verify CI/CD works)
-   - Modify `chore.txt` file
-   - Push to GitHub
-   - Watch Vercel automatically deploy
+5. **Iterate and refine**
+   - If needed, ask AI for adjustments
+   - Repeat until satisfied with the result
 
-**Estimated time:** 30-40 minutes
+**Estimated time:** 50-60 minutes
 
 ## Checklist
 
-- [ ] **Vercel account created** - You have a Vercel account and can log in
-- [ ] **GitHub authorized** - Vercel can access your repository
-- [ ] **First deployment successful** - Status shows "Ready" (green)
-- [ ] **Preview accessible** - You can click "Visit" and see your app in the preview deployment
-- [ ] **Auto-deploy verified** - Pushing code triggers automatic deployment
+- [ ] **App running** - Can access http://localhost:3000 and see the portfolio page
+- [ ] **Design found** - Have a screenshot of a small UI element you want to add
+- [ ] **AI prompted** - Successfully used the prompt template to describe your needs to AI
+- [ ] **Code applied** - Made changes to at least one file in the codebase
+- [ ] **UI visible** - Your new element appears on the page
+- [ ] **Can explain** - Can point to the code that creates your new element and explain roughly what it does
 
 ---
 
@@ -50,14 +54,11 @@ When you're done:
 
 1. Run `/teach-check` to verify your work against the checklist
 
-2. **Take a screenshot of your deployed website:**
-   - Open your deployed site by clicking "Visit" in Vercel
-   - The screenshot MUST show the browser's URL bar with your Vercel URL (e.g., `https://your-project-abc123-username.vercel.app`)
-   - The screenshot MUST show your application running in the browser
+2. Be ready to answer: "What did you add? Which files did you change?"
 
 3. Say "ship it" when complete to generate RESULT.md
 
-4. Share the RESULT.md file GitHub link AND your deployment screenshot with your instructor
+4. Share the RESULT.md file GitHub link with your instructor
 
 ---
 
@@ -65,13 +66,42 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-- **Vercel account setup:** Student can log into Vercel dashboard (Just ask student)
-- **GitHub authorization:** Repository appears in Vercel's import list (Just ask student)
-- **Successful deployment:** At least one deployment shows "Ready" status (Just ask student)
-- **Preview accessibility:** The preview deployment URL loads without errors (Just ask student)
-- **Screenshot requirements:**
-  - Browser URL bar is visible showing `.vercel.app` domain
-  - The deployed application is visible and functional
-  - URL format should match: `https://[project]-[hash]-[username].vercel.app` or similar Vercel URL pattern
-- **CI/CD understanding:** Student can explain what happens when they push code (auto-deploy)
-- **Troubleshooting ability:** If deployment failed, student knows to check build logs and Framework Preset settings
+**Assessment method:** This is a creative exercise. Verification is simple and flexible.
+
+**Core verification (required):**
+
+1. **Ask:** "What UI element did you add?"
+   - Student should describe what they added (button, card, icon, etc.)
+   - No wrong answers - any new element is acceptable
+
+2. **Ask:** "Which file(s) did you modify?"
+   - Student should name at least one file (likely in `app/(marketing)/_components/`)
+   - AI can quickly check `git diff` to verify
+
+3. **Ask:** "Show me the code that creates this element."
+   - Student should be able to point to the relevant code
+   - They don't need to explain every line, just the general structure
+
+**Process verification (optional):**
+
+4. **Ask:** "What was in your prompt to AI?"
+   - Good answer mentions: project context, file location, desired effect
+   - This checks if they learned Context Engineering
+
+5. **Ask:** "If you wanted to change the color, what would you do?"
+   - Good answer: "Ask AI" or "Find the Tailwind class and change it"
+   - This checks if they understand the iteration process
+
+**What counts as "pass":**
+
+- Student added ANY visible UI element to the page
+- Student can identify which file contains the code
+- Student attempted to use the prompt template (even if imperfectly)
+
+**What does NOT matter:**
+
+- Whether the element looks "good" or "professional"
+- Whether the student understands every line of code
+- Whether there are any bugs or styling issues
+
+**Key principle:** This exercise is about the PROCESS (find → describe → implement → iterate), not the RESULT. Any completed attempt demonstrates learning.

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
+import { BookOpen } from "lucide-react"
+import { FaGithub, FaLinkedin } from "react-icons/fa"
 
 export default function Hero() {
   const [isVisible, setIsVisible] = useState(false)
@@ -50,9 +52,34 @@ export default function Hero() {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-text-primary via-primary to-highlight bg-clip-text text-transparent drop-shadow-2xl text-center">
               John Doe
             </h1>
-            <p className="text-lg sm:text-xl text-text-secondary mb-8 font-medium text-center">
+            <p className="text-lg sm:text-xl text-text-secondary mb-6 font-medium text-center">
               <span className="text-highlight">AI Engineer</span>
             </p>
+
+            {/* Social Icons */}
+            <div className="flex justify-center space-x-6 mb-8">
+              <a
+                href="https://example.com"
+                className="w-8 h-8 text-text-secondary hover:text-primary transition-all duration-300 hover:scale-110 hover:drop-shadow-lg hover:shadow-primary/50"
+                aria-label="GitHub"
+              >
+                <FaGithub size={32} className="hover:fill-current filter hover:drop-shadow-lg" />
+              </a>
+              <a
+                href="https://example.com"
+                className="w-8 h-8 text-text-secondary hover:text-primary transition-all duration-300 hover:scale-110 hover:drop-shadow-lg hover:shadow-primary/50"
+                aria-label="LinkedIn"
+              >
+                <FaLinkedin size={32} className="hover:fill-current filter hover:drop-shadow-lg" />
+              </a>
+              <a
+                href="https://example.com"
+                className="w-8 h-8 text-text-secondary hover:text-primary transition-all duration-300 hover:scale-110 hover:drop-shadow-lg hover:shadow-primary/50"
+                aria-label="Blog"
+              >
+                <BookOpen size={32} className="hover:fill-current filter hover:drop-shadow-lg" />
+              </a>
+            </div>
           </div>
 
           {/* Right Column - About Me */}

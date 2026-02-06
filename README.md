@@ -1,437 +1,456 @@
-# Deploying Your Next.js + FastAPI App to Vercel
+# Exploring a Codebase: Top-Down Learning Method
 
-> Set up a deployment pipeline so you can instantly verify if your code changes build and deploy successfully.
+> Learn how to navigate unfamiliar code by starting from what you can see (UI) and tracing back to the source.
+
+![Screenshot](./img/04-Setup-NextJs-FastAPI-Local-Dev-Env/01-example-hello-world-web-app.png)
 
 ## Overview
 
-You've successfully run your Next.js + FastAPI full-stack application locally. Now it's time to deploy it to the cloud.
+You've got the app running locally. Now what?
 
-**Vercel** is a cloud platform optimized specifically for Next.js. Its key features:
-- Extremely simple deployment (connect GitHub, auto-deploy)
-- Free tier sufficient for personal projects
-- Automatic redeployment on every code push
+Most tutorials stop here. They show you how to run the code, maybe explain what each file does, and move on. But that's like giving you a map without teaching you how to read it.
 
-This tutorial will walk you through the entire deployment process. You don't need to change any code—just click through the Vercel interface.
-
----
+This tutorial is different. Instead of telling you where things are, we'll teach you **how to find them yourself**. This is a skill that transfers to any codebase, any framework, any language.
 
 ## Learning Objectives
 
-Deployment is a critical step in software development. Writing code is just the beginning—**enabling users to access your application** is where real value lies.
+When you join a new team or start working on an unfamiliar project, you'll face codebases with hundreds or thousands of files. Nobody will hand you a map. You need to be able to explore on your own.
 
-Many beginners imagine "deployment" as complex: buying servers, configuring domains, setting up SSL certificates, managing databases... But modern SaaS platforms (like Vercel) automate all of this. You just connect your GitHub repo, and they handle the rest.
-
-Learning to use such platforms means you can quickly turn ideas into reality—finish your code, and minutes later the whole world can access it.
+The developers who advance fastest aren't the ones who memorize file locations—they're the ones who can efficiently navigate any codebase they encounter. This exploration skill is what separates junior developers who always need guidance from senior developers who can onboard themselves.
 
 By the end of this exercise, you will:
 
-1. Understand how Vercel integrates with GitHub
-2. Complete the authorization binding between Vercel and GitHub accounts
-3. Successfully deploy a Next.js application to the cloud
-4. Learn to check deployment status and access deployed websites
-5. Know how to debug when deployment fails
+1. Understand the Top-Down learning approach and why it's effective
+2. Learn three practical techniques for finding code from UI elements
+3. Practice tracing UI elements back to their source code
+4. Build the mental muscle for self-directed codebase exploration
 
 ## Prerequisites
 
-- You have a GitHub repository containing Next.js code
-- You have registered a Vercel account (if not, go to [vercel.com](https://vercel.com) to sign up)
-- Your code runs normally locally (`mise run dev` works)
+- You have completed the previous tutorial and can run `mise run dev` successfully
+- You have a browser and can access http://localhost:3000
+- You have an AI assistant available (Claude, ChatGPT, etc.)
 
 ## What You'll Build
 
-After completing this tutorial, you'll have a working deployment pipeline:
-- Every time you push code to your branch, Vercel automatically builds and deploys
-- You can click "Visit" to see your preview deployment and verify it works
-- This is **not** production (we're not promoting to main)—it's your personal verification that the code deploys correctly
+Nothing. You won't write any code in this tutorial.
 
-Think of it as **TDD for deployment**: push → see if it builds → fix if needed → repeat. This rapid feedback loop is essential for modern development.
+Instead, you'll build something more valuable: **the ability to explore any codebase confidently**. By the end, you'll know exactly which file creates each element on the screen, and more importantly, you'll know how to find this information yourself in any project.
 
 ---
 
 ## Key Concepts
 
-### What is Vercel?
+### What is Top-Down Learning?
 
-Vercel is a **cloud platform** specifically for deploying web applications. Its founder is also the creator of Next.js, so Vercel has excellent Next.js support.
+**Top-Down learning** means starting from what you can see and working backwards to understand how it's built.
 
-**How it works:**
-1. You push code to GitHub
-2. Vercel detects the code update
-3. Vercel automatically builds your project
-4. After successful build, automatically deploys to its servers
-5. Your website is live
+Instead of:
+- Reading all the files from top to bottom
+- Memorizing the project structure
+- Following a linear tutorial
 
-This process is called **CI/CD (Continuous Integration / Continuous Deployment)**—code commits trigger automatic build and deployment.
+You do:
+- See something on screen → ask "where does this come from?"
+- Find the answer → ask "how does this get loaded?"
+- Keep tracing → until you reach the entry point
 
-### GitHub App Authorization
+This approach is effective because:
+- You learn with immediate context (you can see what you're studying)
+- You only learn what's relevant (no wasted time on unused code)
+- You build a mental map naturally (connections, not isolated facts)
 
-For Vercel to read your GitHub repo, you need to authorize it. This is done by installing a **GitHub App**.
+### The Alternative: Bottom-Up Learning
 
-The authorization process lets you choose:
-- **All repositories** - Vercel can access all repos under your account
-- **Only select repositories** - Only allow access to specific repos you choose
+**Bottom-Up learning** means starting from the foundation and building up understanding layer by layer.
 
-For security reasons, we recommend selecting **Only select repositories**, authorizing only the projects you need to deploy.
+For example:
+- Read the project structure documentation
+- Study the configuration files
+- Understand the build process
+- Then look at the components
 
-### Branches and Deployments
+Both approaches have their place. Top-Down is great for quick exploration and understanding "what does this thing do?" Bottom-Up is better when you need deep understanding of a system's architecture.
 
-Vercel monitors all branches of your GitHub repo:
-- **main branch** - Usually serves as the Production environment
-- **other branches** - Serve as Preview environments
+**In this tutorial, we focus on Top-Down** because it's the skill most beginners lack, and it's the fastest way to become productive in a new codebase.
 
-Every time you push code to any branch, Vercel automatically creates a new deployment. This means you can test in Preview environments before merging to main.
+### Three Techniques for Finding Code
 
-### Framework Detection
+When you see something on screen and want to find its source code, you have three main approaches:
 
-When first importing a project, Vercel tries to automatically detect your framework (Next.js, React, Vue, etc.). If successful, it automatically configures the correct build commands and output directory.
+**Technique 1: Text Search**
 
-If detection fails (e.g., your main branch code is incomplete), you need to manually set the Framework Preset in Settings.
+If the UI element contains visible text, search for that exact text in the codebase.
+
+Example: You see "About Me" on screen → search for `"About Me"` in the code
+
+This is the simplest and most reliable method when text is available.
+
+**Technique 2: Browser DevTools**
+
+If there's no searchable text (like an image or icon), use Chrome DevTools to inspect the element and find identifying information.
+
+Example: You see a profile image → right-click, Inspect → find class names, IDs, or src attributes → search for those
+
+**Technique 3: Screenshot to AI**
+
+When other methods fail, take a screenshot, highlight the element you're curious about, and ask an AI assistant.
+
+Example: "I see this button (circled in red). What file in my codebase creates this?"
+
+This is especially useful when you're not sure what to search for.
 
 ---
 
 ## Exercises
 
-### Exercise 1: Create New Project and Import Repository
+### Exercise 1: Start the Application
 
-**Goal:** Create a new project on Vercel and connect it to your GitHub repo.
-
-**What to do:**
-
-1. Log in to your Vercel Dashboard ([vercel.com/dashboard](https://vercel.com/dashboard))
-
-2. In the top right corner, find the **"Add New..."** button, click it, then select **"Project"**
-
-   ![Step 1: Add New Project](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/01-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   As shown, click the "Add New..." dropdown menu, then select "Project".
-
-3. You'll see the **"Let's build something new"** page. There are two ways to import a repo:
-
-   ![Step 2: Import Git Repository](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/02-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   **Option 1: Import from linked GitHub account**
-
-   If you've previously linked a GitHub account, you'll see a dropdown menu in the "Import Git Repository" area listing your GitHub accounts. Expand the dropdown, find the repo you want to deploy, and click the **"Import"** button next to it.
-
-   **Option 2: If you don't see your account**
-
-   Click **"+ Add GitHub Account"** in the dropdown menu to add your GitHub account.
-
-   **Option 3: Enter URL directly**
-
-   If your repo is public, you can paste your GitHub repo URL in the input box "Enter a Git repository URL to deploy..." and click "Continue".
-
-**What you'll notice:**
-
-- Vercel's interface is clean and simple, core operations are obvious
-- The "Clone Template" area on the right is for those who want to start quickly with a template—we don't need it
-
-> **Key insight:** Vercel's design philosophy is "turn a GitHub repo into a living website". You put code on GitHub, Vercel turns it into an accessible service.
-
----
-
-### Exercise 2: Authorize Vercel to Access Your GitHub (First-time Setup)
-
-**Goal:** If this is your first time, authorize Vercel to access your GitHub account.
+**Goal:** Get the app running and identify all the UI elements we'll trace.
 
 **What to do:**
 
-1. After clicking "Add GitHub Account", you'll be redirected to GitHub's authorization page. The page title is **"Install Vercel"**.
-
-   ![Step 3: Install Vercel on GitHub](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/03-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   This page asks: **"Where do you want to install Vercel?"**
-
-   As shown, you may see multiple options—your personal account and GitHub Organizations you've joined.
-
-   **Important: Pick the right account!** If the repo you want to deploy is under your personal account, select your personal account. If it's under an Organization, select that Organization. The red annotation in the image reminds you to "pick the right github account".
-
-2. Click the **"Configure >"** button next to the account you want to authorize.
-
-3. Next, GitHub will ask which repositories you want to authorize:
-
-   ![Step 4: Select Repositories](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/04-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   You'll see two options:
-   - **All repositories** - Authorize all repos (convenient but less secure)
-   - **Only select repositories** - Authorize only specific repos (recommended)
-
-   As shown, we recommend selecting **"Only select repositories"**, then click the "Select repositories" dropdown, find your repo, and select it.
-
-   **Why choose "Only select repositories"?**
-
-   For security reasons—principle of least privilege. Enterprise projects typically don't authorize third-party services to access all code. While selecting "All repositories" is fine for personal projects, it's good to build secure habits.
-
-4. After selecting the repo, scroll down to see Vercel's permission request:
-
-   ![Step 5: Review Permissions and Request](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/05-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   Permissions include:
-   - **Read** access to members and metadata
-   - **Read and write** access to administration, checks, code, commit statuses, deployments, issues, pull requests, and repository hooks
-
-   These permissions allow Vercel to:
-   - Read your code for building
-   - Report deployment status on your repo
-   - Automatically add preview links on PRs
-
-   After confirming, click the green **"Request"** button.
-
-5. **Wait for approval (if Organization)**
-
-   If you authorized a personal account, authorization takes effect immediately.
-
-   But if you authorized an Organization (like a company or school account), the Organization admin may need to approve. In this case:
-   - You'll receive an email notification
-   - The admin will receive an approval request
-   - Authorization takes effect after admin approval
-
-   If you're the admin yourself, go to your GitHub Settings > Applications > Authorized OAuth Apps or GitHub Apps to approve.
-
-**What you'll notice:**
-
-- GitHub's authorization page explains clearly what each permission is for
-- Authorization can be revoked anytime (in GitHub Settings)
-
-> **Key insight:** This authorization process is actually installing a "GitHub App". Vercel uses this App to monitor your code changes and trigger automatic deployments.
-
----
-
-### Exercise 3: Return to Vercel to Complete Import
-
-**Goal:** After authorization, return to Vercel to officially import your repo.
-
-**What to do:**
-
-1. After authorization, return to Vercel's "Let's build something new" page.
-
-   ![Step 6: Import the Repository](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/06-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   You should now see your authorized repo in the "Import Git Repository" area.
-
-   **Note:** Authorization just lets Vercel "see" your repo, but hasn't actually imported it. You need to click the **"Import"** button next to the repo to start the import process.
-
-2. Click the **"Import"** button.
-
-**What you'll notice:**
-
-- If you just completed authorization but don't see the repo, refresh the page
-- If still not visible, authorization may not have taken effect yet—wait a moment or check your GitHub email for approval requests
-
-> **Key insight:** "Seeing the repo" and "importing the repo" are two steps. Many people think they're done after authorization, but you still need to come back and click Import.
-
----
-
-### Exercise 4: Configure Project and Deploy
-
-**Goal:** Set project configuration, then trigger your first deployment.
-
-**What to do:**
-
-1. After clicking Import, you'll see the **"New Project"** configuration page:
-
-   ![Step 7: Configure and Deploy](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/07-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   This page lets you configure several key options:
-
-   **Importing from GitHub**
-   - Shows the repo name you're importing
-   - Note the branch shown on the right (e.g., `main`). First import defaults to deploying from main branch.
-
-   **Vercel Team**
-   - Choose which team to deploy the project to. If you only have one personal account, only one option shows. If you've joined multiple teams (personal + company accounts), select the correct one.
-
-   **Project Name**
-   - Your project's name on Vercel. This affects your default URL (`https://[project-name].vercel.app`).
-
-   **Application Preset / Framework Preset**
-   - Vercel tries to auto-detect your framework. If it detects Next.js, this will show "Next.js".
-
-   **Other options** (usually don't need to change)
-   - Root Directory - Default is `./`
-   - Build and Output Settings - Vercel auto-configures based on framework
-   - Environment Variables - Add here if your project needs them
-
-2. After confirming configuration, click the **"Deploy"** button at the bottom.
-
-3. Vercel will start building your project. This usually takes 1-3 minutes. You can see real-time build logs on the page.
-
-**What you'll notice:**
-
-- After clicking Deploy, it changes to "Deploying..."
-- You'll see build progress and logs
-- If everything goes well, you'll see "Congratulations!" and your website URL
-
-> **Key insight:** First deployment starts from the main branch. If your main branch code is incomplete, deployment may fail. Don't worry, we'll handle this situation next.
-
----
-
-### Exercise 5: View Deployment Status and Visit Website
-
-**Goal:** Learn to view the deployment list and how to access deployed websites.
-
-**What to do:**
-
-1. After deployment completes, enter your project Dashboard. Click the **"Deployments"** tab in the top navigation.
-
-   ![Step 8: View Deployments](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/08-Deploy-Hello-World-NextJs-App-to-Vercel.png)
-
-   This lists all deployments. Each row represents one deployment with the following information:
-
-   - **Preview ID** (e.g., "6XqAxLBoQ") - Unique identifier for this deployment
-   - **Status** (e.g., green "Ready") - Deployment status. Green Ready means success, red Error means failure
-   - **Branch name** (e.g., "05-Deploy-Hello-World-NextJs-App-to-Vercel") - Which branch this deployment came from
-   - **Commit message** (e.g., "Update chore.txt") - The commit that triggered this deployment
-
-2. **Visit the deployed website:**
-
-   On the right side of any row, click the **three dots ("...")** button to open a menu. Select **"Visit"** to open your deployed website in a new window.
-
-   You can also click "Copy URL" to copy the link and share with others.
-
-3. **Understanding different branch deployments:**
-
-   Notice the highlighted parts in the image:
-   - branch is `05-Deploy-Hello-World-NextJs-App-to-Vercel`
-   - type is "Preview"
-
-   This means this isn't the main branch (Production), but a preview deployment. Each non-main branch generates its own preview URL.
-
-**What you'll notice:**
-
-- Every time you push code to GitHub, Vercel automatically creates a new deployment
-- Status changes from "Building..." to "Ready" or "Error"
-- A project can have many deployments, all preserved in history
-
-> **Key insight:** Vercel's automatic deployment mechanism enables rapid iteration. Change code → push → wait a few minutes → new version live. This is the rhythm of modern development.
-
----
-
-### Exercise 6: Trigger a New Deployment
-
-**Goal:** Learn how to manually trigger a new deployment.
-
-**What to do:**
-
-We're now going to verify Vercel's automatic deployment mechanism. The method is simple: modify a file, push to GitHub, then see if Vercel auto-deploys.
-
-1. **Make sure you're on the correct branch:**
-
+1. Open your terminal and run:
    ```bash
-   git checkout 05-Deploy-Hello-World-NextJs-App-to-Vercel
+   mise run dev
    ```
 
-   (or whatever branch you're currently developing on)
+2. Open http://localhost:3000 in your browser
 
-2. **Modify the `chore.txt` file:**
-
-   This project has a `chore.txt` file—its content doesn't matter, it's specifically for triggering deployments. Open it, add some content (like a timestamp), then save.
-
-   ```bash
-   echo "Trigger deployment: $(date)" >> chore.txt
-   ```
-
-3. **Commit and push:**
-
-   ```bash
-   git add chore.txt
-   git commit -m "Trigger deployment"
-   git push
-   ```
-
-4. **Return to Vercel Dashboard's Deployments tab,** wait a few seconds, and you'll see a new deployment appear with "Building..." status.
-
-5. **Wait for build to complete:**
-   - If successful, status changes to green "Ready"
-   - If failed, status changes to red "Error"
-
-6. **Once successful, click "Visit" to access your website.**
+3. Look at the screen and identify these elements:
+   - The "Home" link in the navigation bar
+   - The profile picture (avatar)
+   - The name "John Doe" and title "AI Engineer"
+   - The "About Me" heading
+   - The paragraph of Lorem Ipsum text
+   - The "Test API Hello Endpoint" button
+   - The API Response area (appears after clicking the button)
 
 **What you'll notice:**
 
-- From push to deployment completion usually takes about 1 minute
-- No manual operation needed—Vercel automatically detects GitHub changes
-- Each push to any branch triggers an independent deployment
+You're looking at a simple portfolio page. Every single element you see is created by code somewhere in this project. Your mission is to find that code.
 
-> **Key insight:** The purpose of `chore.txt` is: when you just want to test the deployment process without changing real code, you can modify it to trigger deployment. This is a common technique.
+> **Key insight:** Before searching for code, take a moment to really look at what's on screen. What text do you see? What could you search for?
 
 ---
 
-### Concept Deep-Dive: What is CI/CD?
+### Exercise 2: Find the "Home" Navigation Link
 
-What you just experienced—"push code → Vercel auto-deploys"—has a professional term in the industry: **CI/CD**.
-
-- **CI (Continuous Integration)**: Every time you push code, the system automatically runs tests, checks for errors, and attempts to build. Problems are reported immediately, not discovered at deployment time.
-
-- **CD (Continuous Deployment)**: After code passes all checks, it's automatically deployed to servers and the website updates immediately.
-
-Traditional workflows require manual testing, manual building, manual server upload—potentially hours of work with high error rates. With CI/CD, the entire process takes under 2 minutes, fully automated.
-
-**This is why GitHub changes trigger immediate Vercel responses**—it's automatically doing everything that used to be manual.
-
----
-
-### Exercise 7: Handling Framework Detection Failure (Optional)
-
-**Goal:** Learn how to manually configure when Vercel doesn't auto-detect the framework.
-
-**Background:**
-
-When first importing a project, Vercel reads code from the main branch to detect the framework. But if your main branch:
-- Has incomplete code
-- Doesn't have standard Next.js structure
-- Is completely empty
-
-Vercel may not detect it as a Next.js project. The build will fail.
+**Goal:** Practice Technique 1 (Text Search) to find where the "Home" link is defined.
 
 **What to do:**
 
-1. Enter your project Dashboard, click the **"Settings"** tab in the top navigation.
+1. Look at the navigation bar. You see the word "Home".
 
-   ![Step 9: Framework Settings](./img/05-Deploy-Hello-World-NextJs-App-to-Vercel/09-Deploy-Hello-World-NextJs-App-to-Vercel.png)
+2. **Try it yourself first:** Before reading further, try to find where this "Home" text is defined in the codebase. Use your editor's search function or `grep`.
 
-2. In the left menu, find and click **"Build and Deployment"**.
+3. **Stuck?** Here's how to do it: Search for the exact string `"Home"` in the project. You're looking for where this label is defined, not where it's rendered.
 
-3. Find the **"Framework Settings"** area on the right.
+4. Once you find the file, read the surrounding code. Try to understand:
+   - How is the navigation structure defined?
+   - How does this become a clickable link?
+   - How does this component get loaded into the page?
 
-4. Click the **"Framework Preset"** dropdown, select **"Next.js"** from the list.
+**The answer (only read after trying yourself):**
 
-5. Click the **"Save"** button at the bottom to save configuration.
+The "Home" link is defined in `app/_components/layouts/Navigation.tsx`:
 
-6. Return to Deployments tab, find the previously failed deployment, click the three-dot menu, select **"Redeploy"**. Or use Exercise 6's method—modify `chore.txt` and push to trigger a new deployment.
+```typescript
+const DEFAULT_NAV_ITEMS: NavItem[] = [
+  { label: "Home", href: "/" },
+]
+```
 
-7. This time it should succeed.
+**Tracing the import chain:**
+
+1. `Navigation.tsx` exports a `Navigation` component
+2. `app/(marketing)/layout.tsx` imports and uses `<Navigation />`
+3. This layout wraps all pages in the `(marketing)` route group
+4. When you visit `/`, Next.js renders `layout.tsx` which includes `Navigation`
+
+> **Key insight:** The text you see on screen often appears as a string literal in the code. Searching for exact strings is usually the fastest way to find UI code.
+
+---
+
+### Exercise 3: Find the Profile Picture (Hero Image)
+
+**Goal:** Practice Technique 2 (DevTools) when text search isn't obvious.
+
+**What to do:**
+
+1. Look at the circular profile picture on the left side of the page.
+
+2. There's no text to search for. So let's try DevTools.
+
+3. Right-click on the image → click "Inspect" (or press F12)
+
+4. In the Elements panel, you'll see the HTML for this image. Look for:
+   - The `src` attribute (where does the image come from?)
+   - Any class names that might be searchable
+
+5. **Try it yourself:** What file path or class name do you see? Search for it.
+
+**The answer (only read after trying yourself):**
+
+In DevTools, you'll see something like:
+```html
+<img src="/images/profile.png" alt="John Doe Profile Photo" ...>
+```
+
+Search for `profile.png` or `John Doe Profile Photo` in the codebase.
+
+You'll find it in `app/(marketing)/_components/Hero.tsx`:
+
+```tsx
+<Image
+  src="/images/profile.png"
+  alt="John Doe Profile Photo"
+  width={192}
+  height={192}
+  className="w-full h-full object-cover"
+/>
+```
+
+**Tracing the import chain:**
+
+1. `Hero.tsx` exports a `Hero` component
+2. `app/(marketing)/HomePageContent.tsx` imports `<Hero />`
+3. `app/(marketing)/page.tsx` imports `<HomePageContent />`
+4. When you visit `/`, Next.js renders `page.tsx`
+
+> **Key insight:** DevTools is your X-ray vision. When you can't search by text, inspect the HTML and search by attributes, class names, or file paths.
+
+---
+
+### Exercise 4: Find "John Doe" and "AI Engineer"
+
+**Goal:** Reinforce Technique 1 with multiple related elements.
+
+**What to do:**
+
+1. You see "John Doe" (large text) and "AI Engineer" (smaller, highlighted text) below the profile picture.
+
+2. **Try it yourself:** Search for these strings in the codebase.
+
+3. Notice that both are in the same file. What does this tell you about the component structure?
+
+**The answer (only read after trying yourself):**
+
+Both are in `app/(marketing)/_components/Hero.tsx`:
+
+```tsx
+<h1 className="...">
+  John Doe
+</h1>
+<p className="...">
+  <span className="text-highlight">AI Engineer</span>
+</p>
+```
+
+**What this reveals:**
+
+The `Hero` component is responsible for the entire left-side profile area: the image, name, and title. This is a common pattern—grouping related UI elements into a single component.
+
+> **Key insight:** When you find one element, look around in the same file. Related elements are often nearby.
+
+---
+
+### Exercise 5: Find the "About Me" Section
+
+**Goal:** Practice finding headings and their associated content.
+
+**What to do:**
+
+1. You see the "About Me" heading in cyan/teal color on the right side.
+
+2. **Try it yourself:** Search for this text and find where it's defined.
+
+3. Also find where the Lorem Ipsum paragraph text is defined.
+
+**The answer (only read after trying yourself):**
+
+Both are in `app/(marketing)/_components/Hero.tsx`:
+
+```tsx
+<h2 className="...">
+  About Me
+</h2>
+
+<p className="text-lg text-text-secondary mb-8 leading-relaxed">
+  Lorem Ipsum is simply dummy text of the printing and typesetting industry...
+</p>
+```
+
+**Notice the structure:**
+
+The `Hero` component contains both the left column (profile) and the right column (about text). It's a two-column layout within a single component.
+
+> **Key insight:** Component boundaries don't always match visual boundaries. One component can manage multiple visual sections.
+
+---
+
+### Exercise 6: Find the "Test API Hello Endpoint" Button
+
+**Goal:** Find interactive elements and understand their behavior.
+
+**What to do:**
+
+1. Look at the clickable button that says "Test API Hello Endpoint".
+
+2. **Try it yourself:** Search for this text in the codebase.
+
+3. Once you find the button, look for:
+   - What happens when you click it? (Look for `onClick`)
+   - What function does it call?
+   - What API endpoint does it hit?
+
+**The answer (only read after trying yourself):**
+
+In `app/(marketing)/_components/Hero.tsx`:
+
+```tsx
+<button
+  onClick={handleApiCall}
+  disabled={isLoading}
+  className="..."
+>
+  ...
+  {isLoading ? "Loading..." : "Test API Hello Endpoint"}
+  ...
+</button>
+```
+
+The `handleApiCall` function:
+
+```tsx
+const handleApiCall = async () => {
+  setIsLoading(true)
+  try {
+    const response = await fetch("/api/hello")
+    const data = await response.json()
+    setApiResponse(JSON.stringify(data, null, 2))
+  } catch (error) {
+    setApiResponse("Error fetching API response")
+  } finally {
+    setIsLoading(false)
+  }
+}
+```
+
+> **Key insight:** For interactive elements, finding the element is just step one. The real understanding comes from tracing what happens when you interact with it.
+
+---
+
+### Exercise 7: Find the API Endpoint
+
+**Goal:** Trace from frontend to backend code.
+
+**What to do:**
+
+1. From Exercise 6, you know the button calls `/api/hello`.
+
+2. **Try it yourself:** Where is this API endpoint defined? Search for `"/api/hello"` or `@app.get` or similar API decorators.
+
+3. **Hint:** This project uses FastAPI for the backend. The API code isn't in the `app/` folder—look elsewhere.
+
+**The answer (only read after trying yourself):**
+
+The API is defined in `api/index.py`:
+
+```python
+@app.get("/api/hello")
+async def hello_world():
+    return JSONResponse(
+        content={
+            "message": "Hello from FastAPI!",
+            "status": "success"
+        }
+    )
+```
+
+**But wait—how does Next.js know to route `/api/hello` to FastAPI?**
+
+Check `next.config.js`:
+
+```javascript
+rewrites: async () => {
+  return [
+    {
+      source: "/api/:path*",
+      destination:
+        process.env.NODE_ENV === "development"
+          ? "http://127.0.0.1:8000/api/:path*"
+          : "/api/",
+    },
+    ...
+  ];
+},
+```
+
+This tells Next.js: "When someone requests `/api/anything`, forward it to FastAPI running on port 8000."
+
+> **Key insight:** Modern applications often have multiple services communicating. Tracing a request might lead you across service boundaries.
+
+---
+
+### Exercise 8: Ask AI to Find Something (Technique 3)
+
+**Goal:** Practice using AI as an exploration tool.
+
+**What to do:**
+
+1. Take a screenshot of the running application.
+
+2. Draw a red circle around any element you're curious about.
+
+3. Ask your AI assistant: "In my Next.js + FastAPI project, which file creates [describe the circled element]?"
+
+4. **Example prompts you can try:**
+
+   - "I circled the navigation bar at the top. Which file creates this?"
+   - "I circled the glowing effect behind the profile. Where does this come from?"
+   - "I circled the API response box. Which component handles displaying this?"
 
 **What you'll notice:**
 
-- Settings page has many options, most don't need changing
-- Framework Preset determines how Vercel builds your project
-- Once the correct framework is set, subsequent deployments use this configuration
+AI can often identify components just from visual description. This is especially useful when:
+- You don't know the right terms to search for
+- The element is created dynamically
+- You want to understand how multiple pieces fit together
 
-> **Key insight:** This issue usually only occurs on first import. Once configured, you don't need to worry about it again. The key is knowing how to read build logs—they tell you what went wrong.
+> **Key insight:** AI is a power-multiplier for exploration. Don't hesitate to ask "dumb" questions—the goal is learning, not appearing smart.
 
 ---
 
 ## Reflection: What Did We Learn?
 
-After completing this tutorial, you learned:
+After completing these exercises, you've learned:
 
-**Vercel's core workflow:**
-- GitHub repo → Vercel import → auto build → website live
-- Every code push → automatic new deployment
-- main branch → Production, other branches → Preview
+**The Top-Down approach:**
+- Start from what you can see (the UI)
+- Ask "where does this come from?"
+- Trace backwards to the source code
+- Keep following imports until you understand the full chain
 
-**Key operations:**
-- How to create a new project on Vercel
-- How to authorize Vercel to access your GitHub
-- How to check deployment status and build logs
-- How to access deployed websites
-- How to manually set Framework Preset
+**Three practical techniques:**
+- Text Search: Search for visible strings in the codebase
+- DevTools: Inspect elements to find searchable attributes
+- AI Assistant: Screenshot and ask when other methods fail
 
-**Debug approach:**
-- When deployment fails, first check build logs
-- Verify Framework Preset is correct
-- Screenshot or copy error messages for AI analysis
+**How this project is structured:**
+- `app/layout.tsx` is the root layout (applies to all pages)
+- `app/(marketing)/layout.tsx` adds navigation to marketing pages
+- `app/(marketing)/page.tsx` is the home page entry point
+- `app/(marketing)/HomePageContent.tsx` is the main content
+- `app/(marketing)/_components/Hero.tsx` contains most UI elements
+- `app/_components/layouts/Navigation.tsx` creates the nav bar
+- `api/index.py` handles API endpoints
+- `next.config.js` configures routing between Next.js and FastAPI
+
+**Most importantly:**
+- Knowing "how to find" is more valuable than knowing "where it is"
+- This skill transfers to any codebase, any framework
+- The more you practice exploration, the faster you become
 
 ---
 
@@ -439,83 +458,67 @@ After completing this tutorial, you learned:
 
 **Why this exercise matters:**
 
-Deployment is the final step in turning ideas into reality. Many excellent projects never leave the developer's computer because they were never deployed.
+I've seen many developers struggle when joining new projects. They wait for someone to explain the codebase, or they read documentation that's often outdated. The developers who thrive are those who can explore and learn independently.
 
-I've seen too many students spend weeks or even months writing code, but never let anyone actually use it. Code only has value when it's running and being used. Deployment is the bridge connecting "writing code" to "creating value".
-
-Platforms like Vercel have simplified deployment to the extreme. What used to take operations engineers days to configure now takes minutes. This means as a developer, you can spend more time writing code and creating value instead of wrestling with servers.
+This Top-Down skill isn't just for code. It's a fundamental learning approach that works for:
+- Learning a new product (start using it, then dig into how it works)
+- Understanding a new business (see the customer experience, then trace the processes)
+- Debugging problems (see the symptom, then trace to the cause)
 
 **Key insights:**
 
-- **Deployment isn't the end, it's the beginning** - Going live is just the start. User feedback, bug fixes, new feature iterations—that's the real work
-- **Preview deployments are a superpower** - Each branch has its own preview URL, letting others see the effect before you merge
-- **Automation is a productivity multiplier** - CI/CD looks like "auto-deployment", but it actually frees your mental energy to focus on creation
+- **The best map is the one you draw yourself.** When you trace through code by hand, you build a mental model that no documentation can provide.
+
+- **Don't be afraid to ask "dumb" questions.** AI assistants are judgment-free. Use them liberally when exploring. The goal is learning, not looking smart.
+
+- **Top-Down and Bottom-Up complement each other.** Use Top-Down to quickly understand what's relevant. Use Bottom-Up when you need deep, systematic understanding. Master both.
 
 **Next steps:**
 
-1. Try modifying some page content, push it, and see if Vercel updates correctly
-2. Learn how to add Environment Variables—essential for deploying real applications
-3. Explore Vercel's Analytics and Logs features to understand your website's traffic
-4. Consider binding your own domain (Custom Domain)
+1. Try the same exploration technique on a different project
+2. When you encounter a bug, use Top-Down to trace from symptom to cause
+3. Practice explaining code paths to others—teaching reinforces learning
 
 ---
 
 ## Quick Reference
 
-**Vercel Dashboard URL:**
-```
-https://vercel.com/dashboard
-```
-
-**Trigger new deployment (without code changes):**
+**Start the development server:**
 ```bash
-echo "$(date)" >> chore.txt
-git add chore.txt && git commit -m "Trigger deployment" && git push
+mise run dev
 ```
 
-**Check current branch:**
+**Search for text in the codebase:**
 ```bash
-git branch --show-current
+# Using grep
+grep -r "search text" --include="*.tsx" --include="*.ts"
+
+# Using your editor's search (Cmd+Shift+F in VS Code)
 ```
 
-**Key files:**
-- `chore.txt` - Placeholder file for triggering deployments, content doesn't matter
+**Key files in this project:**
 
----
-
-## Troubleshooting
-
-**Issue: Can't see repo after authorization**
-- Refresh the Vercel page
-- Check if you authorized the correct GitHub account/Organization
-- If Organization, check if admin has approved
-
-**Issue: Build failed**
-- Click the failed deployment, view Build Log
-- Check Settings > Build and Deployment > Framework Preset is set to Next.js
-- Screenshot or copy error log for AI analysis
-
-**Issue: Deployment succeeded but page displays incorrectly**
-- Confirm you pushed to the correct branch
-- Check if preview URL corresponds to the correct deployment
-- Check Browser Console (F12) for errors
-
-**Issue: Don't know how to get back to Vercel page**
-- Go directly to https://vercel.com/dashboard
-- All your projects are there
+- `app/layout.tsx` - Root layout, applies to all pages
+- `app/(marketing)/layout.tsx` - Marketing pages layout with navigation
+- `app/(marketing)/page.tsx` - Home page entry point
+- `app/(marketing)/HomePageContent.tsx` - Main content component
+- `app/(marketing)/_components/Hero.tsx` - Profile and about section
+- `app/_components/layouts/Navigation.tsx` - Navigation bar
+- `api/index.py` - FastAPI backend endpoints
+- `next.config.js` - Next.js configuration including API rewrites
 
 ---
 
 ## Reference Implementation
 
-The complete code for this tutorial is in the `05-Deploy-Hello-World-NextJs-App-to-Vercel` branch.
+This tutorial is designed for the `06-Explore-Codebase-Top-Down` branch.
 
-To test locally:
+To verify your environment is set up correctly:
 
 ```bash
-git checkout 05-Deploy-Hello-World-NextJs-App-to-Vercel
+git checkout 06-Explore-Codebase-Top-Down
 mise run inst
 mise run dev
 ```
 
-Then open http://localhost:3000 to confirm it runs locally before deploying to Vercel following this tutorial.
+Then open http://localhost:3000 and follow the exercises above.
