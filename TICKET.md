@@ -17,6 +17,8 @@ You will set up and run a complete **full-stack web application** with:
 
 This task card guides you through understanding the full-stack architecture, starting both servers, and seeing how frontend and backend communicate.
 
+Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/04-Setup-NextJs-FastAPI-Local-Dev-Env/)
+
 ---
 
 ## Part 1: Understanding Full-Stack Architecture (10 minutes)
