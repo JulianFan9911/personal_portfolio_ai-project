@@ -266,7 +266,7 @@ You should see your web application running!
 
 See the example screenshot:
 
-![Example Web App](img/01-example-hello-world-web-app.png)
+![Example Web App](img/04-Setup-NextJs-FastAPI-Local-Dev-Env/01-example-hello-world-web-app.png)
 
 ---
 

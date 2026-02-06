@@ -177,7 +177,7 @@ http://localhost:3000
 
 **Compare to the example:**
 
-[Example Web App](/Users/sanhehu/Documents/GitHub/learn_personal_portfolio_ai-project/img/01-example-hello-world-web-app.png)
+![Example Web App](img/04-Setup-NextJs-FastAPI-Local-Dev-Env/01-example-hello-world-web-app.png)
 
 **Checklist:**
 - [ ] Opened browser to `localhost:3000`

@@ -319,7 +319,7 @@ http://localhost:3000
 
 参考一下这个截图看看应该是什么样的：
 
-![示例网页](img/01-example-hello-world-web-app.png)
+![示例网页](img/04-Setup-NextJs-FastAPI-Local-Dev-Env/01-example-hello-world-web-app.png)
 
 ---
 
