@@ -4,6 +4,13 @@
 .idea
 tmp
 
+# Node Stuff
+node_modules
+
+# NextJS Stuff
+.next
+next-env.d.ts
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -20,7 +27,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
