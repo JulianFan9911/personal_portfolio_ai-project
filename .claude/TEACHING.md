@@ -1,149 +1,157 @@
-# Teaching Guide: Hardcoded AI Chat Interaction
+# Teaching Guide: AI SDK and Stream Protocol Deep Dive
 
 ## Learning Outcomes
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand frontend-backend separation as "data vs logic separation" and why this architectural pattern matters
-2. **Skill outcome** - Successfully implement a hardcoded API response and trace the data flow from user input to displayed output
-3. **Mindset outcome** - Appreciate that good architecture enables easy future changes (hardcoded today, real AI tomorrow)
+1. **Cognitive outcome** - Understand how Stream Protocol works (`text-start`, `text-delta`, `text-end`) and why protocols matter more than libraries
+2. **Skill outcome** - Successfully trace data flow from UI to backend by following import chains and reading code
+3. **Mindset outcome** - Appreciate that reading code is as important as writing code, and that understanding protocols gives you transferable knowledge
 
 ## Concept Sequence
 
 Teach concepts in this order:
 
-### Phase 1: Conceptual Foundation (10-15 minutes)
+### Phase 1: Import Statement Mastery (10 minutes)
 
-1. **What is frontend-backend separation?** - Not just "different folders" but the deeper idea of separating data from logic
-2. **Data vs Logic analogy** - Use the project card example: data is the JSON, logic is how to render it
-3. **Why separation matters** - The four problems of mixing data and logic (from README-cn.md)
-4. **API as the contract** - How frontend and backend agree on communication format
+1. **The three forms of import** - npm packages, relative paths, alias paths
+2. **Practice tracing** - Follow `./message` to find `message.tsx`
+3. **When to read docs vs code** - npm packages → docs; project files → code
 
-### Phase 2: Hands-on Exploration (Main focus)
+### Phase 2: AI SDK Value Proposition (10 minutes)
 
-5. **Run and observe** - Exercise 1: Start the app, see the chat interface
-6. **Locate key files** - Exercise 2: Find the frontend components and backend API
-7. **Understand the backend** - Exercise 3: Look at `api/index.py`, understand the endpoint
-8. **Implement hardcoded response** - Exercise 4: Modify the response to echo user's message
-9. **Test and verify** - Exercise 5: Use DevTools to observe the network request
+4. **What you'd build without AI SDK** - Show the 100+ lines they'd need to write
+5. **What useChat gives you** - `messages`, `sendMessage`, `status`, `stop`
+6. **Convention over configuration** - Default `/api/chat` endpoint
 
-### Phase 3: Concept Reinforcement (After hands-on)
+### Phase 3: Data Flow Tracing (15 minutes)
 
-10. **Stream Protocol high-level** - Just enough to understand why responses appear "one character at a time"
-11. **The power of separation** - Discuss: "What would we change to add real AI?" Answer: Just the backend.
-12. **Trace the full flow** - Draw the path from user input to displayed response
+7. **Step-by-step walkthrough** - User click → handleSubmit → sendMessage → POST → backend
+8. **Backend processing** - `@app.post("/api/chat")` decorator, parsing messages
+9. **Generator pattern** - Why `yield` creates streaming responses
 
-### Phase 4: Reflection
+### Phase 4: Stream Protocol Deep Dive (15 minutes)
 
-13. **What did you implement?** - Let student describe what they did
-14. **What did you learn about architecture?** - Focus on the separation concept, not the code details
+10. **Protocol vs Library** - The HTTP analogy: same protocol, different implementations
+11. **Three core message types** - `text-start`, `text-delta`, `text-end`
+12. **SSE format** - `data: {...}\n\n` structure
+13. **Why IDs matter** - Tracking multiple concurrent text segments
+
+### Phase 5: Hands-on Exercises (15-20 minutes)
+
+14. **DevTools observation** - See the protocol in action
+15. **Import chain practice** - Find PreviewMessage definition
+16. **yield understanding** - Conceptual exercise
+17. **Delta modification** - Practical verification
+
+### Phase 6: Reflection (5 minutes)
+
+18. **Key takeaways** - What did you learn about reading code?
+19. **Protocol thinking** - How does this help when switching AI providers?
 
 ## Common Struggles
 
-**Struggle:** Student doesn't understand why we need a "fake" AI first
-- **Signs:** "Why don't we just connect to the real AI?"
-- **Intervention:** Explain the learning approach: "We want to understand the architecture first. Once you see the data flow clearly, adding real AI is just changing one piece."
+**Struggle:** Student is confused about why we're not writing code
+- **Signs:** "When do we actually build something?"
+- **Intervention:** Explain: "In real work, you spend 70% of time reading code. Today we're building that skill. Once you can read code well, writing becomes much easier."
 
-**Struggle:** Student is confused by Stream Protocol format
-- **Signs:** Looking at the `yield` statements and `data:` format with confusion
-- **Intervention:** Say "Don't worry about the exact format now. Just know that it sends data in pieces so the UI can show text appearing gradually. We'll dive deep into this in the next lesson."
+**Struggle:** Student gets lost in import chains
+- **Signs:** Can't find where a component is defined
+- **Intervention:** Review the three import forms. Ask: "Does this path start with `.`, `@/`, or neither?" Then guide them to the right location.
 
-**Struggle:** Student can't find the right file to modify
-- **Signs:** Looking in `app/` folder for backend code
-- **Intervention:** Remind them: "Frontend code is in `app/` and `components/`. Backend code is in `api/`. The chat endpoint is in `api/index.py`."
+**Struggle:** Student doesn't understand why yield matters
+- **Signs:** "Can't we just use return?"
+- **Intervention:** Draw it out: "return = send everything at once, then stop. yield = send piece, pause, send piece, pause. Which gives better user experience?"
 
-**Struggle:** Changes don't appear after saving
-- **Signs:** Modified code but chat still shows old response
-- **Intervention:** Check if the dev server restarted. Sometimes need to save the file again or restart `mise run dev`.
+**Struggle:** Student can't see Stream Protocol in DevTools
+- **Signs:** Looking at wrong tab or wrong request
+- **Intervention:** Make sure they: 1) Filter for "chat" in Network tab, 2) Click the request, 3) Look at Response tab (not Preview)
 
-**Struggle:** Student copies code without understanding the data flow
-- **Signs:** "It works but I don't know how"
-- **Intervention:** Ask them to trace it step by step: "Where does the user type? Where does it send? Where does it receive? Where does it display?" Use DevTools Network tab as proof.
+**Struggle:** Student is overwhelmed by the code complexity
+- **Signs:** Trying to understand every line of React or Python
+- **Intervention:** "You don't need to understand everything. Focus on the data flow: where does data enter? where does it exit? That's what matters today."
 
-**Struggle:** Student gets lost in frontend code complexity
-- **Signs:** Trying to understand every line of the React components
-- **Intervention:** "You don't need to understand React deeply today. Just know that `useChat` sends messages and `messages` array contains the conversation. Focus on the backend - that's what you're changing."
+**Struggle:** Student modifies wrong file for delta exercise
+- **Signs:** Changed frontend instead of backend
+- **Intervention:** "Stream Protocol is about what the backend SENDS. The frontend just receives. Find `api/index.py` and look for `text-delta`."
 
 ## Teaching Tips
 
-- **Start with the "why"** - Spend time on the conceptual foundation. The data/logic separation idea is more valuable than the implementation details.
+- **Start with the "why read code"** - Many students feel guilty not writing code. Validate that reading is a real skill. "Professionals spend most time reading."
 
-- **Use the analogy** - The project card example (JSON data vs rendering logic) is concrete and relatable. Refer back to it when explaining the chat flow.
+- **Use DevTools as proof** - When explaining Stream Protocol, immediately show it in DevTools. Seeing is believing. Theory alone doesn't stick.
 
-- **DevTools is your friend** - Show students how to use the Network tab. It makes the invisible visible. Seeing the actual request/response is much more convincing than theoretical explanation.
+- **The HTTP analogy works well** - "HTTP lets any browser talk to any server. Stream Protocol lets any AI SDK frontend talk to any compliant backend." This clicks for most people.
 
-- **Keep Stream Protocol light** - Don't get bogged down in SSE details. Say "we'll cover this in the next lesson" and move on. Today is about architecture, not protocol.
+- **Don't get stuck on SSE details** - SSE is just the transport. The protocol messages (`text-start`, etc.) are what matters. If students ask about SSE internals, say "That's how we send the data. What matters is what we send."
 
-- **Celebrate the echo** - When their hardcoded response works, celebrate it! "See? The backend changed, but the frontend didn't. That's the power of separation."
+- **Celebrate the "aha" moment** - When students see two `text-delta` events concatenate into "Hello World," that's the key insight. Pause and reinforce: "This is how ChatGPT works!"
 
-- **Connect to real work** - "In production systems, we often prototype with hardcoded data first, then add real logic. This is how professionals work too."
+- **Connect to future lessons** - "Now you understand the protocol. Next lesson, we just replace the hardcoded response with a real AI call. Frontend stays the same."
 
-- **The "Doer to Thinker" message** - Use the mentor's note theme: today is about understanding WHY, not just WHAT. Frame the learning as becoming an architect, not just a coder.
+- **Use the "protocol vs library" framing** - This is a powerful mental model. Libraries come and go, protocols persist. Understanding protocols makes you adaptable.
 
 ## Assessment Ideas
 
-- **Data flow check:** Ask student to trace a message from typing to display
-  - Good answer names: input field → sendMessage → POST /api/chat → backend handler → StreamingResponse → useChat → messages array → message component
+- **Import chain quiz:** "If you see `import { X } from './foo'`, where do you look?"
+  - Good answer: "foo.tsx or foo/index.tsx in the same directory"
 
-- **Architecture understanding:** Ask "If we wanted to add real AI, what would we change?"
-  - Good answer: "Just the backend - replace the hardcoded response with an AI API call"
-  - This demonstrates they understand the separation
+- **Protocol understanding:** "What are the three core message types?"
+  - Expected: `text-start`, `text-delta`, `text-end`
 
-- **File location check:** Ask "Which files are frontend? Which are backend?"
-  - Frontend: `app/`, `components/`
-  - Backend: `api/`
+- **yield vs return:** "Why does the backend use yield?"
+  - Good answer: "To send data piece by piece instead of all at once"
 
-- **Quick verification:** Send a message, see if response includes the original message
-  - Pass: Response shows "I received: [their message]" or similar
-  - Fail: No response, or response doesn't include their message
+- **Protocol value:** "If you wanted to switch from Python backend to Go backend, what would need to stay the same?"
+  - Good answer: "The Stream Protocol format - the same message types and SSE structure"
+
+- **Quick check:** Ask student to trace the data flow from button click to displayed message
+  - Good answer hits: handleSubmit → sendMessage → POST /api/chat → yield → StreamingResponse → useChat parsing → messages array → render
 
 ## Pacing Guide
 
-- **Conceptual foundation:** 10-15 minutes
-  - Data vs logic explanation with project card example
-  - Why separation matters (the four problems)
-  - API as contract concept
+- **Import statement mastery:** 10 minutes
+  - Three forms explanation
+  - Quick practice finding a file
 
-- **Exercise 1 (Run and observe):** 5 minutes
-  - Start the app
-  - Navigate to /chat
-  - Try sending a message (observe current behavior)
+- **AI SDK value:** 10 minutes
+  - Show what you'd build without it
+  - Show how simple useChat is
 
-- **Exercise 2-3 (Locate and understand):** 10 minutes
-  - Find the key files
-  - Look at `api/index.py` structure
-  - Identify where to make changes
+- **Data flow tracing:** 15 minutes
+  - Walk through each step
+  - Show the code at each step
+  - Can use DevTools to show request/response
 
-- **Exercise 4 (Implement):** 10 minutes
-  - Modify the hardcoded response
-  - Include user's message in response
-  - Save and test
+- **Stream Protocol deep dive:** 15 minutes
+  - Protocol vs Library concept
+  - Three message types with examples
+  - SSE format overview
 
-- **Exercise 5 (DevTools):** 5 minutes
-  - Open Network tab
-  - Send a message
-  - Observe request/response
-
-- **Concept reinforcement:** 5-10 minutes
-  - Quick Stream Protocol overview
-  - Discuss future changes (real AI)
+- **Hands-on exercises:** 15-20 minutes
+  - Exercise 1: DevTools observation (5 min)
+  - Exercise 2: Import tracing (3 min)
+  - Exercise 3: yield understanding (3 min)
+  - Exercise 4: Delta modification (5-7 min)
 
 - **Reflection:** 5 minutes
-  - What did you implement?
-  - What's the key takeaway about architecture?
+  - What did you learn?
+  - How does this help you?
 
-**Total expected time:** 50-60 minutes
+**Total expected time:** 55-70 minutes
 
 ## Key Messages to Reinforce
 
-1. **Separation is the core principle** - Frontend handles UI, backend handles logic. They communicate through APIs. This pattern is everywhere in modern software.
+1. **Reading code is a fundamental skill** - 70% of professional work is reading, not writing. Today we're building that skill.
 
-2. **Data vs Logic** - Data tells you "what", logic tells you "how". Keep them separate for flexibility.
+2. **Protocols > Libraries** - A library is one implementation. A protocol is an agreement that enables many implementations. HTTP, HTML, Stream Protocol—understanding protocols gives you transferable knowledge.
 
-3. **Architecture enables change** - Good architecture (like frontend-backend separation) makes future changes easy. Today: hardcoded. Tomorrow: real AI. Frontend stays the same.
+3. **Stream Protocol in three parts** - `text-start` (begin), `text-delta` (content), `text-end` (finish). That's the core. Everything else is details.
 
-4. **Run first, understand later** - You don't need to understand every line. Get it working, then deepen understanding over time.
+4. **yield enables streaming** - Instead of waiting for all data, we send piece by piece. Better UX, feels like AI is "thinking."
 
-5. **DevTools reveals truth** - When in doubt, check the Network tab. Seeing actual data is more valuable than theoretical understanding.
+5. **Import statements have patterns** - npm packages (no `.`), relative paths (`./`), alias paths (`@/`). Know the pattern, find the code.
 
-6. **This is professional practice** - Prototyping with hardcoded data before adding real logic is how production systems are built. You're learning real workflow.
+6. **DevTools reveals truth** - When in doubt, check the Network tab. See what's actually being sent and received.
+
+7. **Architecture enables change** - Understanding the protocol means you can swap backends, change AI providers, or modify the frontend—independently. That's good architecture.

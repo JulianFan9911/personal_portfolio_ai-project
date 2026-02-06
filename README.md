@@ -1,508 +1,608 @@
-# Integrate Hardcoded AI Chat Interaction
+# Deep Dive into AI SDK and Stream Protocol
 
-> Learn the core concept of frontend-backend separation and implement a simplified AI chat feature.
+> No code writing—just thoroughly understand how ChatGPT-like chat applications work under the hood.
 
 ![Chat Interface](./img/08-Add-Hardcoded-AI-Interaction/01-Hardcoded-Chat-Message.png)
 
 ## Overview
 
-Congratulations on making it this far! If the previous lessons were about building foundations and getting familiar with tools, today we're entering the most exciting part of this project—making your portfolio website "come alive" by enabling conversations with visitors.
+In the last lesson, we got the chat feature "running," but you probably still have many questions:
 
-On the surface, today's lesson is about adding a chat interface. But underneath, you'll encounter an extremely important architectural concept—**frontend-backend separation**. This concept may seem simple, but the philosophy of "separating data from logic" behind it runs through the entire tech industry. Once you understand this, your perspective on any complex system will fundamentally change.
+- What exactly does the `useChat` hook do for us?
+- Why does the AI's response appear one character at a time, instead of all at once?
+- What data is actually being passed between frontend and backend?
+
+Today, we won't write any code. We'll do just one thing: **read and understand code**.
+
+This might sound strange—shouldn't learning to program mean writing more code? But the reality is, in actual work, you spend 70% of your time reading other people's code and only 30% writing. Moreover, many beginners can't write good code precisely because they haven't read enough good code.
+
+Today, we'll "read" a production-level chat application.
 
 ## Learning Objectives
 
-When you join a new team or start working on a new project, you'll find that modern web applications almost universally adopt frontend-backend separation architecture. Understanding this architecture not only helps you onboard faster to new projects, but more importantly, the "data vs logic separation" thinking behind it is a universal system design capability that will benefit you no matter what direction you take in your career.
+After completing this lesson, you will be able to:
 
-By the end of this exercise, you will:
-
-1. **Deeply understand the essence of frontend-backend separation**—not just the division of responsibilities between frontend and backend, but mastering the universally applicable mindset of "separating data from logic"
-2. **Locate and understand key chat interface code**—learn to quickly find the components and functions you need in a complex project
-3. **Practice modifying and testing hardcoded conversations**—experience the complete frontend-backend communication flow; although the AI is "fake" for now, the data flow is real
-4. **Get a high-level understanding of AI SDK's Stream Protocol**—understand how frontend and backend agree on interfaces for communication (we'll dive deep in the next tutorial)
+1. **Understand import statements** — When you see `import { X } from "Y"`, know where to find X's definition
+2. **Appreciate AI SDK's value** — Understand how much work the `useChat` hook saves you
+3. **Master Stream Protocol fundamentals** — Understand the `text-start`, `text-delta`, `text-end` protocol
+4. **Use DevTools to observe data flow** — See every byte transmitted between frontend and backend
 
 ## Prerequisites
 
-- You have completed the previous tutorials and can successfully run `mise run dev`
-- You have a browser and can access http://localhost:3000
-- You have an AI assistant available (Claude, ChatGPT, etc.)
+- Completed the previous lesson, able to run `mise run dev` and access the chat page
+- Have a browser (Chrome recommended)
+- Have an AI assistant ready (Claude, ChatGPT, etc.) to help answer questions
 
-## What You'll Build
+## What You'll Learn
 
-You will integrate a chat interface into the existing portfolio project. Although this version's AI responses are hardcoded, the entire frontend-backend communication flow is real:
+This is not a hands-on coding tutorial. You'll learn how to **understand** a real chat application:
 
-- User enters a message in the frontend
-- Frontend sends a request to the backend via API
-- Backend processes the request and returns a streaming response
-- Frontend receives and displays the response
-
-This lays the foundation for integrating real AI models (like AWS Bedrock) in the next step.
+- Trace code: From when the user clicks the send button to when the message appears on screen—what happens in between
+- Understand protocols: How the "communication language" between frontend and backend is designed
+- Build a global perspective: No longer get lost in the sea of imports
 
 ---
 
 ## Key Concepts
 
-### Frontend-Backend Separation: More Than Just Technology Choice
+### Level 1: Understanding Import Statements
 
-You've probably heard the term "frontend-backend separation" countless times. Search online and you'll see various technical implementations: some say use Node.js for backend, others say use React for frontend, and still others say full-stack frameworks like Next.js have "merged" frontend and backend again... These discussions can make you lose sight of the most fundamental question: **Why do we need frontend-backend separation?**
+Many beginners get confused by `import` statements when reading code. File A imports file B, file B imports file C, and after jumping around, they're lost.
 
-The answer is actually very simple, yet extremely profound: **Data and logic should be separated.**
+Actually, import statements only come in three forms. Master these and you'll never get lost:
 
-### What is Data? What is Logic?
+#### Form 1: npm Packages (External Dependencies)
 
-Let's start with the simplest example to understand this concept.
+```tsx
+import { useChat } from "@ai-sdk/react";
+```
 
-Imagine you want to display your project experience on your portfolio. Your project **data** might look like this:
+**Characteristic**: Path doesn't start with `.` or `/`, usually a package name.
+
+**Where to find it**: `node_modules/@ai-sdk/react/` directory. But usually you don't need to look there—this is someone else's library, you just need to read its documentation.
+
+**Analogy**: Like using a phone—you don't need to know how the chip is manufactured, just read the manual.
+
+#### Form 2: Relative Paths (Same Project Files)
+
+```tsx
+import { PreviewMessage } from "./message";
+```
+
+**Characteristic**: Path starts with `.` (`./` means current directory, `../` means parent directory).
+
+**Where to find it**: `message.tsx` (or `message.ts`, `message/index.tsx`) in the same directory as the current file.
+
+**Analogy**: Like saying "the book on my desk"—it's described relative to "my position."
+
+#### Form 3: Alias Paths (Project Convention)
+
+```tsx
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
+```
+
+**Characteristic**: Path starts with `@/` (this is a Next.js project convention).
+
+**Where to find it**: `hooks/use-scroll-to-bottom.ts` in the project root. `@/` is an alias for the project root.
+
+**Analogy**: Like company desk numbers—"Section A, Row 3, Seat 5"—once you know the rule, you can find it.
+
+#### Practical Exercise
+
+Open [`components/chat/chat.tsx`](./components/chat/chat.tsx) and look at the import statements at the top:
+
+```tsx
+import { PreviewMessage, ThinkingMessage } from "./message";     // Form 2: message.tsx in same directory
+import { MultimodalInput } from "./multimodal-input";            // Form 2: multimodal-input.tsx in same directory
+import { Overview } from "./overview";                           // Form 2: overview.tsx in same directory
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom"; // Form 3: hooks/ in root directory
+import { useChat } from "@ai-sdk/react";                         // Form 1: npm package
+import { toast } from "sonner";                                  // Form 1: npm package
+import { useState, useEffect, useRef } from "react";             // Form 1: npm package
+import FingerprintJS from '@fingerprintjs/fingerprintjs';        // Form 1: npm package
+```
+
+Now you know: if you want to see how `PreviewMessage` is implemented, go to [`components/chat/message.tsx`](./components/chat/message.tsx); if you want to learn how to use `useChat`, check the [AI SDK official documentation](https://ai-sdk.dev/docs/ai-sdk-ui/overview).
+
+---
+
+### Level 2: AI SDK — Pre-built Wheels
+
+Before discussing AI SDK, let's imagine: what would you need to implement yourself without AI SDK?
+
+#### Without AI SDK, You'd Need To:
+
+1. **Manage message state**
+   ```tsx
+   const [messages, setMessages] = useState([]);
+
+   function addMessage(role, content) {
+     setMessages(prev => [...prev, { role, content, id: Date.now() }]);
+   }
+   ```
+
+2. **Send requests to the backend**
+   ```tsx
+   async function sendMessage(text) {
+     const response = await fetch('/api/chat', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ messages: [...messages, { role: 'user', content: text }] })
+     });
+     // Then what? How to handle streaming responses?
+   }
+   ```
+
+3. **Parse streaming responses (SSE)**
+   ```tsx
+   const reader = response.body.getReader();
+   const decoder = new TextDecoder();
+
+   while (true) {
+     const { done, value } = await reader.read();
+     if (done) break;
+
+     const chunk = decoder.decode(value);
+     // Parse "data: {...}\n\n" format
+     // Handle text-start, text-delta, text-end...
+     // Update UI...
+   }
+   ```
+
+4. **Handle various edge cases**
+   - What if the user sends a new message while AI is still responding?
+   - What if the network disconnects?
+   - What if the user clicks "stop generating"?
+
+Just thinking about it is overwhelming. But all of this is handled by AI SDK's `useChat` hook.
+
+#### With AI SDK, You Only Need:
+
+Open [`components/chat/chat.tsx`](./components/chat/chat.tsx), find lines 128-156:
+
+```tsx
+const {
+  messages,      // Array of all messages, auto-updates
+  setMessages,   // Manually modify messages (rarely used)
+  sendMessage,   // Function to send messages, one line does it
+  status,        // Current status: "idle" | "submitted" | "streaming"
+  stop,          // Function to stop AI generation
+} = useChat({
+  onError: (error) => {
+    // Error handling
+  },
+});
+```
+
+That simple. One `useChat`, returns 5 things, covering all the functionality you need:
+
+| Return Value | Purpose | How Much Code You'd Need |
+|-------------|---------|-------------------------|
+| `messages` | All messages, auto-updates | ~30 lines state management |
+| `sendMessage` | Send messages | ~50 lines fetch + parsing logic |
+| `status` | Current status | ~20 lines state tracking |
+| `stop` | Stop generation | ~15 lines interrupt logic |
+
+AI SDK saves you 100+ lines of code, and those 100 lines are extensively tested code that handles all kinds of edge cases.
+
+#### How Does AI SDK Know Where to Send Requests?
+
+You may have noticed `useChat()` doesn't specify an API address. So how does it know to send requests to `/api/chat`?
+
+The answer is: **convention over configuration**. AI SDK defaults to sending to `/api/chat`. If you want to change it, you can pass an `api` parameter:
+
+```tsx
+useChat({ api: '/api/my-custom-chat' })
+```
+
+This "convention over configuration" design philosophy is very common in modern development. The benefit: in most cases, you don't need to configure anything—it just works.
+
+---
+
+### Level 3: Tracing Data Flow — From Button to Backend
+
+Now, let's trace a complete data flow: user enters "hello" and clicks send, until the AI reply appears on screen.
+
+#### Step 1: User Clicks Send
+
+Open [`components/chat/multimodal-input.tsx`](./components/chat/multimodal-input.tsx), find the send button's click event. When the user clicks the button or presses Enter, it calls the `submitForm()` function, which ultimately calls `handleSubmit()`.
+
+#### Step 2: handleSubmit Processing
+
+Back to [`components/chat/chat.tsx`](./components/chat/chat.tsx), find lines 162-168:
+
+```tsx
+const handleSubmit = (e?: { preventDefault?: () => void }, options?: any) => {
+  e?.preventDefault?.();
+  if (input.trim()) {
+    sendMessage({ text: input });  // Key! Calls AI SDK's sendMessage
+    setInput("");                   // Clear input box
+  }
+};
+```
+
+The line `sendMessage({ text: input })` is the key to sending the message.
+
+#### Step 3: AI SDK Sends Request
+
+After `sendMessage` is called, AI SDK will:
+
+1. Add the user message to the `messages` array
+2. Construct a POST request to `/api/chat`
+3. Request body looks roughly like this:
 
 ```json
 {
-  "title": "AI Portfolio Project",
-  "description": "A personal portfolio built with Next.js and AWS Bedrock",
-  "tech_stack": ["Next.js", "Python", "AWS Bedrock"]
+  "messages": [
+    {
+      "role": "user",
+      "parts": [
+        {
+          "type": "text",
+          "text": "hello"
+        }
+      ]
+    }
+  ]
 }
 ```
 
-This is **data**—pure information, with no logic about "how to display" it.
+#### Step 4: Backend Receives Request
 
-What is **logic** then? Logic is: "How do I turn this data into the beautiful card the user sees?" This process includes:
-
-- Parsing JSON data
-- Extracting title, description, tech_stack fields
-- Adding different colors for each tech tag
-- Assembling this information into HTML elements
-- Applying CSS styles to make the card look good
-
-You see, data itself is static and objective, while logic is dynamic and variable. **Data tells you "what it is", logic tells you "how to do it"**.
-
-### Why Separate?
-
-Now here's the key question: Why not mix data and logic together?
-
-Imagine what happens if we don't separate them: you hardcode project data directly in HTML:
-
-```html
-<div class="project-card">
-  <h3>AI Portfolio Project</h3>
-  <p>A personal portfolio built with Next.js and AWS Bedrock</p>
-  <span class="tag-nextjs">Next.js</span>
-  <span class="tag-python">Python</span>
-  <span class="tag-aws">AWS Bedrock</span>
-</div>
-```
-
-Looks fine, right? But problems arise:
-
-- **Problem 1**: If you want to add a new project, you need to copy-paste the entire HTML and change the text one by one
-- **Problem 2**: If you want to change the card style, you need to find all card HTMLs and modify each one
-- **Problem 3**: If you want project data to come from a database or API, it's simply impossible because data is hardcoded
-- **Problem 4**: If you want different styles on mobile, you need to maintain two completely different sets of HTML
-
-This is the pain of mixing things together.
-
-Now let's separate them:
-
-**Data Layer (Backend):**
+Open [`api/index.py`](./api/index.py), find lines 30-47:
 
 ```python
-projects = [
-  {
-    "title": "AI Portfolio Project",
-    "description": "A personal portfolio built with Next.js and AWS Bedrock",
-    "tech_stack": ["Next.js", "Python", "AWS Bedrock"]
-  },
-  {
-    "title": "Data Analytics Platform",
-    "description": "A real-time TB-scale data analytics system",
-    "tech_stack": ["Spark", "Kafka", "PostgreSQL"]
-  }
-]
+@app.post("/api/chat")
+async def handle_chat_data(request: Request, protocol: str = Query("data")):
+    # Parse request body
+    request_body_data = await request.json()
+    messages = request_body_data.get('messages', [])
+
+    # Get user's last message
+    user_message = messages[-1]['parts'][0]['text']  # "hello"
 ```
 
-**Logic Layer (Frontend):**
+The backend receives POST requests to `/api/chat` through the `@app.post("/api/chat")` decorator.
 
-```tsx
-function ProjectCard({ project }) {
-  return (
-    <div className="project-card">
-      <h3>{project.title}</h3>
-      <p>{project.description}</p>
-      {project.tech_stack.map(tech => (
-        <span className={`tag-${tech}`}>{tech}</span>
-      ))}
-    </div>
-  )
-}
+#### Step 5: Backend Returns Streaming Response
 
-// Usage: iterate through all project data
-projects.map(project => <ProjectCard project={project} />)
+Continue reading [`api/index.py`](./api/index.py) lines 53-76:
+
+```python
+def ai_sdk_v5_message_generator():
+    id = str(uuid.uuid4())
+    yield f'data: {json.dumps({"type": "text-start", "id": id})}\n\n'
+    yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "Hello Alice"})}\n\n'
+    yield f'data: {json.dumps({"type": "text-end", "id": id})}\n\n'
+    yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+    yield "data: [DONE]\n\n"
+
+response = StreamingResponse(
+    ai_sdk_v5_message_generator(),
+    media_type="text/event-stream",
+)
 ```
 
-The benefits of separation are immediately apparent:
+Here Python's `yield` keyword is used, turning the function into a "generator" that can emit data piece by piece, instead of returning everything at once.
 
-- **Adding new projects**: Just add an object to the data array, UI updates automatically
-- **Changing styles**: Just modify the ProjectCard component once, all project cards change
-- **Flexible data sources**: projects can come from database, API, local files—logic code doesn't need to change
-- **Responsive design**: Logic can adjust styles based on screen size, data stays unchanged
+#### Step 6: Frontend Parses and Displays
 
-### API: The "SOP" for Frontend-Backend Communication
+AI SDK automatically listens to this streaming response, parses the `data: {...}` format messages, extracts content from `text-delta`, and updates the `messages` array. React detects the `messages` change, re-renders the page, and the user sees the AI's reply.
 
-API (Application Programming Interface) is essentially the simplest SOP (Standard Operating Procedure): it defines:
+---
 
-- **Input data format** (request parameters)
-- **Processing logic** (what the backend should do)
-- **Output data format** (returned results)
+### Level 4: Stream Protocol — The Core of Cores
 
-In our chat application, data flows like this:
+Now we arrive at the most important part: **Stream Protocol**.
 
-1. User enters a question in the chat interface: "What are your project experiences?"
-2. Frontend collects input data (user's question text, chat history)
-3. Frontend sends request to backend API: `POST /api/chat`
-4. Backend receives and processes the request (currently returns hardcoded response, will call AI model later)
-5. Backend returns response data
-6. Frontend receives and displays response
+You might think: isn't this just a data format? What's special about it?
 
-Throughout the flow:
-- **Data**: User question, history, AI response
-- **Logic**: Frontend's UI rendering, backend's AI call
+Let me use an analogy to explain why protocols are so important:
 
-They are clearly separated through the API.
+#### Protocol vs Library
 
-### Stream Protocol: High-Level Understanding of Streaming Responses
+A **library** is a specific implementation. For example, AI SDK is a JavaScript library that you can only use in JavaScript/TypeScript projects.
 
-Our chat application has a special feature: AI responses aren't returned all at once, but streamed character by character, just like ChatGPT.
+A **protocol** is an agreement. As long as you follow this agreement, you can implement it in any language.
 
-**Traditional API (One-time return):**
+Think about HTTP protocol:
+- Chrome browser (written in C++) can access web pages
+- Safari browser (written in Swift) can access web pages
+- curl command line tool (written in C) can access web pages
+- Python's requests library can also access web pages
+
+They all work because they all follow the HTTP protocol "agreement."
+
+Stream Protocol works the same way. AI SDK's frontend can communicate with any backend that follows the Stream Protocol:
+- Python (FastAPI) backend ✓
+- Go backend ✓
+- Rust backend ✓
+- Node.js backend ✓
+
+As long as the backend returns data in Stream Protocol format, the frontend can parse it correctly.
+
+#### The Three Core Message Types of Stream Protocol
+
+Open [`api/index.py`](./api/index.py) and look at the data the backend returns:
+
+```python
+yield f'data: {json.dumps({"type": "text-start", "id": id})}\n\n'
+yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "Hello Alice"})}\n\n'
+yield f'data: {json.dumps({"type": "text-end", "id": id})}\n\n'
+```
+
+There are three message types here. Let's break them down one by one:
+
+#### 1. `text-start`: Text Begins
+
+```json
+{"type": "text-start", "id": "550e8400-e29b-41d4-a716-446655440000"}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `type` | Message type, here it's "text-start" |
+| `id` | Unique identifier for this text segment (UUID) |
+
+**Purpose**: Tell the frontend "I'm about to start sending a text segment, its ID is xxx."
+
+**Why do we need ID?** Because AI might generate multiple segments simultaneously (like thinking process and final answer), we need IDs to distinguish which deltas belong to which text segment.
+
+#### 2. `text-delta`: Text Content (Incremental)
+
+```json
+{"type": "text-delta", "id": "550e8400-e29b-41d4-a716-446655440000", "delta": "Hello Alice"}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `type` | Message type, here it's "text-delta" |
+| `id` | This text's ID, same as in text-start |
+| `delta` | Incremental content, newly added text |
+
+**Purpose**: Send the actual text content.
+
+**Why "delta" instead of "content"?** Because it's "incremental"—each time only the newly added part is sent, not the complete content. For example, if AI replies "Hello World," it might be sent in two parts:
 
 ```
-User sends message → Wait 10 seconds → Display complete response at once
+{"type": "text-delta", "id": "...", "delta": "Hello "}
+{"type": "text-delta", "id": "...", "delta": "World"}
 ```
 
-User experience: During those 10 seconds, the interface has no feedback, user thinks the system froze.
+After receiving these, the frontend concatenates the deltas to get the complete "Hello World."
 
-**Streaming API (Stream Protocol):**
+#### 3. `text-end`: Text Ends
+
+```json
+{"type": "text-end", "id": "550e8400-e29b-41d4-a716-446655440000"}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `type` | Message type, here it's "text-end" |
+| `id` | This text's ID |
+
+**Purpose**: Tell the frontend "this text segment is complete."
+
+#### The Complete Flow
+
+Putting the three message types together:
 
 ```
-User sends message → Show "H" after 0.5s → Show "He" after 0.5s → Show "Hello!" after 0.5s → ...
+text-start  → "I'm about to start speaking, my ID is abc123"
+text-delta  → "Hello " (ID: abc123)
+text-delta  → "World" (ID: abc123)
+text-end    → "The text with ID abc123 is complete"
 ```
 
-User experience: Immediate feedback, feels like AI is "thinking" and "typing", similar to chatting with a real person.
+When the frontend receives `text-start`, it creates an empty message box; when it receives `text-delta`, it appends the delta content to the message box; when it receives `text-end`, it knows this message is complete.
 
-In our project, we use **AI SDK's Stream Protocol**. For now, you just need to know:
+#### SSE Format Details
 
-- Backend sends data piece by piece in a specific format
-- Frontend's AI SDK automatically parses this data and updates the UI
-- We'll dive deep into Stream Protocol details in the next tutorial
+You may have noticed each line has a fixed format:
 
-> **Key understanding**: Today we'll get the whole flow running first, understanding how data flows from frontend to backend and back. The specific format and workings of Stream Protocol—we'll learn that in depth in the next tutorial.
+```
+data: {"type":"text-start","id":"..."}\n\n
+```
+
+This is required by the **SSE (Server-Sent Events)** format:
+
+| Part | Meaning |
+|------|---------|
+| `data: ` | Prefix, indicating this is a data line (not a comment or other type) |
+| `{...}` | Actual content in JSON format |
+| `\n\n` | Double newline, indicating end of an event |
+
+Why use SSE instead of regular HTTP response? Because SSE is specifically designed for "server-to-client push," natively supported by browsers, without the complexity of WebSocket.
+
+#### Other Message Types (For Reference)
+
+Besides `text-start`, `text-delta`, `text-end`, Stream Protocol supports many other types:
+
+```python
+yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+yield "data: [DONE]\n\n"
+```
+
+| Type | Meaning |
+|------|---------|
+| `finish-message` | Entire message complete, `finishReason` explains why (stop=normal end) |
+| `[DONE]` | Entire stream ends |
+
+More complex types (like `tool-input-*`, `reasoning-*`) are used for AI tool calls or showing thinking process—we won't go deep here. Interested readers can check the [AI SDK Stream Protocol official documentation](https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol).
 
 ---
 
 ## Exercises
 
-### Exercise 1: Start the Project and Switch Branches
+### Exercise 1: Observe Stream Protocol with DevTools
 
-**Goal:** Prepare your development environment and ensure the project runs correctly.
+**Goal**: See the data transmitted between frontend and backend with your own eyes.
 
-**What to do:**
+**Steps**:
 
-1. In Codespaces, switch to the branch containing chat functionality:
+1. Open your browser, visit http://localhost:3000/chat
 
-   ```bash
-   git checkout 08-Add-Hardcoded-AI-Interaction
-   ```
+2. Press F12 to open Developer Tools, switch to the **Network** tab
 
-2. Install dependencies and start the development server:
+3. Enter any content in the chat box, click send
 
-   ```bash
-   mise run inst
-   mise run dev
-   ```
+4. Find the `chat` request in the Network list, click it
 
-3. In your browser, visit http://localhost:3000, click the "Chat" link in the navigation bar (or directly visit http://localhost:3000/chat). You should see a chat interface.
-
-**What you'll notice:**
-
-The chat interface already has a complete UI: input box, send button, message display area. But sending a message won't get a real AI response yet—that's exactly what we're going to implement.
-
-> **Key insight:** We're implementing a "fake AI" (hardcoded response), but the entire frontend-backend communication flow is real. This lets us focus on understanding the architecture, not the details of AI calls.
-
----
-
-### Exercise 2: Locate Key Chat Interface Components
-
-**Goal:** Learn to find the key files for the chat interface in the project code and understand the component structure.
-
-**What to do:**
-
-1. Open VS Code and find these key files:
-
-   - `app/chat/page.tsx` - Chat page entry
-   - `components/chat/chat.tsx` - Core chat functionality component
-   - `components/chat/multimodal-input.tsx` - Input box and send button
-   - `components/chat/message.tsx` - Single message rendering
-
-2. In `components/chat/chat.tsx`, find the `useChat` hook:
-
-   ```tsx
-   const {
-     messages,       // Message array
-     sendMessage,    // Function to send messages
-     status,         // Current status
-     stop,           // Function to stop AI response
-   } = useChat({
-     // Config...
-   });
-   ```
-
-3. Find the `handleSubmit` function and understand what happens when the user clicks send:
-
-   ```tsx
-   const handleSubmit = () => {
-     if (input.trim()) {
-       sendMessage({ text: input });  // Call AI SDK's send function
-       setInput("");                   // Clear input box
-     }
-   };
-   ```
-
-**What you'll notice:**
-
-- `useChat` is a hook provided by AI SDK that encapsulates message state management, API requests, and other complex logic
-- Frontend developers don't need to manually write fetch requests—AI SDK handles it
-- The `messages` array contains all chat history; React automatically re-renders when it updates
-
-> **Key insight:** AI SDK encapsulates a lot of complex logic for us. We just need to call `sendMessage`, and the SDK automatically sends POST requests to `/api/chat` and handles responses.
-
----
-
-### Exercise 3: Find the Backend API Code
-
-**Goal:** Understand how the backend handles chat requests.
-
-**What to do:**
-
-1. Open `api/index.py` and find the function that handles chat requests:
-
-   ```python
-   @app.post("/api/chat")
-   async def handle_chat_data(request: Request):
-       # Parse request
-       request_body_data = await request.json()
-       messages = request_body_data.get('messages', [])
-       user_message = messages[-1]['parts'][0]['text'] if messages else ""
-
-       # Generate response (currently hardcoded)
-       hardcoded_reply = f"Hello! I received your message: \"{user_message}\""
-
-       # Return streaming response
-       return StreamingResponse(...)
-   ```
-
-2. Notice the use of `StreamingResponse`—this is the key to making AI responses appear "character by character".
-
-3. Find the code that generates Stream Protocol format:
-
-   ```python
-   def ai_sdk_v5_message_generator():
-       id = str(uuid.uuid4())
-       yield f'data: {json.dumps({"type": "text-start", "id": id})}\n\n'
-       yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": hardcoded_reply})}\n\n'
-       yield f'data: {json.dumps({"type": "text-end", "id": id})}\n\n'
-       yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
-       yield "data: [DONE]\n\n"
-   ```
-
-**What you'll notice:**
-
-- Backend uses Python's generator (`yield`) to send data step by step
-- Each line of data starts with `data: `—this is the standard SSE (Server-Sent Events) format
-- AI SDK automatically parses this data on the frontend
-
-> **Key insight:** Although the Stream Protocol format looks a bit complex, for now you just need to know: every piece of data the backend sends, the frontend can receive in real-time. We'll learn the format details in depth in the next tutorial.
-
----
-
-### Exercise 4: Modify the Hardcoded Response
-
-**Goal:** Hands-on code modification to verify the entire frontend-backend communication flow.
-
-**What to do:**
-
-1. Open `api/index.py` and find the `hardcoded_reply` line
-
-2. Modify the response content, for example:
-
-   ```python
-   hardcoded_reply = f"""Hello! I received your message: "{user_message}"
-
-   I'm a hardcoded AI response. I'm still under development, but soon I'll be able to really answer your questions!
-
-   You can ask me about:
-   - My skills and project experience
-   - My learning background
-   - How to contact me
-   """
-   ```
-
-3. Save the file, the backend will restart automatically
-
-4. In the browser, send a message like "hello" and observe the AI's response
-
-**What you'll notice:**
-
-Your modifications take effect immediately! This shows:
-- Frontend correctly sent request to backend
-- Backend correctly processed request and returned your hardcoded response
-- Frontend correctly displayed the content returned by backend
-
-![Hardcoded Response](./img/08-Add-Hardcoded-AI-Interaction/02-Hardcoded-Chat-Message.png)
-
-> **Key insight:** Although the AI is "fake", the entire data flow is real. When we later replace it with real AI calls, the frontend code barely needs to change—that's the power of separation!
-
----
-
-### Exercise 5: Observe Network Requests in Browser DevTools
-
-**Goal:** See frontend-backend communication data with your own eyes.
-
-**What to do:**
-
-1. Open browser developer tools (F12)
-
-2. Switch to the "Network" tab
-
-3. Send a message in the chat interface
-
-4. In the Network tab, find the `chat` request and click it
-
-5. Check:
-   - **Headers**: Request header information
-   - **Payload**: Data sent by frontend (your message)
-   - **Response**: Streaming data returned by backend
-
-**What you'll notice:**
-
-In Response, you'll see content like this:
+5. Check the **Response** tab, you should see content like this:
 
 ```
 data: {"type":"text-start","id":"..."}
-data: {"type":"text-delta","id":"...","delta":"Hello! I received..."}
+data: {"type":"text-delta","id":"...","delta":"Hello Alice"}
 data: {"type":"text-end","id":"..."}
 data: {"type":"finish-message","finishReason":"stop"}
 data: [DONE]
 ```
 
-This is Stream Protocol! Each line starts with `data: ` followed by a JSON object.
+**What did you observe?**
 
-> **Key insight:** DevTools is your "X-ray vision". By observing network requests, you can clearly see what frontend sent and what backend returned. This is an important skill for debugging problems.
+This is Stream Protocol! This is the format the backend uses to "stream" data to the frontend.
 
 ---
 
-### Exercise 6: Return Different Responses Based on Keywords (Extended)
+### Exercise 2: Trace the Import Chain
 
-**Goal:** Make the hardcoded AI a bit more "intelligent".
+**Goal**: Practice finding source files based on import statements.
 
-**What to do:**
+**Task**:
 
-1. Modify the response logic in `api/index.py`:
+1. Open [`components/chat/chat.tsx`](./components/chat/chat.tsx)
 
-   ```python
-   user_message = messages[-1]['parts'][0]['text'] if messages else ""
-
-   if "project" in user_message.lower():
-       reply = """I have three main projects:
-
-   1. **AI Portfolio** - Built with Next.js + AWS Bedrock
-   2. **Data Analytics Platform** - Real-time TB-scale data processing
-   3. **ML Model Deployment** - MLOps best practices
-
-   Which project would you like to know more about?"""
-
-   elif "skill" in user_message.lower():
-       reply = """My skills include:
-
-   - **Programming Languages**: Python, JavaScript, TypeScript
-   - **Frameworks**: React, Next.js, FastAPI
-   - **Cloud Services**: AWS (Bedrock, Lambda, S3)
-   - **AI/ML**: TensorFlow, PyTorch, LangChain"""
-
-   elif "contact" in user_message.lower():
-       reply = "You can reach me at: your@email.com"
-
-   else:
-       reply = f"I received your message: \"{user_message}\"\n\nAsk me about my **projects**, **skills**, or **contact info**!"
+2. Find this import line:
+   ```tsx
+   import { PreviewMessage, ThinkingMessage } from "./message";
    ```
 
-2. Save and test with different questions
+3. Based on this import, find the file where `PreviewMessage` is defined
 
-**What you'll notice:**
+4. In that file, find how the `PreviewMessage` component renders AI messages
 
-Now your AI returns different responses based on keywords! Although this isn't real AI, it demonstrates an important pattern: **backend can execute different logic based on input data**.
-
-> **Key insight:** This exercise demonstrates the "data-driven logic" concept. When we integrate real AI later, we just need to replace the `if-else` logic with AI calls—the overall architecture stays the same.
+**Hint**: `./message` means `message.tsx` (or `message/index.tsx`) in the same directory.
 
 ---
 
-## Reflection: What Did We Learn?
+### Exercise 3: Understand the Role of yield
 
-After completing these exercises, you've learned:
+**Goal**: Understand why the backend uses `yield` instead of `return`.
 
-**The essence of frontend-backend separation**
-- Data and logic separation is the core concept
-- Frontend handles UI display and user interaction
-- Backend handles data processing and business logic
-- They communicate through APIs
+**Thought Exercise**:
 
-**Chat application architecture**
-- `useChat` hook encapsulates message state management
-- Frontend sends POST requests to `/api/chat`
-- Backend uses StreamingResponse to return streaming data
-- AI SDK automatically handles parsing and displaying streaming responses
+Open [`api/index.py`](./api/index.py), look at this code:
 
-**Key file locations**
-- `app/chat/page.tsx` - Chat page entry
-- `components/chat/chat.tsx` - Core chat logic
-- `components/chat/multimodal-input.tsx` - Input component
-- `components/chat/message.tsx` - Message rendering component
-- `api/index.py` - Backend API handling
+```python
+def ai_sdk_v5_message_generator():
+    yield f'data: ...\n\n'  # First line
+    yield f'data: ...\n\n'  # Second line
+    yield f'data: ...\n\n'  # Third line
+```
 
-**Most importantly**
-- Understanding "why it's designed this way" is more valuable than remembering "where the code is"
-- Hardcoded responses are "fake", but the architecture is real
-- When we replace with real AI, frontend barely needs to change
+What would happen if you replaced `yield` with `return`?
+
+**Answer**:
+
+`return` would immediately end the function, returning only the first line.
+
+`yield` turns the function into a "generator"—each call returns one line, the function doesn't end, and the next call continues from where it left off.
+
+This is why AI responses can be sent "line by line" instead of waiting until everything is generated.
+
+---
+
+### Exercise 4: Modify Delta Content
+
+**Goal**: Verify your understanding of Stream Protocol.
+
+**Task**:
+
+1. Open [`api/index.py`](./api/index.py)
+
+2. Find the `text-delta` line:
+   ```python
+   yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "Hello Alice"})}\n\n'
+   ```
+
+3. Change it to send two deltas:
+   ```python
+   yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "Hello "})}\n\n'
+   yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": "World"})}\n\n'
+   ```
+
+4. Save the file, refresh the page, send a message
+
+5. Observe: the frontend displays "Hello World," showing the two deltas were correctly concatenated
+
+6. Use DevTools' Network tab to view the response—you'll see two `text-delta` events
+
+---
+
+## Summary: What You Learned
+
+After this lesson, you should be able to:
+
+**Understand import statements**
+- `"@ai-sdk/react"` → npm package, read documentation
+- `"./message"` → relative path, look in same directory
+- `"@/hooks/..."` → alias path, look in project root
+
+**Appreciate AI SDK's value**
+- `useChat` encapsulates message management, request sending, streaming parsing
+- You just call `sendMessage`, everything else is handled
+- "Convention over configuration": defaults to `/api/chat`
+
+**Master Stream Protocol**
+- `text-start`: Start a text segment, with ID
+- `text-delta`: Incremental content, appended to text
+- `text-end`: Text ends
+- SSE format: `data: {...}\n\n`
+
+**Trace data flow**
+- User input → `handleSubmit` → `sendMessage` → `/api/chat`
+- Backend `yield` → `StreamingResponse` → Frontend parsing → UI update
 
 ---
 
 ## Mentor's Note
 
-**Why this exercise matters:**
+**Why no code writing in this lesson?**
 
-Today's content is information-dense, and you might feel a bit tired. But I want to congratulate you—because you've crossed an important threshold.
+I've seen too many beginners who, upon receiving a project, immediately start modifying code. They change things until the project breaks, and then don't know how to recover.
 
-Most beginners learning programming only focus on "What does this line of code mean?" or "How do I change this feature?" They are **Doers**—executors who follow tutorials step by step.
+Actually, **the ability to read code is more fundamental than the ability to write code**. You must first understand others' code before you can make modifications in the right places.
 
-But today, you not only learned "how to do it", more importantly you understood "why it's done this way". You started thinking:
-- Why do we need frontend-backend separation?
-- Why do we need APIs?
-- Why use streaming responses?
+The "data flow tracing" we practiced today—from button to backend to page—is a very important skill. In real work, you often need to answer questions like:
 
-You're becoming a **Thinker**—someone who understands the principles and design philosophy behind things.
+- "Where does this data come from?"
+- "What happens when this button is clicked?"
+- "Why isn't this feature working?"
 
-**Key insights:**
+The answers to these questions are hidden in the code's call chain.
 
-- **Frameworks become obsolete, thinking patterns don't**. Angular was popular 5 years ago, React is popular now, something else might be popular in 5 years. But the "data and logic separation" thinking will never become obsolete.
+**The Importance of Protocols**
 
-- **The power of separation**. When you design a system well, future extensions become very simple. Today we use hardcoded responses, tomorrow we switch to AWS Bedrock, frontend code barely changes.
+We spent a lot of time today discussing Stream Protocol. You might think: I just want to make a chat application, why do I need to understand such low-level stuff?
 
-- **Run first, understand later**. You might not fully understand every detail of Stream Protocol—that's completely fine. We'll learn it in depth in the next tutorial. Today's goal is understanding the overall architecture and seeing how data flows.
+The reason is: **understanding protocols means understanding system boundaries**.
 
-**Next steps:**
+For example, if you later want to switch AI models (from OpenAI to Claude), you just need to ask yourself one question: Does the new API's return format comply with Stream Protocol? If yes, not a single line of frontend code needs to change. If no, you just need to add a conversion layer in the backend.
 
-1. Next tutorial: Deep dive into how Stream Protocol works
-2. Then: Configure AWS Bedrock and integrate real AI
-3. Finally: Build a personal knowledge base so AI becomes your personal assistant
+This is the power of "protocol thinking." It helps you know what's unchangeable (protocol) and what's changeable (specific implementation) when facing changes.
 
-You've built the architectural foundation. The learning ahead will only get more interesting!
+**A library isn't impressive, but a protocol can influence an industry**
+
+HTTP protocol allows websites worldwide to interconnect. HTML protocol allows any browser to render web pages. Stream Protocol, though still young, is becoming the de facto standard for AI application frontend-backend communication.
+
+When you understand protocols, you're no longer just a developer who knows how to use a specific library—you're an engineer who understands the entire ecosystem.
+
+**Next Steps**
+
+Now you understand the entire chat application's architecture and data flow. In the next lesson, we'll integrate a real AI model (AWS Bedrock) to make your chat application truly "come alive."
+
+Since you already understand Stream Protocol, integrating real AI will require very few changes—just replace the hardcoded response in the backend with a real AI call. Frontend code? Not a single line needs to change.
 
 ---
 
@@ -514,39 +614,38 @@ You've built the architectural foundation. The learning ahead will only get more
 mise run dev
 ```
 
-**Switch to this tutorial's branch:**
-
-```bash
-git checkout 08-Add-Hardcoded-AI-Interaction
-```
-
 **Key files:**
 
-- `app/chat/page.tsx` - Chat page entry
-- `components/chat/chat.tsx` - Core chat component with `useChat` hook
-- `components/chat/multimodal-input.tsx` - Input box and send button
-- `components/chat/message.tsx` - Single message rendering logic
-- `api/index.py` - Backend API handling `/api/chat` requests
+| File | Purpose |
+|------|---------|
+| [`components/chat/chat.tsx`](./components/chat/chat.tsx) | Core logic, `useChat` hook |
+| [`components/chat/multimodal-input.tsx`](./components/chat/multimodal-input.tsx) | Input box and send button |
+| [`components/chat/message.tsx`](./components/chat/message.tsx) | Message rendering |
+| [`api/index.py`](./api/index.py) | Backend API |
 
-**Data flow path:**
+**Stream Protocol message types:**
 
-1. User enters message in `multimodal-input.tsx`
-2. `chat.tsx`'s `handleSubmit` calls `sendMessage`
-3. AI SDK automatically sends POST request to `/api/chat`
-4. `api/index.py` processes request, returns StreamingResponse
-5. AI SDK parses streaming response, updates `messages` state
-6. `message.tsx` renders each message
+| Type | Format | Purpose |
+|------|--------|---------|
+| `text-start` | `{"type":"text-start","id":"..."}` | Start a text segment |
+| `text-delta` | `{"type":"text-delta","id":"...","delta":"..."}` | Send incremental content |
+| `text-end` | `{"type":"text-end","id":"..."}` | End a text segment |
+
+**Reference documentation:**
+
+- [AI SDK UI Overview](https://ai-sdk.dev/docs/ai-sdk-ui/overview)
+- [AI SDK Stream Protocol](https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol)
 
 ---
 
 ## Reference Implementation
 
-This tutorial corresponds to branch `08-Add-Hardcoded-AI-Interaction`.
+This tutorial corresponds to branch `09-AI-SDK-And-Stream-Protocol`.
 
 Verify your environment is correct:
 
 ```bash
-git checkout 08-Add-Hardcoded-AI-Interaction
+git checkout 09-AI-SDK-And-Stream-Protocol
 mise run inst
 mise run dev
 ```

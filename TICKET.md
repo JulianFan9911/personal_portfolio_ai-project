@@ -1,49 +1,49 @@
-# Task Card: Integrate Hardcoded AI Chat Interaction
+# Task Card: Deep Dive into AI SDK and Stream Protocol
 
 ## Objective
 
-Learn frontend-backend separation by implementing a hardcoded AI chat response in your portfolio website.
+Develop code reading skills by understanding how a ChatGPT-like chat application works under the hood—without writing any code.
 
-This exercise teaches the **core architectural pattern** of modern web applications: frontend handles UI, backend handles logic, and they communicate through APIs. You'll implement a simple hardcoded response that echoes back the user's message, laying the foundation for integrating real AI later.
+This exercise focuses on **reading and understanding** rather than implementation. You'll trace data flow from frontend to backend, understand what AI SDK does for you, and master the Stream Protocol that powers real-time AI responses.
 
-Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/08-Add-Hardcoded-AI-Interaction/)
+Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/09-AI-SDK-And-Stream-Protocol/)
 
 ## Actionable Items
 
-1. **Switch to the tutorial branch and run the application**
-   - Execute `git checkout 08-Add-Hardcoded-AI-Interaction`
-   - Run `mise run inst` then `mise run dev`
-   - Open http://localhost:3000/chat to see the chat interface
+1. **Observe Stream Protocol with DevTools**
+   - Open http://localhost:3000/chat
+   - Open DevTools (F12), go to Network tab
+   - Send a message and find the `chat` request
+   - Examine the Response tab to see Stream Protocol format
+   - Identify `text-start`, `text-delta`, and `text-end` messages
 
-2. **Locate the key files in the codebase**
-   - Find `app/chat/page.tsx` (chat page entry)
-   - Find `components/chat/chat.tsx` (core chat logic with `useChat` hook)
-   - Find `api/index.py` (backend API handler)
+2. **Trace the Import Chain**
+   - Open `components/chat/chat.tsx`
+   - Find the import: `import { PreviewMessage } from "./message"`
+   - Navigate to the source file `message.tsx`
+   - Locate how `PreviewMessage` renders AI messages
 
-3. **Implement the hardcoded response in `api/index.py`**
-   - Find the `@app.post("/api/chat")` endpoint
-   - Modify the response to echo back: `I received: "{user_message}"`
-   - The response should include the original user message
+3. **Understand the Role of yield**
+   - Open `api/index.py`
+   - Find the `ai_sdk_v5_message_generator()` function
+   - Understand why `yield` is used instead of `return`
+   - Explain: what would happen if we used `return` instead?
 
-4. **Test the chat interaction**
-   - Send a message in the chat interface
-   - Verify the AI responds with your hardcoded message
-   - Use browser DevTools (Network tab) to observe the request/response
-
-5. **Observe the data flow**
-   - Understand how the message travels: Frontend → API → Backend → Response → Frontend
-   - Notice that the frontend code doesn't change when you modify the backend
+4. **Modify Delta Content (Hands-on Verification)**
+   - In `api/index.py`, find the `text-delta` yield statement
+   - Change it to send two separate deltas: "Hello " and "World"
+   - Save, refresh, and send a message
+   - Verify the frontend displays "Hello World" (deltas concatenated)
+   - Check DevTools to see two `text-delta` events
 
 **Estimated time:** 30-40 minutes
 
 ## Checklist
 
-- [ ] **App running** - Can access http://localhost:3000/chat and see the chat interface
-- [ ] **Files located** - Can identify where `api/index.py` handles chat requests
-- [ ] **Response implemented** - Modified `api/index.py` to return `I received: "{user_message}"`
-- [ ] **Chat working** - Sending a message shows the hardcoded response in the UI
-- [ ] **DevTools checked** - Observed the network request in browser DevTools
-- [ ] **Can explain** - Can describe the data flow from user input to displayed response
+- [ ] **DevTools observation** - Can see Stream Protocol messages in Network tab Response
+- [ ] **Import tracing** - Found `message.tsx` from the import statement in `chat.tsx`
+- [ ] **yield understanding** - Can explain why `yield` is used for streaming (vs `return`)
+- [ ] **Delta modification** - Successfully modified backend to send two deltas, verified concatenation
 
 ---
 
@@ -53,7 +53,10 @@ When you're done:
 
 1. Run `/teach-check` to verify your work against the checklist
 
-2. Be ready to answer: "What happens when you send a message? Trace the data flow."
+2. Be ready to answer:
+   - "What are the three core message types in Stream Protocol?"
+   - "Why does AI SDK use `yield` instead of `return`?"
+   - "What happens when frontend receives a `text-delta` message?"
 
 3. Say "ship it" when complete to generate RESULT.md
 
@@ -65,45 +68,47 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-**Assessment method:** This is a guided implementation exercise. Verification focuses on understanding the data flow.
+**Assessment method:** This is a code-reading exercise. Verification is conversation-based—ask if students completed each task.
 
 **Core verification (required):**
 
-1. **Check:** Does the chat respond with a message that includes the user's input?
-   - Send any message in the chat
-   - Response should contain the original message (e.g., "I received: hello" when user sends "hello")
-   - Exact wording doesn't matter, but user's message must be echoed
+1. **Ask:** "Did you observe the Stream Protocol in DevTools?"
+   - Student should confirm they saw `text-start`, `text-delta`, `text-end` in the Response tab
+   - No need to verify screenshot—verbal confirmation is sufficient
 
-2. **Check:** Can student locate the backend code?
-   - Ask: "Which file did you modify?"
-   - Expected: `api/index.py`
-   - Can verify with `git diff api/index.py`
+2. **Ask:** "Did you trace the import chain from chat.tsx to message.tsx?"
+   - Student should confirm they found the `PreviewMessage` component in `message.tsx`
+   - Can ask follow-up: "What directory is message.tsx in?"
 
-3. **Check:** Does student understand the data flow?
-   - Ask: "When you type a message and press send, what happens step by step?"
-   - Good answer mentions: frontend sends to `/api/chat`, backend processes, returns response, frontend displays
-   - Don't need perfect technical terms, just understanding of the flow
+3. **Ask:** "Can you explain the difference between yield and return?"
+   - Good answer: `return` ends function immediately; `yield` sends one piece and continues
+   - This is conceptual understanding, not code verification
+
+4. **Ask:** "Did you modify the delta to send two parts?"
+   - Student should confirm they changed the backend and saw "Hello World" in the UI
+   - Can ask: "Did you see two text-delta events in DevTools?"
 
 **Understanding verification (optional):**
 
-4. **Ask:** "Why don't we need to change the frontend code when we change the backend response?"
-   - Good answer: Because they're separated - frontend just displays whatever the backend returns
-   - This checks understanding of frontend-backend separation
+5. **Ask:** "What are the three core message types in Stream Protocol?"
+   - Expected: `text-start`, `text-delta`, `text-end`
 
-5. **Ask:** "What would you need to change to make the AI actually intelligent?"
-   - Good answer: Replace the hardcoded response with a real AI API call (like AWS Bedrock)
-   - This checks understanding that the architecture supports future changes
+6. **Ask:** "Why is the field called 'delta' instead of 'content'?"
+   - Good answer: Because it's incremental—only the new part is sent each time
+
+7. **Ask:** "Why do we need an ID in each message?"
+   - Good answer: To track which deltas belong to which text segment (when AI generates multiple segments)
 
 **What counts as "pass":**
 
-- Chat interface shows a response that includes the user's original message
-- Student can point to `api/index.py` as the file they modified
-- Student can roughly describe the request/response flow
+- Student verbally confirms completing all 4 exercises
+- Student can answer basic questions about Stream Protocol
+- Student understands the yield vs return difference
 
 **What does NOT matter:**
 
-- Exact wording of the hardcoded response
-- Whether student understands every line of the Stream Protocol code
-- Whether student can explain React hooks or Python async
+- Whether the code modification is still in place
+- Perfect technical terminology
+- Deep understanding of SSE internals
 
-**Key principle:** This exercise is about understanding the ARCHITECTURE (frontend-backend separation, API communication), not the implementation details. The hardcoded response is intentionally simple so students can focus on the bigger picture.
+**Key principle:** This exercise is about building mental models for code reading and protocol understanding. The goal is comprehension, not implementation. Ask questions, listen to understanding, not deliverables.
