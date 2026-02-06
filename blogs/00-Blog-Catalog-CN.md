@@ -14,7 +14,7 @@
 
 📄 [01-If-You-re-Going-to-Learn-Learn-the-Best-CN.md](01-If-You-re-Going-to-Learn-Learn-the-Best-CN.md)
 
-## 03 - Before You Run, Learn How to Not Fall
+## 02 - Before You Run, Learn How to Not Fall
 
 在只有 Hello World 的阶段就搭好了测试框架。TDD 的本质不是测试，而是构建一个超短的反馈循环，让长跑走得又稳又远。
 
