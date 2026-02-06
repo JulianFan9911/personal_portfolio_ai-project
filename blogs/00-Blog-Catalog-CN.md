@@ -49,3 +49,9 @@ GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起�
 不会设计？没关系。去 Pinterest 偷一个，让 AI 帮你实现。模仿不是终点，是起点。
 
 📄 [07-Steal-Like-An-Artist-CN.md](07-Steal-Like-An-Artist-CN.md)
+
+## 08 - The Fake Teaches You The Real
+
+用 hardcoded 的假 AI 跑通整个架构。替身演员先把走位排好，真正的主演上场时才能一条过。
+
+📄 [08-The-Fake-Teaches-You-The-Real-CN.md](08-The-Fake-Teaches-You-The-Real-CN.md)
