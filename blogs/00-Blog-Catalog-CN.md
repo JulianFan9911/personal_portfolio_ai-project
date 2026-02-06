@@ -55,3 +55,9 @@ GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起�
 用 hardcoded 的假 AI 跑通整个架构。替身演员先把走位排好，真正的主演上场时才能一条过。
 
 📄 [08-The-Fake-Teaches-You-The-Real-CN.md](08-The-Fake-Teaches-You-The-Real-CN.md)
+
+## 09 - The Power of Protocol
+
+一个约定，让 1000 个人省掉 9000 小时。协议不是技术细节，是让复杂系统能被分工的根本原因。
+
+📄 [09-The-Power-of-Protocol-CN.md](09-The-Power-of-Protocol-CN.md)
