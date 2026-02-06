@@ -1,8 +1,7 @@
 {
   "functions": {
     "api/**": {
-      "excludeFiles": "{.next,.git,node_modules}/**",
-      "memory": 1024
+      "excludeFiles": "{.next,.git,node_modules}/**"
     }
   },
   "build": {

@@ -2,6 +2,7 @@
   "name": "learn-personal-portfolio-ai",
   "version": "0.1.1",
   "private": true,
+  "packageManager": "pnpm@10.28.0",
   "scripts": {
     "fastapi-dev": "pip3 install -r requirements.txt && python3 -m uvicorn api.index:app --reload --host 127.0.0.1 --port 8000",
     "next-dev": "next dev",
