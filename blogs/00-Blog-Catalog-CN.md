@@ -43,3 +43,9 @@
 GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起。Top-Down + AI，终于让"从牛人那里偷师"变得可行。
 
 📄 [06-Learn-From-The-Giants-CN.md](06-Learn-From-The-Giants-CN.md)
+
+## 07 - Steal Like an Artist
+
+不会设计？没关系。去 Pinterest 偷一个，让 AI 帮你实现。模仿不是终点，是起点。
+
+📄 [07-Steal-Like-An-Artist-CN.md](07-Steal-Like-An-Artist-CN.md)
