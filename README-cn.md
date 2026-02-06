@@ -1,6 +1,6 @@
 # 把 Next.js + FastAPI 应用部署到 Vercel
 
-> 把你在本地运行的 full-stack web application 部署到云端，让全世界都能访问。
+> 建立部署流水线，让你能即时验证代码改动是否能成功构建和部署。
 
 ## Overview
 
@@ -39,7 +39,12 @@ By the end of this exercise, you will:
 
 ## What You'll Build
 
-完成这个教程后，你的 Next.js 应用会运行在 Vercel 的服务器上，拥有一个类似 `https://your-project-name.vercel.app` 的公开 URL。任何人都可以通过这个 URL 访问你的网站。
+完成这个教程后，你会拥有一个可用的部署流水线：
+- 每次你 push 代码到你的 branch，Vercel 自动构建和部署
+- 你可以点击 "Visit" 查看 preview deployment，验证它是否正常工作
+- 这**不是** production（我们没有 promote 到 main）——这是你个人验证代码能否正确部署的工具
+
+把它想成 **部署的 TDD**：push → 看能不能 build → 有问题就修 → 重复。这种快速反馈循环是现代开发的核心。
 
 ---
 

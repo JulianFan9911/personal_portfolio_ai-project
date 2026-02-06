@@ -4,9 +4,9 @@
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand how modern CI/CD platforms like Vercel work and why they matter for software delivery
-2. **Skill outcome** - Successfully deploy a Next.js application to Vercel and manage deployments
-3. **Mindset outcome** - Appreciate that deployment is not the end but the beginning of delivering value to users
+1. **Cognitive outcome** - Understand how CI/CD platforms like Vercel provide instant feedback on whether code deploys correctly
+2. **Skill outcome** - Successfully set up a Vercel deployment pipeline and use it to verify code changes
+3. **Mindset outcome** - Treat deployment verification as part of TDD—push, see if it builds, fix if needed, repeat
 
 ## Concept Sequence
 
@@ -64,7 +64,7 @@ Teach concepts in this order:
 
 - **Let them fail once** - If their first deployment fails (common if main branch is incomplete), don't panic. Use it as a teaching moment to show how to read build logs and fix Framework Preset.
 
-- **Emphasize the "magic moment"** - When their website first loads on a `.vercel.app` URL, pause and celebrate. This is the moment code becomes real.
+- **Emphasize the "magic moment"** - When their preview first loads on a `.vercel.app` URL, pause and celebrate. This is the moment they see their deployment pipeline working.
 
 - **Connect to professional practice** - Mention that this is exactly how companies deploy: push to GitHub → CI/CD runs → website updates. They're learning professional workflows.
 
@@ -108,12 +108,12 @@ Teach concepts in this order:
 
 ## Key Messages to Reinforce
 
-1. **Deployment is just the beginning** - Once deployed, the real work starts: user feedback, iterations, improvements.
+1. **This is TDD for deployment** - Push code, see if it builds, fix if needed, repeat. The deployment pipeline gives you instant feedback.
 
-2. **Modern deployment is easy** - What used to take days now takes minutes. No excuses for not deploying.
+2. **Preview != Production** - We're setting up preview deployments, not promoting to production. The goal is verification, not public release.
 
-3. **Preview deployments are powerful** - Every branch gets its own URL. Use this to share work-in-progress with others.
+3. **Preview deployments are your testing ground** - Every branch gets its own URL. Use this to verify your code deploys correctly before moving forward.
 
-4. **Errors are normal** - Build failures happen. The skill is knowing how to read logs and fix issues.
+4. **Errors are normal and expected** - Build failures happen. The skill is knowing how to read logs and fix issues quickly.
 
-5. **Automation frees your mind** - CI/CD handles the mechanical work so you can focus on creating.
+5. **Automation enables rapid iteration** - CI/CD handles the mechanical work so you can focus on code changes and immediately see results.

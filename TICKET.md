@@ -2,7 +2,9 @@
 
 ## Objective
 
-Deploy your locally running Next.js application to Vercel, making it accessible to anyone on the internet.
+Set up Vercel deployment for your Next.js application so you can instantly verify if your code changes deploy successfully—a key part of your development workflow.
+
+This is a **preview deployment** (not production). The goal is to establish the deployment pipeline so that every time you push code, you can immediately see if it builds and deploys correctly. Think of it as TDD for deployment: push → see result → fix if needed → repeat.
 
 Read the tutorial: [Deploying Next.js App to Vercel](https://github.com/sanhehu/learn_personal_portfolio_ai-project/tree/05-Deploy-Hello-World-NextJs-App-to-Vercel)
 
@@ -37,7 +39,7 @@ Read the tutorial: [Deploying Next.js App to Vercel](https://github.com/sanhehu/
 - [ ] **Vercel account created** - You have a Vercel account and can log in
 - [ ] **GitHub authorized** - Vercel can access your repository
 - [ ] **First deployment successful** - Status shows "Ready" (green)
-- [ ] **Website accessible** - You can visit your `.vercel.app` URL and see your app
+- [ ] **Preview accessible** - You can click "Visit" and see your app in the preview deployment
 - [ ] **Auto-deploy verified** - Pushing code triggers automatic deployment
 
 ---
@@ -66,7 +68,7 @@ When you're done:
 - **Vercel account setup:** Student can log into Vercel dashboard (Just ask student)
 - **GitHub authorization:** Repository appears in Vercel's import list (Just ask student)
 - **Successful deployment:** At least one deployment shows "Ready" status (Just ask student)
-- **Website accessibility:** The `.vercel.app` URL loads without errors (Just ask student)
+- **Preview accessibility:** The preview deployment URL loads without errors (Just ask student)
 - **Screenshot requirements:**
   - Browser URL bar is visible showing `.vercel.app` domain
   - The deployed application is visible and functional

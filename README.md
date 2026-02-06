@@ -1,6 +1,6 @@
 # Deploying Your Next.js + FastAPI App to Vercel
 
-> Take your locally running full-stack web application and deploy it to the cloud for the whole world to access.
+> Set up a deployment pipeline so you can instantly verify if your code changes build and deploy successfully.
 
 ## Overview
 
@@ -39,7 +39,12 @@ By the end of this exercise, you will:
 
 ## What You'll Build
 
-After completing this tutorial, your Next.js application will run on Vercel's servers with a public URL like `https://your-project-name.vercel.app`. Anyone can access your website through this URL.
+After completing this tutorial, you'll have a working deployment pipeline:
+- Every time you push code to your branch, Vercel automatically builds and deploys
+- You can click "Visit" to see your preview deployment and verify it works
+- This is **not** production (we're not promoting to main)—it's your personal verification that the code deploys correctly
+
+Think of it as **TDD for deployment**: push → see if it builds → fix if needed → repeat. This rapid feedback loop is essential for modern development.
 
 ---
 
