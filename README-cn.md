@@ -1,572 +1,550 @@
-# AI 辅助编程：添加卡片组件与个人信息展示
+# 集成 Hardcoded AI 对话界面
 
-> 学习如何在 AI 辅助下为 personal portfolio 网站添加自定义 UI 组件。
-
-![Screenshot](./img/07-Add-Card-Components-And-Hero-Section/01-personal-info-and-card.png)
+> 学习前后端分离的核心理念，并实现一个简化版的 AI 聊天功能。
 
 ## Overview
 
-你已经学会了如何探索代码库、找到 UI 元素对应的源码。现在，是时候亲手创造一些东西了。
+恭喜你走到了这一步！如果说前面的学习都是在打基础、熟悉工具，那么从今天开始，我们就要进入这个项目最核心、最激动人心的部分了——让你的个人主页"活"起来，能够与访客对话。
 
-但这不是传统意义上的"写代码"——在 AI 时代，编程的核心技能变了。不再是记住语法、背诵 API，而是**学会如何清晰地向 AI 描述你想要什么**。
-
-这节课，你会体验一种全新的工作方式：**看到喜欢的设计 → 描述给 AI → 让 AI 帮你实现 → 理解代码如何工作**。这个技能将陪伴你整个职业生涯。
-
-**关于技术栈：** 这个项目使用 React 组件和 Tailwind CSS。如果你不知道这些是什么，没关系——我们采用**先动手，后理解**的学习方式。先把东西做出来，看到效果，然后再回头理解原理。详细的概念介绍放在练习之后。
+今天的学习，表面上看是在添加一个聊天界面，但实际上你将接触到一个极其重要的架构思维——**前后端分离**。这个概念看似简单，但它背后蕴含的"数据与逻辑分离"的哲学，几乎贯穿了整个科技行业。理解了这一点，你看待任何复杂系统的方式都会发生根本性的改变。
 
 ## Learning Objectives
 
-为什么这很重要？
+当你加入一个新团队或开始一个新项目时，你会发现现代 Web 应用几乎都采用前后端分离的架构。理解这种架构不仅能帮助你更快地上手新项目，更重要的是，它背后的"数据与逻辑分离"思想是一种通用的系统设计能力，无论你将来做什么方向，这种思维方式都会让你受益匪浅。
 
-当你浏览其他人的 portfolio 网站时，你会看到很多炫酷的设计——渐变按钮、悬浮卡片、动态图标。以前，你需要花几周时间学习 CSS 和 React 才能实现这些效果。现在，有了 AI，几分钟就能完成。
+通过今天的学习，你将：
 
-但关键不是"让 AI 帮你写代码"这么简单。关键是：
-
-1. **你要能描述清楚你想要什么** — 模糊的描述只会得到模糊的结果
-2. **你要能理解 AI 给你的代码** — 不理解就无法调试、修改、扩展
-3. **你要能把学到的知识迁移到新场景** — 这才是真正的学习
-
-这三点，才是 AI 时代最重要的编程技能。
-
-完成这节课后，你将：
-
-1. 学会如何从设计灵感到代码实现的完整流程
-2. 理解 React 组件和 Tailwind CSS 的基本工作原理
-3. 掌握向 AI 提需求的正确姿势——提供充足的 context
-4. 能够独立为自己的 portfolio 添加新的 UI 元素
+1. **深刻理解前后端分离的本质**——不仅仅是前端和后端的职责划分，更重要的是掌握"数据与逻辑分离"这个放之四海而皆准的思维方式
+2. **定位并理解聊天界面的关键代码**——学会在复杂项目中快速找到你需要的组件和功能
+3. **实践修改和测试 hardcoded 对话**——体验前后端通信的完整流程，虽然暂时是"假的 AI"，但数据流动是真实的
+4. **初步了解 AI SDK 的 Stream Protocol**——理解前后端如何约定接口进行通信（下一个教程会深入讲解）
 
 ## Prerequisites
 
-- 你已完成前面的教程，能运行 `mise run dev`
-- 浏览器可以访问 http://localhost:3000
-- 你有一个 AI assistant (Claude, ChatGPT 等)
+- 你已经完成了前面的教程，能够成功运行 `mise run dev`
+- 你有一个浏览器，可以访问 http://localhost:3000
+- 你有一个 AI assistant 可用（Claude, ChatGPT 等）
 
 ## What You'll Build
 
-你将为 personal portfolio 网站添加自己喜欢的 UI 效果。
+你将在现有的个人主页项目中集成一个聊天界面。虽然这个版本的 AI 回复是 hardcoded（写死的），但整个前后端通信流程是真实的：
 
-可能是一个炫酷的按钮、一个卡片悬浮效果、一个图标动画——具体是什么，由你决定。
+- 用户在前端输入消息
+- 前端通过 API 发送请求到后端
+- 后端处理请求并返回流式响应
+- 前端接收并显示响应
 
-这节课的核心不是完成某个特定功能，而是**掌握从"我想要这个效果"到"代码跑起来了"的完整流程**。
+这为下一步接入真正的 AI 模型（如 AWS Bedrock）奠定了基础。
 
 ---
 
-## Key Concepts（简要版）
+## Key Concepts
 
-> 这里只做简单介绍，让你知道有这些东西。详细的概念讲解在练习之后，我们先动手！
+### 前后端分离：不仅仅是技术选型
 
-### Context Engineering
+你可能已经听说过"前后端分离"这个词无数次了。在网上搜索，你会看到各种技术实现：有人说要用 Node.js 做后端，有人说要用 React 做前端，还有人说现在流行全栈框架如 Next.js 又把前后端"合并"了... 这些讨论容易让人迷失在技术细节中，忘记了最根本的问题：**我们为什么需要前后端分离？**
 
-**Context**（上下文）是和 AI 协作时最重要的技能。简单说，就是**给 AI 足够的背景信息**，让它能准确理解你的需求。
+答案其实非常简单，但又极其深刻：**数据和逻辑应该分离**。
 
-后面的练习会教你怎么做。
+### 什么是数据？什么是逻辑？
 
-### React 组件
+让我们从最简单的例子开始理解这个概念。
 
-React 组件就是**可复用的 UI 模块**，像乐高积木一样可以拼装。
+想象你要在个人主页上展示你的项目经历。你的项目**数据**可能是这样的：
 
-你会在代码里看到类似这样的东西：
-```tsx
-<Hero />
-<StatsSection />
-<ContactSection />
+```json
+{
+  "title": "AI 个人主页项目",
+  "description": "使用 Next.js 和 AWS Bedrock 构建的个人主页",
+  "tech_stack": ["Next.js", "Python", "AWS Bedrock"]
+}
 ```
 
-每一个都是一个组件。先知道这个概念就够了，详细介绍在后面。
+这就是**数据**——纯粹的信息，没有任何关于"如何展示"的逻辑。
 
-### Tailwind CSS
+而**逻辑**是什么呢？逻辑是："如何把这个数据变成用户看到的精美卡片？"这个过程包括：
 
-Tailwind CSS 是一种**用 class 名直接写样式**的方式：
-```tsx
-<button className="bg-blue-500 p-2 rounded">
-  点击我
-</button>
+- 解析 JSON 数据
+- 提取 title, description, tech_stack 字段
+- 为每个技术标签添加不同的颜色
+- 将这些信息组装成 HTML 元素
+- 应用 CSS 样式让卡片好看
+
+你看，数据本身是静态的、客观的，而逻辑是动态的、可变的。**数据告诉你"是什么"，逻辑告诉你"怎么做"**。
+
+### 为什么要分离？
+
+现在关键问题来了：为什么不把数据和逻辑混在一起？
+
+想象如果我们不分离会怎样：你把项目数据直接写死在 HTML 代码里：
+
+```html
+<div class="project-card">
+  <h3>AI 个人主页项目</h3>
+  <p>使用 Next.js 和 AWS Bedrock 构建的个人主页</p>
+  <span class="tag-nextjs">Next.js</span>
+  <span class="tag-python">Python</span>
+  <span class="tag-aws">AWS Bedrock</span>
+</div>
 ```
 
-`bg-blue-500` 是蓝色背景，`p-2` 是内边距，`rounded` 是圆角。先知道这个概念就够了。
+看起来挺好的对吧？但问题来了：
+
+- **问题 1**：如果你要添加一个新项目，你需要复制粘贴整个 HTML，然后一个一个改里面的文字
+- **问题 2**：如果你想改变卡片的样式，你需要找到所有的卡片 HTML 并逐个修改
+- **问题 3**：如果你想让项目数据来自数据库或 API，现在根本做不到，因为数据是写死的
+- **问题 4**：如果你想在手机上显示不同的样式，你需要维护两套完全不同的 HTML
+
+这就是混在一起的痛苦。
+
+现在我们分离一下：
+
+**数据层（后端）：**
+
+```python
+projects = [
+  {
+    "title": "AI 个人主页项目",
+    "description": "使用 Next.js 和 AWS Bedrock 构建的个人主页",
+    "tech_stack": ["Next.js", "Python", "AWS Bedrock"]
+  },
+  {
+    "title": "数据分析平台",
+    "description": "实时处理 TB 级数据的分析系统",
+    "tech_stack": ["Spark", "Kafka", "PostgreSQL"]
+  }
+]
+```
+
+**逻辑层（前端）：**
+
+```tsx
+function ProjectCard({ project }) {
+  return (
+    <div className="project-card">
+      <h3>{project.title}</h3>
+      <p>{project.description}</p>
+      {project.tech_stack.map(tech => (
+        <span className={`tag-${tech}`}>{tech}</span>
+      ))}
+    </div>
+  )
+}
+
+// 使用：遍历所有项目数据
+projects.map(project => <ProjectCard project={project} />)
+```
+
+分离后的好处立刻显现：
+
+- **添加新项目**：只需在数据数组中添加一个对象，界面自动更新
+- **修改样式**：只需修改 ProjectCard 组件一次，所有项目卡片都会改变
+- **数据来源灵活**：projects 可以来自数据库、API、本地文件，逻辑代码不需要改变
+- **响应式设计**：逻辑可以根据屏幕大小调整样式，数据保持不变
+
+### API：前后端通信的"SOP"
+
+API（Application Programming Interface）本质上就是一个最简单的 SOP（标准作业程序）：它定义了：
+
+- **输入数据的格式**（请求的参数）
+- **处理的逻辑**（后端要做什么）
+- **输出数据的格式**（返回的结果）
+
+在我们的聊天应用中，数据流动是这样的：
+
+1. 用户在聊天界面输入一个问题："你的项目经验有哪些？"
+2. 前端收集输入数据（用户的问题文本、历史聊天记录）
+3. 前端发送请求到后端 API：`POST /api/chat`
+4. 后端接收请求并处理（现在是返回 hardcoded 回复，将来是调用 AI 模型）
+5. 后端返回回复数据
+6. 前端接收回复并显示
+
+整个流程中：
+- **数据**：用户问题、历史记录、AI 回复
+- **逻辑**：前端的界面渲染、后端的 AI 调用
+
+它们通过 API 清晰地分离开来。
+
+### Stream Protocol：流式响应的高层理解
+
+我们的聊天应用有个特殊之处：AI 的回复不是一次性返回的，而是一个字一个字地流式输出，就像 ChatGPT 那样。
+
+**传统 API（一次性返回）：**
+
+```
+用户发送消息 → 等待 10 秒 → 一次性显示完整回复
+```
+
+用户体验：在这 10 秒里，界面没有任何反馈，用户会以为系统卡住了。
+
+**流式 API（Stream Protocol）：**
+
+```
+用户发送消息 → 0.5秒后显示"你" → 0.5秒后显示"你好" → 0.5秒后显示"你好！" → ...
+```
+
+用户体验：立刻就有反馈，感觉 AI 在"思考"和"打字"，体验类似和真人聊天。
+
+在我们的项目中，我们使用的是 **AI SDK 的 Stream Protocol**。你现在只需要知道：
+
+- 后端会按照特定格式一段一段发送数据
+- 前端的 AI SDK 会自动解析这些数据并更新界面
+- 下一个教程我们会深入讲解 Stream Protocol 的细节
+
+> **关键理解**：今天我们先跑通整个流程，理解数据如何从前端到后端再回到前端。Stream Protocol 的具体格式和工作原理，我们下一个教程再深入学习。
 
 ---
 
 ## Exercises
 
-### Exercise 1: 启动项目，观察现有组件
+### Exercise 1: 启动项目并切换分支
 
-**Goal:** 熟悉项目当前的 UI 结构。
+**Goal:** 准备好开发环境，确保项目可以正常运行。
 
 **What to do:**
 
-1. 启动开发服务器：
+1. 在 Codespaces 中切换到包含聊天功能的分支：
+
    ```bash
+   git checkout 08-Add-Hardcoded-AI-Interaction
+   ```
+
+2. 安装依赖并启动开发服务器：
+
+   ```bash
+   mise run inst
    mise run dev
    ```
 
-2. 打开 http://localhost:3000
-
-3. 观察页面上的这些元素：
-   - Hero section（头像、名字、简介）
-   - Social icons（GitHub、LinkedIn、Blog 图标）
-   - Stats cards（成就卡片 grid）
-   - Contact section（联系按钮）
-
-4. 用前一节课学的技能，尝试找到每个元素对应的代码文件。
+3. 在浏览器中访问 http://localhost:3000，点击导航栏的 "Chat" 链接（或直接访问 http://localhost:3000/chat），你应该能看到一个聊天界面。
 
 **What you'll notice:**
 
-页面由多个组件构成：
-- `Hero.tsx` — 头像、名字、简介、社交图标
-- `StatsSection.tsx` — 成就卡片 grid
-- `ContactSection.tsx` — 联系区域
+聊天界面已经有了完整的 UI：输入框、发送按钮、消息显示区域。但现在发送消息还不会有真正的 AI 回复——这正是我们要实现的。
 
-这些组件在 `HomePageContent.tsx` 中被组合使用。
-
-> **Key insight:** 大的页面由小的组件拼装而成。理解这种结构，你就能知道该在哪里修改代码。
+> **Key insight:** 我们要实现的是"假的 AI"（hardcoded 回复），但整个前后端通信流程是真实的。这让我们可以先专注于理解架构，而不是 AI 调用的细节。
 
 ---
 
-### Exercise 2: 寻找设计灵感
+### Exercise 2: 定位聊天界面的关键组件
 
-**Goal:** 找到你想添加到 portfolio 的 UI 效果。
-
-**What to do:**
-
-1. 打开 https://www.pinterest.com/（需要注册账号）
-
-2. 搜索 "personal portfolio website"
-
-3. 你会看到很多设计灵感：
-
-![Pinterest Ideas](./img/07-Add-Card-Components-And-Hero-Section/02-personal-portfolio-ideas.png)
-
-4. 浏览设计图，找到一个你喜欢的**小元素**：
-   - 一个有趣的按钮样式
-   - 一个卡片的悬浮效果
-   - 一个 skill bar 的设计
-   - 一个 timeline 组件
-   - 一个 icon 的动画效果
-
-5. **截图保存**，把你喜欢的那个小部分圈出来
-
-**Important:** 选择一个**小而具体**的元素，不要选整个页面。小元素更容易实现，更容易理解。
-
-**What you'll notice:**
-
-好的 portfolio 设计通常有这些共同点：
-- 简洁的布局
-- 吸引眼球的交互效果（悬浮、点击反馈）
-- 一致的配色方案
-- 适当的留白
-
-> **Key insight:** 设计灵感要具体化。"我想让网站更好看"太模糊；"我想要这个按钮的渐变效果"可以执行。
-
----
-
-### Exercise 3: 向 AI 描述你想要的效果
-
-**Goal:** 学习如何清晰地向 AI 提需求。
+**Goal:** 学会在项目代码中找到聊天界面的关键文件，理解组件结构。
 
 **What to do:**
 
-1. 打开你的 AI assistant (Claude, ChatGPT 等)
+1. 打开 VS Code，找到以下关键文件：
 
-2. 使用以下 prompt 模板，把 `[...]` 替换成你的具体内容：
+   - `app/chat/page.tsx` - 聊天页面的入口
+   - `components/chat/chat.tsx` - 聊天功能的核心组件
+   - `components/chat/multimodal-input.tsx` - 输入框和发送按钮
+   - `components/chat/message.tsx` - 单条消息的渲染
 
-```
-我想将这张图片中的 [具体描述你圈出的那个元素] 加入到我的 personal portfolio 网站。
+2. 在 `components/chat/chat.tsx` 中，找到 `useChat` hook：
 
-【项目背景】
-- 技术栈：Next.js + React + Tailwind CSS
-- 我想把这个元素添加到 [具体位置，比如"Hero section 的社交图标下方"]
-- 当前相关代码在 [文件路径，比如 app/(marketing)/_components/Hero.tsx]
-
-【我想要的效果】
-- 形状：[描述形状]
-- 颜色：[描述颜色]
-- 文字/图标：[描述内容]
-- 交互效果：[比如悬浮时放大/变色]
-
-【我的要求】
-请使用对于新手最容易懂、代码量尽量少的方式实现。
-完成基础的设计功能即可，不需要过于复杂。
-请详细解释：
-1. 改了哪些代码
-2. 每段代码的作用是什么
-3. 为什么这样写能实现这个效果
-```
-
-3. 把截图一起发给 AI
-
-4. 仔细阅读 AI 的回复，确保你理解了每个步骤
-
-**Example prompt:**
-
-```
-我想将这张图片中的"带图标的技能进度条"加入到我的 personal portfolio 网站。
-
-【项目背景】
-- 技术栈：Next.js + React + Tailwind CSS
-- 我想把这个元素添加到 StatsSection 下方
-- 当前相关代码在 app/(marketing)/HomePageContent.tsx
-
-【我想要的效果】
-- 每个进度条有一个技能名称和一个图标
-- 进度条是渐变色的，从蓝色到紫色
-- 鼠标悬浮时进度条会轻微发光
-
-【我的要求】
-请使用对于新手最容易懂、代码量尽量少的方式实现。
-完成基础的设计功能即可，不需要过于复杂。
-请详细解释：
-1. 改了哪些代码
-2. 每段代码的作用是什么
-3. 为什么这样写能实现这个效果
-```
-
-> **Key insight:** 描述越具体，AI 给的代码越准确。如果结果不满意，补充更多 context 再问一次。
-
----
-
-### Exercise 4: 应用代码并理解
-
-**Goal:** 把 AI 给的代码加入项目，并理解它是如何工作的。
-
-**What to do:**
-
-1. **仔细阅读 AI 的解释**，不要急着复制代码
-
-2. **确认修改位置**：AI 应该告诉你要修改哪个文件的哪个位置
-
-3. **应用代码**：
-   - 打开对应的文件
-   - 按照 AI 的指示添加或修改代码
-   - 保存文件
-
-4. **查看效果**：刷新浏览器 http://localhost:3000
-
-5. **理解代码**：如果有任何不理解的地方，问 AI：
-
-```
-你给的代码中，这一行是什么意思？
-[粘贴那一行代码]
-```
-
-6. **使用 Git 查看改动**：
-   ```bash
-   git diff
+   ```tsx
+   const {
+     messages,       // 消息数组
+     sendMessage,    // 发送消息的函数
+     status,         // 当前状态
+     stop,           // 停止 AI 回复的函数
+   } = useChat({
+     // 配置...
+   });
    ```
 
-   这会显示你修改了哪些文件、哪些行。
+3. 找到 `handleSubmit` 函数，理解当用户点击发送时发生了什么：
+
+   ```tsx
+   const handleSubmit = () => {
+     if (input.trim()) {
+       sendMessage({ text: input });  // 调用 AI SDK 的发送函数
+       setInput("");                   // 清空输入框
+     }
+   };
+   ```
 
 **What you'll notice:**
 
-- 大多数 UI 效果只需要修改几十行代码
-- Tailwind CSS 的 class 名通常很直观
-- 组件的结构是嵌套的，大组件包含小组件
+- `useChat` 是 AI SDK 提供的 hook，封装了消息状态管理、API 请求等复杂逻辑
+- 前端开发者不需要手动写 fetch 请求，AI SDK 帮我们处理了
+- `messages` 数组包含所有聊天记录，每次更新时 React 会自动重新渲染
 
-> **Key insight:** "先做再理解"比"完全理解再做"更有效。看到效果后再去理解代码，印象更深刻。
+> **Key insight:** AI SDK 帮我们封装了大量复杂逻辑。我们只需要调用 `sendMessage`，SDK 会自动向 `/api/chat` 发送请求并处理响应。
 
 ---
 
-### Exercise 5: 微调和迭代
+### Exercise 3: 找到后端 API 代码
 
-**Goal:** 学会根据效果微调代码。
+**Goal:** 理解后端是如何处理聊天请求的。
 
 **What to do:**
 
-1. 看着浏览器中的效果，思考：
-   - 颜色满意吗？
-   - 大小合适吗？
-   - 间距好看吗？
-   - 交互效果自然吗？
+1. 打开 `api/index.py`，找到处理聊天请求的函数：
 
-2. 如果想调整，问 AI：
+   ```python
+   @app.post("/api/chat")
+   async def handle_chat_data(request: Request):
+       # 解析请求
+       request_body_data = await request.json()
+       messages = request_body_data.get('messages', [])
+       user_message = messages[-1]['parts'][0]['text'] if messages else ""
 
-```
-效果基本是我想要的，但我想做一些调整：
-- [具体调整，比如"按钮颜色从蓝色改成绿色"]
-- [具体调整，比如"悬浮时的放大效果减小一点"]
+       # 生成回复（目前是 hardcoded）
+       hardcoded_reply = f"你好！我收到了你的消息：「{user_message}」"
 
-请告诉我需要修改代码的哪个部分。
-```
+       # 返回流式响应
+       return StreamingResponse(...)
+   ```
 
-3. 应用 AI 的建议，再次查看效果
+2. 注意 `StreamingResponse` 的使用——这就是让 AI 回复可以"一个字一个字"显示的关键。
 
-4. 重复这个过程，直到满意为止
+3. 找到生成 Stream Protocol 格式的代码：
 
-**Iteration tips:**
+   ```python
+   def ai_sdk_v5_message_generator():
+       id = str(uuid.uuid4())
+       yield f'data: {json.dumps({"type": "text-start", "id": id})}\n\n'
+       yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": hardcoded_reply})}\n\n'
+       yield f'data: {json.dumps({"type": "text-end", "id": id})}\n\n'
+       yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+       yield "data: [DONE]\n\n"
+   ```
 
-- 每次只改一件事，这样容易定位问题
-- 保存每次满意的状态（可以用 Git commit）
-- 不用追求完美，"差不多了"就行
+**What you'll notice:**
 
-> **Key insight:** 编程是一个迭代过程。没有人能一次写出完美的代码。调试和微调是正常的工作流程。
+- 后端使用 Python 的 generator（`yield`）来逐步发送数据
+- 每行数据都以 `data: ` 开头，这是 SSE（Server-Sent Events）的标准格式
+- AI SDK 会在前端自动解析这些数据
+
+> **Key insight:** 虽然 Stream Protocol 的格式看起来有点复杂，但你现在只需要知道：后端发送的每一段数据，前端都能实时接收到。具体的格式细节，我们下一个教程会深入学习。
 
 ---
 
-## Key Concepts（详细版）
+### Exercise 4: 修改 Hardcoded 回复
 
-> 现在你已经动手做了，回过头来理解这些概念会更有感觉。
+**Goal:** 动手修改代码，验证整个前后端通信流程。
 
-### Context Engineering: AI 时代最重要的技能
+**What to do:**
 
-**Context**（上下文）是什么？
+1. 打开 `api/index.py`，找到 `hardcoded_reply` 这一行
 
-想象你请朋友帮你做一件事。你不会只说"帮我做这个"，而是会告诉他：
-- 背景是什么？
-- 为什么要做？
-- 现在有什么资源？
-- 之前试过什么方法？
+2. 修改回复内容，比如：
 
-这些信息就是 context。人类天生会收集和理解 context，但 AI 需要你**明确地提供**。
+   ```python
+   hardcoded_reply = f"""你好！我收到了你的消息：「{user_message}」
 
-**为什么 Context Engineering 这么重要？**
+   我是一个 hardcoded 的 AI 回复。目前我还在开发中，很快就能真正回答你的问题了！
 
-同样一个需求，不同的描述方式会得到完全不同的结果：
+   你可以问我关于：
+   - 我的技能和项目经验
+   - 我的学习背景
+   - 我的联系方式
+   """
+   ```
 
-**糟糕的描述：**
+3. 保存文件，后端会自动重启
+
+4. 在浏览器中发送一条消息，比如"你好"，观察 AI 的回复
+
+**What you'll notice:**
+
+你修改的内容立刻就生效了！这说明：
+- 前端正确地发送了请求到后端
+- 后端正确地处理了请求并返回了你的 hardcoded 回复
+- 前端正确地显示了后端返回的内容
+
+> **Key insight:** 虽然 AI 是"假的"，但整个数据流动是真实的。当我们将来替换成真正的 AI 调用时，前端代码几乎不需要改动——这就是分离的力量！
+
+---
+
+### Exercise 5: 在浏览器 DevTools 中观察网络请求
+
+**Goal:** 亲眼看到前后端通信的数据。
+
+**What to do:**
+
+1. 打开浏览器的开发者工具（F12）
+
+2. 切换到 "Network"（网络）标签
+
+3. 在聊天界面发送一条消息
+
+4. 在 Network 标签中，找到 `chat` 这个请求，点击它
+
+5. 查看：
+   - **Headers**：请求头信息
+   - **Payload**：前端发送的数据（你的消息）
+   - **Response**：后端返回的流式数据
+
+**What you'll notice:**
+
+在 Response 中，你会看到类似这样的内容：
+
 ```
-帮我把卡片改成蓝色
-```
-
-AI 不知道：你在说哪个卡片？项目结构是什么？用的什么技术栈？
-
-**好的描述：**
-```
-我在做 personal portfolio 网站，使用 React + Tailwind CSS。
-卡片组件在 app/(marketing)/_components/StatsSection.tsx。
-现在卡片背景是深色的，我想把它改成浅蓝色。
-请告诉我应该修改哪里，改成什么代码。
-```
-
-看到区别了吗？好的描述包含：
-- **项目背景**（我在做什么）
-- **技术栈**（用什么工具）
-- **具体位置**（代码在哪）
-- **当前状态**（现在是什么样）
-- **目标需求**（我想要什么）
-
-这个技能不仅用于 AI 编程，也适用于你未来的工作沟通、团队协作、甚至日常生活中的问题解决。
-
-### React 组件：可复用的 UI 模块
-
-**什么是组件？用乐高来类比**
-
-想象你在搭乐高。每个乐高积木都是一个独立的单元——你可以把它用在城堡上，也可以用在汽车上。
-
-React 组件就是代码世界的乐高积木：
-
-```tsx
-// 这是一个"卡片"积木
-function Card({ title, description }) {
-  return (
-    <div className="border rounded-lg p-4">
-      <h3>{title}</h3>
-      <p>{description}</p>
-    </div>
-  )
-}
-```
-
-写一次，到处复用：
-
-```tsx
-<Card title="项目A" description="这是项目A的描述" />
-<Card title="项目B" description="这是项目B的描述" />
-<Card title="项目C" description="这是项目C的描述" />
+data: {"type":"text-start","id":"..."}
+data: {"type":"text-delta","id":"...","delta":"你好！我收到了..."}
+data: {"type":"text-end","id":"..."}
+data: {"type":"finish-message","finishReason":"stop"}
+data: [DONE]
 ```
 
-**如何识别 React 组件？**
+这就是 Stream Protocol！每一行以 `data: ` 开头，后面跟一个 JSON 对象。
 
-- 它是一个函数（function）
-- 函数名是大写开头（如 `Card`、`Button`、`Hero`）
-- 函数返回 JSX（看起来像 HTML 的东西）
+> **Key insight:** DevTools 是你的"X 光眼"。通过观察网络请求，你可以清楚地看到前端发送了什么、后端返回了什么。这是调试问题的重要技能。
 
-**框架化思考：学习任何新组件的三个步骤**
+---
 
-1. **分类体系** — 先知道有哪些类型的组件（按钮、卡片、表单、布局...）
-2. **建立概念** — 去组件库网站看看实际效果，点击、悬停、感受交互
-3. **动手实践** — 先模仿（从 1 到 10），再创造（从 0 到 1）
+### Exercise 6: 根据关键词返回不同回复（扩展练习）
 
-**去哪里看组件效果？**
+**Goal:** 让 hardcoded AI 更"智能"一点。
 
-问 AI："有哪些优秀的 React 组件库网站？我想看看常见组件的效果。"
+**What to do:**
 
-AI 会推荐一些网站，你可以去浏览 5-10 分钟，感受一下"组件"是什么样的。
+1. 修改 `api/index.py` 中的回复逻辑：
 
-> **注意：** 组件库这个话题可以讲一个月。这里你只需要理解**组件是什么**、**设计理念是什么**就够了。具体的组件 API、属性配置，需要时再查文档或问 AI。
+   ```python
+   user_message = messages[-1]['parts'][0]['text'] if messages else ""
 
-### Tailwind CSS：用 class 直接写样式
+   if "项目" in user_message:
+       reply = """我有三个主要项目：
 
-传统 CSS 需要在单独的文件里写样式：
+   1. **AI 个人主页** - 使用 Next.js + AWS Bedrock 构建
+   2. **数据分析平台** - 实时处理 TB 级数据
+   3. **机器学习模型部署** - MLOps 最佳实践
 
-```css
-/* styles.css */
-.my-button {
-  background-color: blue;
-  padding: 10px;
-  border-radius: 5px;
-}
-```
+   你想了解哪个项目的详情？"""
 
-Tailwind CSS 让你直接在 HTML 里用 class 组合样式：
+   elif "技能" in user_message:
+       reply = """我掌握的技能包括：
 
-```tsx
-<button className="bg-blue-500 p-2 rounded">
-  点击我
-</button>
-```
+   - **编程语言**：Python, JavaScript, TypeScript
+   - **框架**：React, Next.js, FastAPI
+   - **云服务**：AWS (Bedrock, Lambda, S3)
+   - **AI/ML**：TensorFlow, PyTorch, LangChain"""
 
-每个 class 做一件事：
-- `bg-blue-500` — 蓝色背景（50-900 共 9 个色阶）
-- `text-white` — 白色文字
-- `p-2` — 内边距
-- `px-4` — 水平内边距
-- `py-2` — 垂直内边距
-- `m-4` — 外边距
-- `rounded` — 圆角
-- `shadow` — 阴影
-- `hover:bg-blue-600` — 鼠标悬停时的效果
-- `transition` — 过渡动画
+   elif "联系" in user_message:
+       reply = "你可以通过邮件联系我：your@email.com"
 
-**为什么用 Tailwind？**
+   else:
+       reply = f"收到你的消息：「{user_message}」\n\n请问关于我的**项目**、**技能**或**联系方式**？"
+   ```
 
-1. **快** — 不用在文件之间跳转
-2. **直观** — 看 class 名就知道效果
-3. **一致性** — 提供统一的设计系统（颜色、间距、字号）
-4. **响应式** — 轻松适配不同屏幕（`md:text-lg` 表示中等屏幕时用大字）
+2. 保存并测试不同的问题
 
-**常用的 Tailwind 类速查：**
+**What you'll notice:**
 
-布局：`flex`、`grid`、`justify-center`、`items-center`
-间距：`p-4`、`m-4`、`space-x-4`、`gap-4`
-尺寸：`w-full`、`h-screen`、`max-w-4xl`
-颜色：`bg-blue-500`、`text-gray-700`、`border-gray-300`
-文字：`text-xl`、`font-bold`、`text-center`
-效果：`shadow`、`rounded`、`hover:scale-105`、`transition`
+现在你的 AI 会根据关键词返回不同的回复！虽然这还不是真正的 AI，但它展示了一个重要的模式：**后端可以根据输入数据执行不同的逻辑**。
 
-> **注意：** Tailwind CSS 也可以讲一个月。这里你只需要理解**它是什么**、**设计理念是什么**就够了。具体的 class 名，需要时查文档（https://tailwindcss.com/docs）或问 AI。
+> **Key insight:** 这个练习展示了"数据驱动逻辑"的思想。当我们将来接入真正的 AI 时，只需要把 `if-else` 逻辑替换成 AI 调用即可，整体架构不变。
 
 ---
 
 ## Reflection: What Did We Learn?
 
-完成这些练习后，你学会了：
+完成这些练习后，你学到了：
 
-**AI 辅助编程的完整流程：**
-1. 找到设计灵感（具体化你想要什么）
-2. 向 AI 描述需求（提供充足的 context）
-3. 应用代码并理解（先做再学）
-4. 迭代微调（小步快跑）
+**前后端分离的本质**
+- 数据与逻辑分离是核心思想
+- 前端负责界面展示和用户交互
+- 后端负责数据处理和业务逻辑
+- 它们通过 API 进行通信
 
-**Context Engineering 的核心要素：**
-- 说明项目背景和技术栈
-- 指出具体的文件位置
-- 描述当前状态和目标状态
-- 明确你的约束和要求
+**聊天应用的架构**
+- `useChat` hook 封装了消息状态管理
+- 前端发送 POST 请求到 `/api/chat`
+- 后端使用 StreamingResponse 返回流式数据
+- AI SDK 自动处理流式响应的解析和显示
 
-**React 和 Tailwind 的基本概念：**
-- 组件是可复用的 UI 模块
-- Tailwind 用 class 组合样式
-- 大页面由小组件拼装而成
+**关键文件定位**
+- `app/chat/page.tsx` - 聊天页面入口
+- `components/chat/chat.tsx` - 核心聊天逻辑
+- `components/chat/multimodal-input.tsx` - 输入组件
+- `components/chat/message.tsx` - 消息渲染组件
+- `api/index.py` - 后端 API 处理
 
-**最重要的是：**
-- 你不需要记住所有代码——需要时问 AI
-- 你需要能清晰描述你想要什么
-- 你需要能理解 AI 给你的代码
-- 这个技能适用于任何编程任务
+**最重要的是**
+- 理解"为什么这样设计"比记住"代码在哪里"更有价值
+- Hardcoded 回复虽然是"假的"，但架构是真实的
+- 当我们替换成真正的 AI 时，前端几乎不需要改动
 
 ---
 
 ## Mentor's Note
 
-**为什么这个练习如此重要：**
+**Why this exercise matters:**
 
-我见过太多人这样学编程：看视频、记语法、背 API、做习题。学了很久，还是不会做东西。
+今天的内容信息量很大，你可能会觉得有点累。但我要恭喜你——因为你已经迈过了一个重要的门槛。
 
-真正的编程能力不是记忆，是**创造**——把脑子里的想法变成能运行的代码。
+大多数初学者学编程时，只关注"这行代码是什么意思？""怎么改这个功能？"他们是 **Doer**——执行者，按照教程一步步操作。
 
-AI 改变了这个游戏。以前，从"想法"到"代码"需要几年的学习。现在，AI 帮你跨越了这道鸿沟。但 AI 不能替你做的是：
+但今天，你不仅学会了"怎么做"，更重要的是理解了"为什么这样做"。你开始思考：
+- 为什么要前后端分离？
+- 为什么需要 API？
+- 为什么要用流式响应？
 
-1. **知道自己想要什么** — 这需要你去看、去想、去选择
-2. **清晰地表达需求** — 这需要你练习 context engineering
-3. **理解代码为什么工作** — 这需要你追问、思考、验证
-
-这三件事，才是 AI 时代的核心编程技能。
+你开始成为 **Thinker**——思考者，理解背后的原理和设计思想。
 
 **Key insights:**
 
-- **从模仿开始，不丢人。** 所有大师都是从模仿开始的。看到好的设计，想办法复现它，这是最好的学习方式。
+- **框架会过时，思维方式不会**。5 年前流行 Angular，现在流行 React，5 年后可能又是新东西。但"数据与逻辑分离"的思想永远不会过时。
 
-- **完成比完美重要。** 一个"能用"的功能，比一个"完美但没做完"的功能有价值一万倍。先做出来，再慢慢改。
+- **分离的力量**。当你把系统设计好了，未来的扩展会非常简单。今天我们用 hardcoded 回复，明天换成 AWS Bedrock，前端代码几乎不用改。
 
-- **理解是渐进的。** 今天你可能只理解 50%，没关系。明天做另一个功能时，你会理解 60%。编程能力是这样一点点积累的。
-
-- **深入学习可以持续很久。** 组件库、Tailwind CSS 这些话题，每个都可以学一个月。但现在，你只需要理解它们是什么、设计理念是什么。具体细节，在你需要的时候再深入。
+- **先跑通，再理解**。你可能还不完全理解 Stream Protocol 的每个细节——这完全没问题。下一个教程我们会深入学习。今天的目标是理解整体架构，看到数据如何流动。
 
 **Next steps:**
 
-1. 继续给你的 portfolio 添加新元素——每做一个，你的技能就提升一点
-2. 尝试修改颜色、大小、间距——感受 Tailwind 的工作方式
-3. 当你做了 3-5 个小功能后，回头看第一个，你会发现自己进步了多少
+1. 下一个教程：深入学习 Stream Protocol 的工作原理
+2. 然后：配置 AWS Bedrock，接入真正的 AI
+3. 最后：构建个人知识库，让 AI 成为你的专属助手
+
+你已经打好了架构的基础。接下来的学习会越来越有意思！
 
 ---
 
 ## Quick Reference
 
 **启动开发服务器：**
+
 ```bash
 mise run dev
 ```
 
-**查看代码改动：**
+**切换到本教程的分支：**
+
 ```bash
-git diff
+git checkout 08-Add-Hardcoded-AI-Interaction
 ```
 
-**AI Prompt 模板：**
-```
-我想将这张图片中的 [元素描述] 加入到我的 personal portfolio 网站。
+**关键文件：**
 
-【项目背景】
-- 技术栈：Next.js + React + Tailwind CSS
-- 位置：[目标位置]
-- 相关文件：[文件路径]
+- `app/chat/page.tsx` - 聊天页面入口
+- `components/chat/chat.tsx` - 核心聊天组件，包含 `useChat` hook
+- `components/chat/multimodal-input.tsx` - 输入框和发送按钮
+- `components/chat/message.tsx` - 单条消息的渲染逻辑
+- `api/index.py` - 后端 API，处理 `/api/chat` 请求
 
-【效果描述】
-- 形状：[...]
-- 颜色：[...]
-- 交互：[...]
+**数据流动路径：**
 
-【要求】
-请用最简单的方式实现，并详细解释代码的作用。
-```
-
-**项目关键文件：**
-- `app/(marketing)/HomePageContent.tsx` — 主页内容组装
-- `app/(marketing)/_components/Hero.tsx` — 头像、名字、简介
-- `app/(marketing)/_components/StatsSection.tsx` — 成就卡片
-- `app/(marketing)/_components/ContactSection.tsx` — 联系区域
-- `data/achievement-stats.ts` — 成就卡片数据
-
-**设计灵感来源：**
-- https://www.pinterest.com/ — 搜索 "personal portfolio website"
-- https://dribbble.com/ — 高质量设计作品
-- https://awwwards.com/ — 获奖网站设计
-
-**Tailwind CSS 文档：**
-- https://tailwindcss.com/docs — 官方文档，需要什么 class 就去查
+1. 用户在 `multimodal-input.tsx` 输入消息
+2. `chat.tsx` 的 `handleSubmit` 调用 `sendMessage`
+3. AI SDK 自动发送 POST 请求到 `/api/chat`
+4. `api/index.py` 处理请求，返回 StreamingResponse
+5. AI SDK 解析流式响应，更新 `messages` 状态
+6. `message.tsx` 渲染每条消息
 
 ---
 
 ## Reference Implementation
 
-本教程对应 `07-Add-Card-Components-And-Profile-Display` branch。
+本教程对应的分支是 `08-Add-Hardcoded-AI-Interaction`。
 
-确认环境正常：
+验证你的环境是否正确：
 
 ```bash
-git checkout 07-Add-Card-Components-And-Profile-Display
+git checkout 08-Add-Hardcoded-AI-Interaction
 mise run inst
 mise run dev
 ```
 
-然后打开 http://localhost:3000 查看效果。
+然后打开 http://localhost:3000/chat，按照上面的练习进行操作。
