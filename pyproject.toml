@@ -7,6 +7,7 @@ requires-python = ">=3.12,<4.0"
 dependencies = [
     "fastapi>=0.118.0,<1.0.0",      # Web framework
     "uvicorn>=0.38.0,<1.0.0",       # ASGI server
+    "boto3>=1.42.0,<2.0.0",         # AWS SDK for Python
 ]
 
 [project.optional-dependencies]
