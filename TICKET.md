@@ -3,6 +3,8 @@
 ## Overview
 Learn to set up a professional Python development environment and write your first functions with type hints.
 
+Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/01-Setup-Python-Development-Environment/)
+
 ## Learning Path
 
 ### ✓ Task 1: Set Up Python Environment (2 minutes)
