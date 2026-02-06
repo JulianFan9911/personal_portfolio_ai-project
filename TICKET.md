@@ -1,47 +1,50 @@
-# Task Card: Explore Codebase with Top-Down Learning
+# Task Card: AI-Assisted Programming - Add Your Own UI Element
 
 ## Objective
 
-Learn to navigate unfamiliar code by starting from what you can see (UI) and tracing back to the source code.
+Learn to collaborate with AI to add custom UI elements to your personal portfolio website.
 
-This exercise teaches **exploration skills**, not coding skills. You won't write any code. Instead, you'll build the ability to find code for any UI element you see—a skill that transfers to any codebase, any framework, any language.
+This exercise teaches **AI-assisted programming skills**. You will find a design you like, describe it to AI, implement it in your codebase, and understand how it works. This is the core workflow of modern AI-assisted development.
 
-Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/06-Explore-Codebase-From-Top-To-Down/)
+Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/07-Add-Card-Components-And-Hero-Section/)
 
 ## Actionable Items
 
-1. **Run the application locally**
+1. **Run the application and observe existing components**
    - Execute `mise run dev`
-   - Open http://localhost:3000 in your browser
+   - Open http://localhost:3000
+   - Identify the existing components: Hero, StatsSection, ContactSection
 
-2. **Learn the three exploration techniques**
-   - Text search: Search for visible strings in the codebase
-   - DevTools: Inspect elements to find searchable attributes
-   - AI assistance: Screenshot and ask when other methods fail
+2. **Find design inspiration on Pinterest**
+   - Go to https://www.pinterest.com/
+   - Search "personal portfolio website"
+   - Find ONE small UI element you like (button, card, icon, progress bar, etc.)
+   - Screenshot and circle the specific element
 
-3. **Find the source code for each UI element**
-   - "Home" navigation link
-   - Profile picture (avatar)
-   - "John Doe" name and "AI Engineer" title
-   - "About Me" heading and Lorem Ipsum text
-   - "Test API Hello Endpoint" button
-   - API endpoint that returns the response
+3. **Describe your desired element to AI**
+   - Use the prompt template from the tutorial
+   - Include: project background, tech stack, target location, desired effect
+   - Ask AI to explain the code in detail
 
-4. **Trace the import chain**
-   - For each element, understand HOW it gets loaded onto the page
-   - Follow imports from component → parent → page entry point
+4. **Apply the code and verify**
+   - Follow AI's instructions to modify the code
+   - Check the result in browser
+   - Use `git diff` to see what changed
+
+5. **Iterate and refine**
+   - If needed, ask AI for adjustments
+   - Repeat until satisfied with the result
 
 **Estimated time:** 50-60 minutes
 
 ## Checklist
 
-- [ ] **"Home" link located** - Know which file defines the navigation and how it's loaded
-- [ ] **Profile image located** - Know which file contains the `<Image>` component and the import chain
-- [ ] **Name and title located** - Know where "John Doe" and "AI Engineer" are defined
-- [ ] **About Me section located** - Know which component contains the heading and Lorem Ipsum text
-- [ ] **API button located** - Know which file has the button AND the `handleApiCall` function
-- [ ] **API endpoint located** - Know where the FastAPI `/api/hello` endpoint is defined AND how Next.js routes to it
-- [ ] **Import chain understood** - Can explain how Hero.tsx gets rendered on the page (the full chain)
+- [ ] **App running** - Can access http://localhost:3000 and see the portfolio page
+- [ ] **Design found** - Have a screenshot of a small UI element you want to add
+- [ ] **AI prompted** - Successfully used the prompt template to describe your needs to AI
+- [ ] **Code applied** - Made changes to at least one file in the codebase
+- [ ] **UI visible** - Your new element appears on the page
+- [ ] **Can explain** - Can point to the code that creates your new element and explain roughly what it does
 
 ---
 
@@ -51,7 +54,7 @@ When you're done:
 
 1. Run `/teach-check` to verify your work against the checklist
 
-2. The instructor will ask you to find specific elements to verify your exploration skills
+2. Be ready to answer: "What did you add? Which files did you change?"
 
 3. Say "ship it" when complete to generate RESULT.md
 
@@ -63,40 +66,42 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-**Assessment method:** Ask the student questions. They should be able to answer within 1-2 minutes by searching/finding.
+**Assessment method:** This is a creative exercise. Verification is simple and flexible.
 
-- **"Home" navigation link:**
-  - Q: "Which file defines the 'Home' link?"
-  - A: `app/_components/layouts/Navigation.tsx` - the `DEFAULT_NAV_ITEMS` array
+**Core verification (required):**
 
-- **Profile image:**
-  - Q: "Which file contains the profile picture? How did you find it?"
-  - A: `app/(marketing)/_components/Hero.tsx` - found via DevTools (src="/images/profile.png") or searching "profile.png"
+1. **Ask:** "What UI element did you add?"
+   - Student should describe what they added (button, card, icon, etc.)
+   - No wrong answers - any new element is acceptable
 
-- **Name and title:**
-  - Q: "Where is 'John Doe' defined?"
-  - A: `app/(marketing)/_components/Hero.tsx` - found via text search
+2. **Ask:** "Which file(s) did you modify?"
+   - Student should name at least one file (likely in `app/(marketing)/_components/`)
+   - AI can quickly check `git diff` to verify
 
-- **About Me section:**
-  - Q: "Which component has the About Me heading?"
-  - A: `app/(marketing)/_components/Hero.tsx` - it contains both left (profile) and right (about) columns
+3. **Ask:** "Show me the code that creates this element."
+   - Student should be able to point to the relevant code
+   - They don't need to explain every line, just the general structure
 
-- **API button:**
-  - Q: "What function is called when you click the Test API button? What endpoint does it call?"
-  - A: `handleApiCall` function in `Hero.tsx`, calls `/api/hello`
+**Process verification (optional):**
 
-- **API endpoint:**
-  - Q: "Where is the /api/hello endpoint defined? How does Next.js know to forward it to FastAPI?"
-  - A: `api/index.py` defines the endpoint. `next.config.js` has rewrites that forward `/api/*` to FastAPI on port 8000
+4. **Ask:** "What was in your prompt to AI?"
+   - Good answer mentions: project context, file location, desired effect
+   - This checks if they learned Context Engineering
 
-- **Import chain:**
-  - Q: "Trace how Hero.tsx ends up on the page."
-  - A: `Hero.tsx` → imported by `HomePageContent.tsx` → imported by `page.tsx` in `(marketing)` → wrapped by `layout.tsx` which adds Navigation → rendered when visiting `/`
+5. **Ask:** "If you wanted to change the color, what would you do?"
+   - Good answer: "Ask AI" or "Find the Tailwind class and change it"
+   - This checks if they understand the iteration process
 
-**Technique verification:**
-- Ask: "If you saw a loading spinner with no text, how would you find its code?"
-- Expected: "Use DevTools to inspect and find class names or other attributes to search for"
+**What counts as "pass":**
 
-**Mindset verification:**
-- Ask: "If you joined a new project tomorrow, what would you do first?"
-- Expected: Something like "Run it, look at the UI, pick an element and trace it to the code"
+- Student added ANY visible UI element to the page
+- Student can identify which file contains the code
+- Student attempted to use the prompt template (even if imperfectly)
+
+**What does NOT matter:**
+
+- Whether the element looks "good" or "professional"
+- Whether the student understands every line of code
+- Whether there are any bugs or styling issues
+
+**Key principle:** This exercise is about the PROCESS (find → describe → implement → iterate), not the RESULT. Any completed attempt demonstrates learning.
