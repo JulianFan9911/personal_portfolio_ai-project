@@ -1,31 +1,17 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import Image from "next/image"
 import { BookOpen } from "lucide-react"
 import { FaGithub, FaLinkedin } from "react-icons/fa"
 
 export default function Hero() {
   const [isVisible, setIsVisible] = useState(false)
-  const [apiResponse, setApiResponse] = useState<string>("")
-  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     setIsVisible(true)
   }, [])
-
-  const handleApiCall = async () => {
-    setIsLoading(true)
-    try {
-      const response = await fetch("/api/hello")
-      const data = await response.json()
-      setApiResponse(JSON.stringify(data, null, 2))
-    } catch (error) {
-      setApiResponse("Error fetching API response")
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   return (
     <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 relative">
@@ -95,34 +81,23 @@ export default function Hero() {
             </p>
 
             {/* CTA */}
-            <button
-              onClick={handleApiCall}
-              disabled={isLoading}
-              className="mt-8 p-5 bg-gradient-to-r from-highlight/20 via-primary/20 to-secondary/20 border-2 border-highlight rounded-lg block w-full hover:from-highlight/30 hover:via-primary/30 hover:to-secondary/30 hover:border-highlight hover:scale-[1.03] transition-all duration-300 shadow-lg shadow-highlight/30 hover:shadow-xl hover:shadow-highlight/50 cursor-pointer group relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+            <Link
+              href="/chat"
+              className="mt-8 p-5 bg-gradient-to-r from-highlight/20 via-primary/20 to-secondary/20 border-2 border-highlight rounded-lg block hover:from-highlight/30 hover:via-primary/30 hover:to-secondary/30 hover:border-highlight hover:scale-[1.03] transition-all duration-300 shadow-lg shadow-highlight/30 hover:shadow-xl hover:shadow-highlight/50 cursor-pointer group relative overflow-hidden"
             >
               {/* Animated background shine effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
               <div className="relative z-10 text-center">
                 <p className="text-2xl text-highlight font-bold group-hover:text-primary transition-colors duration-300 drop-shadow-lg mb-2">
-                  {isLoading ? "⏳ Loading..." : "✨ Test API Hello Endpoint"}
+                  ✨ Chat with Virtual John Doe
                   <span className="inline-block group-hover:translate-x-1 transition-transform duration-300 ml-2">→</span>
                 </p>
                 <p className="text-base text-text-primary/90 font-medium group-hover:text-text-primary transition-colors duration-300">
-                  Click to test the /api/hello endpoint
+                  Explore my experience, projects, and discover what makes me different
                 </p>
               </div>
-            </button>
-
-            {/* API Response Display */}
-            {apiResponse && (
-              <div className="mt-6 p-4 bg-[#1a1a1a] border border-primary/30 rounded-lg">
-                <h3 className="text-lg font-semibold text-primary mb-2">API Response:</h3>
-                <pre className="text-text-secondary text-sm overflow-x-auto">
-                  {apiResponse}
-                </pre>
-              </div>
-            )}
+            </Link>
           </div>
         </div>
       </div>

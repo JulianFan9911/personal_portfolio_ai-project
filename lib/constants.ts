@@ -11,4 +11,5 @@ export const CDN_ASSETS = {
 
 export const ROUTES = {
   HOME: "/",
+  CHAT: "/chat",
 } as const;
