@@ -6,7 +6,7 @@ Learn to navigate unfamiliar code by starting from what you can see (UI) and tra
 
 This exercise teaches **exploration skills**, not coding skills. You won't write any code. Instead, you'll build the ability to find code for any UI element you see—a skill that transfers to any codebase, any framework, any language.
 
-Read the tutorial: [Exploring a Codebase: Top-Down Learning Method](https://github.com/sanhehu/learn_personal_portfolio_ai-project/tree/06-Explore-Codebase-Top-Down)
+Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/06-Explore-Codebase-From-Top-To-Down/)
 
 ## Actionable Items
 
