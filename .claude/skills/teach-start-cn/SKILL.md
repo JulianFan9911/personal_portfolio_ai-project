@@ -28,7 +28,7 @@ description: 交互式对话引导，遵循TEACHING_GUIDE的教学方式
 
 ## 第二步：读取教学指南
 
-读取 [TEACHING.md](../../TEACHING.md) 了解：
+读取 [.claude/TEACHING.md](../../TEACHING.md) 了解：
 - Learning outcomes（学习成果）
 - Concept sequence（概念顺序：先教什么、后教什么）
 - Teaching phases（教学阶段和目标）
