@@ -9,6 +9,8 @@ Ensure your environment is set up: `mise run venv-create`, `mise run inst`, and 
 
 You will learn Test-Driven Development (TDD) by implementing the `multiply_two` function. The key principle: **write tests first, then implement code to pass those tests.**
 
+Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/02-Test-Driven-Development-Guide/)
+
 ---
 
 ## Phase 1: RED - Write Tests First
