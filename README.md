@@ -1,424 +1,441 @@
-# Exploring a Codebase: Top-Down Learning Method
+# Integrate Hardcoded AI Chat Interaction
 
-> Learn how to navigate unfamiliar code by starting from what you can see (UI) and tracing back to the source.
-
-![Screenshot](./img/04-Setup-NextJs-FastAPI-Local-Dev-Env/01-example-hello-world-web-app.png)
+> Learn the core concept of frontend-backend separation and implement a simplified AI chat feature.
 
 ## Overview
 
-You've got the app running locally. Now what?
+Congratulations on making it this far! If the previous lessons were about building foundations and getting familiar with tools, today we're entering the most exciting part of this project—making your portfolio website "come alive" by enabling conversations with visitors.
 
-Most tutorials stop here. They show you how to run the code, maybe explain what each file does, and move on. But that's like giving you a map without teaching you how to read it.
-
-This tutorial is different. Instead of telling you where things are, we'll teach you **how to find them yourself**. This is a skill that transfers to any codebase, any framework, any language.
+On the surface, today's lesson is about adding a chat interface. But underneath, you'll encounter an extremely important architectural concept—**frontend-backend separation**. This concept may seem simple, but the philosophy of "separating data from logic" behind it runs through the entire tech industry. Once you understand this, your perspective on any complex system will fundamentally change.
 
 ## Learning Objectives
 
-When you join a new team or start working on an unfamiliar project, you'll face codebases with hundreds or thousands of files. Nobody will hand you a map. You need to be able to explore on your own.
-
-The developers who advance fastest aren't the ones who memorize file locations—they're the ones who can efficiently navigate any codebase they encounter. This exploration skill is what separates junior developers who always need guidance from senior developers who can onboard themselves.
+When you join a new team or start working on a new project, you'll find that modern web applications almost universally adopt frontend-backend separation architecture. Understanding this architecture not only helps you onboard faster to new projects, but more importantly, the "data vs logic separation" thinking behind it is a universal system design capability that will benefit you no matter what direction you take in your career.
 
 By the end of this exercise, you will:
 
-1. Understand the Top-Down learning approach and why it's effective
-2. Learn three practical techniques for finding code from UI elements
-3. Practice tracing UI elements back to their source code
-4. Build the mental muscle for self-directed codebase exploration
+1. **Deeply understand the essence of frontend-backend separation**—not just the division of responsibilities between frontend and backend, but mastering the universally applicable mindset of "separating data from logic"
+2. **Locate and understand key chat interface code**—learn to quickly find the components and functions you need in a complex project
+3. **Practice modifying and testing hardcoded conversations**—experience the complete frontend-backend communication flow; although the AI is "fake" for now, the data flow is real
+4. **Get a high-level understanding of AI SDK's Stream Protocol**—understand how frontend and backend agree on interfaces for communication (we'll dive deep in the next tutorial)
 
 ## Prerequisites
 
-- You have completed the previous tutorial and can run `mise run dev` successfully
+- You have completed the previous tutorials and can successfully run `mise run dev`
 - You have a browser and can access http://localhost:3000
 - You have an AI assistant available (Claude, ChatGPT, etc.)
 
 ## What You'll Build
 
-Nothing. You won't write any code in this tutorial.
+You will integrate a chat interface into the existing portfolio project. Although this version's AI responses are hardcoded, the entire frontend-backend communication flow is real:
 
-Instead, you'll build something more valuable: **the ability to explore any codebase confidently**. By the end, you'll know exactly which file creates each element on the screen, and more importantly, you'll know how to find this information yourself in any project.
+- User enters a message in the frontend
+- Frontend sends a request to the backend via API
+- Backend processes the request and returns a streaming response
+- Frontend receives and displays the response
+
+This lays the foundation for integrating real AI models (like AWS Bedrock) in the next step.
 
 ---
 
 ## Key Concepts
 
-### What is Top-Down Learning?
+### Frontend-Backend Separation: More Than Just Technology Choice
 
-**Top-Down learning** means starting from what you can see and working backwards to understand how it's built.
+You've probably heard the term "frontend-backend separation" countless times. Search online and you'll see various technical implementations: some say use Node.js for backend, others say use React for frontend, and still others say full-stack frameworks like Next.js have "merged" frontend and backend again... These discussions can make you lose sight of the most fundamental question: **Why do we need frontend-backend separation?**
 
-Instead of:
-- Reading all the files from top to bottom
-- Memorizing the project structure
-- Following a linear tutorial
+The answer is actually very simple, yet extremely profound: **Data and logic should be separated.**
 
-You do:
-- See something on screen → ask "where does this come from?"
-- Find the answer → ask "how does this get loaded?"
-- Keep tracing → until you reach the entry point
+### What is Data? What is Logic?
 
-This approach is effective because:
-- You learn with immediate context (you can see what you're studying)
-- You only learn what's relevant (no wasted time on unused code)
-- You build a mental map naturally (connections, not isolated facts)
+Let's start with the simplest example to understand this concept.
 
-### The Alternative: Bottom-Up Learning
+Imagine you want to display your project experience on your portfolio. Your project **data** might look like this:
 
-**Bottom-Up learning** means starting from the foundation and building up understanding layer by layer.
+```json
+{
+  "title": "AI Portfolio Project",
+  "description": "A personal portfolio built with Next.js and AWS Bedrock",
+  "tech_stack": ["Next.js", "Python", "AWS Bedrock"]
+}
+```
 
-For example:
-- Read the project structure documentation
-- Study the configuration files
-- Understand the build process
-- Then look at the components
+This is **data**—pure information, with no logic about "how to display" it.
 
-Both approaches have their place. Top-Down is great for quick exploration and understanding "what does this thing do?" Bottom-Up is better when you need deep understanding of a system's architecture.
+What is **logic** then? Logic is: "How do I turn this data into the beautiful card the user sees?" This process includes:
 
-**In this tutorial, we focus on Top-Down** because it's the skill most beginners lack, and it's the fastest way to become productive in a new codebase.
+- Parsing JSON data
+- Extracting title, description, tech_stack fields
+- Adding different colors for each tech tag
+- Assembling this information into HTML elements
+- Applying CSS styles to make the card look good
 
-### Three Techniques for Finding Code
+You see, data itself is static and objective, while logic is dynamic and variable. **Data tells you "what it is", logic tells you "how to do it"**.
 
-When you see something on screen and want to find its source code, you have three main approaches:
+### Why Separate?
 
-**Technique 1: Text Search**
+Now here's the key question: Why not mix data and logic together?
 
-If the UI element contains visible text, search for that exact text in the codebase.
+Imagine what happens if we don't separate them: you hardcode project data directly in HTML:
 
-Example: You see "About Me" on screen → search for `"About Me"` in the code
+```html
+<div class="project-card">
+  <h3>AI Portfolio Project</h3>
+  <p>A personal portfolio built with Next.js and AWS Bedrock</p>
+  <span class="tag-nextjs">Next.js</span>
+  <span class="tag-python">Python</span>
+  <span class="tag-aws">AWS Bedrock</span>
+</div>
+```
 
-This is the simplest and most reliable method when text is available.
+Looks fine, right? But problems arise:
 
-**Technique 2: Browser DevTools**
+- **Problem 1**: If you want to add a new project, you need to copy-paste the entire HTML and change the text one by one
+- **Problem 2**: If you want to change the card style, you need to find all card HTMLs and modify each one
+- **Problem 3**: If you want project data to come from a database or API, it's simply impossible because data is hardcoded
+- **Problem 4**: If you want different styles on mobile, you need to maintain two completely different sets of HTML
 
-If there's no searchable text (like an image or icon), use Chrome DevTools to inspect the element and find identifying information.
+This is the pain of mixing things together.
 
-Example: You see a profile image → right-click, Inspect → find class names, IDs, or src attributes → search for those
+Now let's separate them:
 
-**Technique 3: Screenshot to AI**
+**Data Layer (Backend):**
 
-When other methods fail, take a screenshot, highlight the element you're curious about, and ask an AI assistant.
+```python
+projects = [
+  {
+    "title": "AI Portfolio Project",
+    "description": "A personal portfolio built with Next.js and AWS Bedrock",
+    "tech_stack": ["Next.js", "Python", "AWS Bedrock"]
+  },
+  {
+    "title": "Data Analytics Platform",
+    "description": "A real-time TB-scale data analytics system",
+    "tech_stack": ["Spark", "Kafka", "PostgreSQL"]
+  }
+]
+```
 
-Example: "I see this button (circled in red). What file in my codebase creates this?"
+**Logic Layer (Frontend):**
 
-This is especially useful when you're not sure what to search for.
+```tsx
+function ProjectCard({ project }) {
+  return (
+    <div className="project-card">
+      <h3>{project.title}</h3>
+      <p>{project.description}</p>
+      {project.tech_stack.map(tech => (
+        <span className={`tag-${tech}`}>{tech}</span>
+      ))}
+    </div>
+  )
+}
+
+// Usage: iterate through all project data
+projects.map(project => <ProjectCard project={project} />)
+```
+
+The benefits of separation are immediately apparent:
+
+- **Adding new projects**: Just add an object to the data array, UI updates automatically
+- **Changing styles**: Just modify the ProjectCard component once, all project cards change
+- **Flexible data sources**: projects can come from database, API, local files—logic code doesn't need to change
+- **Responsive design**: Logic can adjust styles based on screen size, data stays unchanged
+
+### API: The "SOP" for Frontend-Backend Communication
+
+API (Application Programming Interface) is essentially the simplest SOP (Standard Operating Procedure): it defines:
+
+- **Input data format** (request parameters)
+- **Processing logic** (what the backend should do)
+- **Output data format** (returned results)
+
+In our chat application, data flows like this:
+
+1. User enters a question in the chat interface: "What are your project experiences?"
+2. Frontend collects input data (user's question text, chat history)
+3. Frontend sends request to backend API: `POST /api/chat`
+4. Backend receives and processes the request (currently returns hardcoded response, will call AI model later)
+5. Backend returns response data
+6. Frontend receives and displays response
+
+Throughout the flow:
+- **Data**: User question, history, AI response
+- **Logic**: Frontend's UI rendering, backend's AI call
+
+They are clearly separated through the API.
+
+### Stream Protocol: High-Level Understanding of Streaming Responses
+
+Our chat application has a special feature: AI responses aren't returned all at once, but streamed character by character, just like ChatGPT.
+
+**Traditional API (One-time return):**
+
+```
+User sends message → Wait 10 seconds → Display complete response at once
+```
+
+User experience: During those 10 seconds, the interface has no feedback, user thinks the system froze.
+
+**Streaming API (Stream Protocol):**
+
+```
+User sends message → Show "H" after 0.5s → Show "He" after 0.5s → Show "Hello!" after 0.5s → ...
+```
+
+User experience: Immediate feedback, feels like AI is "thinking" and "typing", similar to chatting with a real person.
+
+In our project, we use **AI SDK's Stream Protocol**. For now, you just need to know:
+
+- Backend sends data piece by piece in a specific format
+- Frontend's AI SDK automatically parses this data and updates the UI
+- We'll dive deep into Stream Protocol details in the next tutorial
+
+> **Key understanding**: Today we'll get the whole flow running first, understanding how data flows from frontend to backend and back. The specific format and workings of Stream Protocol—we'll learn that in depth in the next tutorial.
 
 ---
 
 ## Exercises
 
-### Exercise 1: Start the Application
+### Exercise 1: Start the Project and Switch Branches
 
-**Goal:** Get the app running and identify all the UI elements we'll trace.
+**Goal:** Prepare your development environment and ensure the project runs correctly.
 
 **What to do:**
 
-1. Open your terminal and run:
+1. In Codespaces, switch to the branch containing chat functionality:
+
    ```bash
+   git checkout 08-Add-Hardcoded-AI-Interaction
+   ```
+
+2. Install dependencies and start the development server:
+
+   ```bash
+   mise run inst
    mise run dev
    ```
 
-2. Open http://localhost:3000 in your browser
-
-3. Look at the screen and identify these elements:
-   - The "Home" link in the navigation bar
-   - The profile picture (avatar)
-   - The name "John Doe" and title "AI Engineer"
-   - The "About Me" heading
-   - The paragraph of Lorem Ipsum text
-   - The "Test API Hello Endpoint" button
-   - The API Response area (appears after clicking the button)
+3. In your browser, visit http://localhost:3000, click the "Chat" link in the navigation bar (or directly visit http://localhost:3000/chat). You should see a chat interface.
 
 **What you'll notice:**
 
-You're looking at a simple portfolio page. Every single element you see is created by code somewhere in this project. Your mission is to find that code.
+The chat interface already has a complete UI: input box, send button, message display area. But sending a message won't get a real AI response yet—that's exactly what we're going to implement.
 
-> **Key insight:** Before searching for code, take a moment to really look at what's on screen. What text do you see? What could you search for?
-
----
-
-### Exercise 2: Find the "Home" Navigation Link
-
-**Goal:** Practice Technique 1 (Text Search) to find where the "Home" link is defined.
-
-**What to do:**
-
-1. Look at the navigation bar. You see the word "Home".
-
-2. **Try it yourself first:** Before reading further, try to find where this "Home" text is defined in the codebase. Use your editor's search function or `grep`.
-
-3. **Stuck?** Here's how to do it: Search for the exact string `"Home"` in the project. You're looking for where this label is defined, not where it's rendered.
-
-4. Once you find the file, read the surrounding code. Try to understand:
-   - How is the navigation structure defined?
-   - How does this become a clickable link?
-   - How does this component get loaded into the page?
-
-**The answer (only read after trying yourself):**
-
-The "Home" link is defined in `app/_components/layouts/Navigation.tsx`:
-
-```typescript
-const DEFAULT_NAV_ITEMS: NavItem[] = [
-  { label: "Home", href: "/" },
-]
-```
-
-**Tracing the import chain:**
-
-1. `Navigation.tsx` exports a `Navigation` component
-2. `app/(marketing)/layout.tsx` imports and uses `<Navigation />`
-3. This layout wraps all pages in the `(marketing)` route group
-4. When you visit `/`, Next.js renders `layout.tsx` which includes `Navigation`
-
-> **Key insight:** The text you see on screen often appears as a string literal in the code. Searching for exact strings is usually the fastest way to find UI code.
+> **Key insight:** We're implementing a "fake AI" (hardcoded response), but the entire frontend-backend communication flow is real. This lets us focus on understanding the architecture, not the details of AI calls.
 
 ---
 
-### Exercise 3: Find the Profile Picture (Hero Image)
+### Exercise 2: Locate Key Chat Interface Components
 
-**Goal:** Practice Technique 2 (DevTools) when text search isn't obvious.
-
-**What to do:**
-
-1. Look at the circular profile picture on the left side of the page.
-
-2. There's no text to search for. So let's try DevTools.
-
-3. Right-click on the image → click "Inspect" (or press F12)
-
-4. In the Elements panel, you'll see the HTML for this image. Look for:
-   - The `src` attribute (where does the image come from?)
-   - Any class names that might be searchable
-
-5. **Try it yourself:** What file path or class name do you see? Search for it.
-
-**The answer (only read after trying yourself):**
-
-In DevTools, you'll see something like:
-```html
-<img src="/images/profile.png" alt="John Doe Profile Photo" ...>
-```
-
-Search for `profile.png` or `John Doe Profile Photo` in the codebase.
-
-You'll find it in `app/(marketing)/_components/Hero.tsx`:
-
-```tsx
-<Image
-  src="/images/profile.png"
-  alt="John Doe Profile Photo"
-  width={192}
-  height={192}
-  className="w-full h-full object-cover"
-/>
-```
-
-**Tracing the import chain:**
-
-1. `Hero.tsx` exports a `Hero` component
-2. `app/(marketing)/HomePageContent.tsx` imports `<Hero />`
-3. `app/(marketing)/page.tsx` imports `<HomePageContent />`
-4. When you visit `/`, Next.js renders `page.tsx`
-
-> **Key insight:** DevTools is your X-ray vision. When you can't search by text, inspect the HTML and search by attributes, class names, or file paths.
-
----
-
-### Exercise 4: Find "John Doe" and "AI Engineer"
-
-**Goal:** Reinforce Technique 1 with multiple related elements.
+**Goal:** Learn to find the key files for the chat interface in the project code and understand the component structure.
 
 **What to do:**
 
-1. You see "John Doe" (large text) and "AI Engineer" (smaller, highlighted text) below the profile picture.
+1. Open VS Code and find these key files:
 
-2. **Try it yourself:** Search for these strings in the codebase.
+   - `app/chat/page.tsx` - Chat page entry
+   - `components/chat/chat.tsx` - Core chat functionality component
+   - `components/chat/multimodal-input.tsx` - Input box and send button
+   - `components/chat/message.tsx` - Single message rendering
 
-3. Notice that both are in the same file. What does this tell you about the component structure?
+2. In `components/chat/chat.tsx`, find the `useChat` hook:
 
-**The answer (only read after trying yourself):**
+   ```tsx
+   const {
+     messages,       // Message array
+     sendMessage,    // Function to send messages
+     status,         // Current status
+     stop,           // Function to stop AI response
+   } = useChat({
+     // Config...
+   });
+   ```
 
-Both are in `app/(marketing)/_components/Hero.tsx`:
+3. Find the `handleSubmit` function and understand what happens when the user clicks send:
 
-```tsx
-<h1 className="...">
-  John Doe
-</h1>
-<p className="...">
-  <span className="text-highlight">AI Engineer</span>
-</p>
-```
-
-**What this reveals:**
-
-The `Hero` component is responsible for the entire left-side profile area: the image, name, and title. This is a common pattern—grouping related UI elements into a single component.
-
-> **Key insight:** When you find one element, look around in the same file. Related elements are often nearby.
-
----
-
-### Exercise 5: Find the "About Me" Section
-
-**Goal:** Practice finding headings and their associated content.
-
-**What to do:**
-
-1. You see the "About Me" heading in cyan/teal color on the right side.
-
-2. **Try it yourself:** Search for this text and find where it's defined.
-
-3. Also find where the Lorem Ipsum paragraph text is defined.
-
-**The answer (only read after trying yourself):**
-
-Both are in `app/(marketing)/_components/Hero.tsx`:
-
-```tsx
-<h2 className="...">
-  About Me
-</h2>
-
-<p className="text-lg text-text-secondary mb-8 leading-relaxed">
-  Lorem Ipsum is simply dummy text of the printing and typesetting industry...
-</p>
-```
-
-**Notice the structure:**
-
-The `Hero` component contains both the left column (profile) and the right column (about text). It's a two-column layout within a single component.
-
-> **Key insight:** Component boundaries don't always match visual boundaries. One component can manage multiple visual sections.
-
----
-
-### Exercise 6: Find the "Test API Hello Endpoint" Button
-
-**Goal:** Find interactive elements and understand their behavior.
-
-**What to do:**
-
-1. Look at the clickable button that says "Test API Hello Endpoint".
-
-2. **Try it yourself:** Search for this text in the codebase.
-
-3. Once you find the button, look for:
-   - What happens when you click it? (Look for `onClick`)
-   - What function does it call?
-   - What API endpoint does it hit?
-
-**The answer (only read after trying yourself):**
-
-In `app/(marketing)/_components/Hero.tsx`:
-
-```tsx
-<button
-  onClick={handleApiCall}
-  disabled={isLoading}
-  className="..."
->
-  ...
-  {isLoading ? "Loading..." : "Test API Hello Endpoint"}
-  ...
-</button>
-```
-
-The `handleApiCall` function:
-
-```tsx
-const handleApiCall = async () => {
-  setIsLoading(true)
-  try {
-    const response = await fetch("/api/hello")
-    const data = await response.json()
-    setApiResponse(JSON.stringify(data, null, 2))
-  } catch (error) {
-    setApiResponse("Error fetching API response")
-  } finally {
-    setIsLoading(false)
-  }
-}
-```
-
-> **Key insight:** For interactive elements, finding the element is just step one. The real understanding comes from tracing what happens when you interact with it.
-
----
-
-### Exercise 7: Find the API Endpoint
-
-**Goal:** Trace from frontend to backend code.
-
-**What to do:**
-
-1. From Exercise 6, you know the button calls `/api/hello`.
-
-2. **Try it yourself:** Where is this API endpoint defined? Search for `"/api/hello"` or `@app.get` or similar API decorators.
-
-3. **Hint:** This project uses FastAPI for the backend. The API code isn't in the `app/` folder—look elsewhere.
-
-**The answer (only read after trying yourself):**
-
-The API is defined in `api/index.py`:
-
-```python
-@app.get("/api/hello")
-async def hello_world():
-    return JSONResponse(
-        content={
-            "message": "Hello from FastAPI!",
-            "status": "success"
-        }
-    )
-```
-
-**But wait—how does Next.js know to route `/api/hello` to FastAPI?**
-
-Check `next.config.js`:
-
-```javascript
-rewrites: async () => {
-  return [
-    {
-      source: "/api/:path*",
-      destination:
-        process.env.NODE_ENV === "development"
-          ? "http://127.0.0.1:8000/api/:path*"
-          : "/api/",
-    },
-    ...
-  ];
-},
-```
-
-This tells Next.js: "When someone requests `/api/anything`, forward it to FastAPI running on port 8000."
-
-> **Key insight:** Modern applications often have multiple services communicating. Tracing a request might lead you across service boundaries.
-
----
-
-### Exercise 8: Ask AI to Find Something (Technique 3)
-
-**Goal:** Practice using AI as an exploration tool.
-
-**What to do:**
-
-1. Take a screenshot of the running application.
-
-2. Draw a red circle around any element you're curious about.
-
-3. Ask your AI assistant: "In my Next.js + FastAPI project, which file creates [describe the circled element]?"
-
-4. **Example prompts you can try:**
-
-   - "I circled the navigation bar at the top. Which file creates this?"
-   - "I circled the glowing effect behind the profile. Where does this come from?"
-   - "I circled the API response box. Which component handles displaying this?"
+   ```tsx
+   const handleSubmit = () => {
+     if (input.trim()) {
+       sendMessage({ text: input });  // Call AI SDK's send function
+       setInput("");                   // Clear input box
+     }
+   };
+   ```
 
 **What you'll notice:**
 
-AI can often identify components just from visual description. This is especially useful when:
-- You don't know the right terms to search for
-- The element is created dynamically
-- You want to understand how multiple pieces fit together
+- `useChat` is a hook provided by AI SDK that encapsulates message state management, API requests, and other complex logic
+- Frontend developers don't need to manually write fetch requests—AI SDK handles it
+- The `messages` array contains all chat history; React automatically re-renders when it updates
 
-> **Key insight:** AI is a power-multiplier for exploration. Don't hesitate to ask "dumb" questions—the goal is learning, not appearing smart.
+> **Key insight:** AI SDK encapsulates a lot of complex logic for us. We just need to call `sendMessage`, and the SDK automatically sends POST requests to `/api/chat` and handles responses.
+
+---
+
+### Exercise 3: Find the Backend API Code
+
+**Goal:** Understand how the backend handles chat requests.
+
+**What to do:**
+
+1. Open `api/index.py` and find the function that handles chat requests:
+
+   ```python
+   @app.post("/api/chat")
+   async def handle_chat_data(request: Request):
+       # Parse request
+       request_body_data = await request.json()
+       messages = request_body_data.get('messages', [])
+       user_message = messages[-1]['parts'][0]['text'] if messages else ""
+
+       # Generate response (currently hardcoded)
+       hardcoded_reply = f"Hello! I received your message: \"{user_message}\""
+
+       # Return streaming response
+       return StreamingResponse(...)
+   ```
+
+2. Notice the use of `StreamingResponse`—this is the key to making AI responses appear "character by character".
+
+3. Find the code that generates Stream Protocol format:
+
+   ```python
+   def ai_sdk_v5_message_generator():
+       id = str(uuid.uuid4())
+       yield f'data: {json.dumps({"type": "text-start", "id": id})}\n\n'
+       yield f'data: {json.dumps({"type": "text-delta", "id": id, "delta": hardcoded_reply})}\n\n'
+       yield f'data: {json.dumps({"type": "text-end", "id": id})}\n\n'
+       yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+       yield "data: [DONE]\n\n"
+   ```
+
+**What you'll notice:**
+
+- Backend uses Python's generator (`yield`) to send data step by step
+- Each line of data starts with `data: `—this is the standard SSE (Server-Sent Events) format
+- AI SDK automatically parses this data on the frontend
+
+> **Key insight:** Although the Stream Protocol format looks a bit complex, for now you just need to know: every piece of data the backend sends, the frontend can receive in real-time. We'll learn the format details in depth in the next tutorial.
+
+---
+
+### Exercise 4: Modify the Hardcoded Response
+
+**Goal:** Hands-on code modification to verify the entire frontend-backend communication flow.
+
+**What to do:**
+
+1. Open `api/index.py` and find the `hardcoded_reply` line
+
+2. Modify the response content, for example:
+
+   ```python
+   hardcoded_reply = f"""Hello! I received your message: "{user_message}"
+
+   I'm a hardcoded AI response. I'm still under development, but soon I'll be able to really answer your questions!
+
+   You can ask me about:
+   - My skills and project experience
+   - My learning background
+   - How to contact me
+   """
+   ```
+
+3. Save the file, the backend will restart automatically
+
+4. In the browser, send a message like "hello" and observe the AI's response
+
+**What you'll notice:**
+
+Your modifications take effect immediately! This shows:
+- Frontend correctly sent request to backend
+- Backend correctly processed request and returned your hardcoded response
+- Frontend correctly displayed the content returned by backend
+
+> **Key insight:** Although the AI is "fake", the entire data flow is real. When we later replace it with real AI calls, the frontend code barely needs to change—that's the power of separation!
+
+---
+
+### Exercise 5: Observe Network Requests in Browser DevTools
+
+**Goal:** See frontend-backend communication data with your own eyes.
+
+**What to do:**
+
+1. Open browser developer tools (F12)
+
+2. Switch to the "Network" tab
+
+3. Send a message in the chat interface
+
+4. In the Network tab, find the `chat` request and click it
+
+5. Check:
+   - **Headers**: Request header information
+   - **Payload**: Data sent by frontend (your message)
+   - **Response**: Streaming data returned by backend
+
+**What you'll notice:**
+
+In Response, you'll see content like this:
+
+```
+data: {"type":"text-start","id":"..."}
+data: {"type":"text-delta","id":"...","delta":"Hello! I received..."}
+data: {"type":"text-end","id":"..."}
+data: {"type":"finish-message","finishReason":"stop"}
+data: [DONE]
+```
+
+This is Stream Protocol! Each line starts with `data: ` followed by a JSON object.
+
+> **Key insight:** DevTools is your "X-ray vision". By observing network requests, you can clearly see what frontend sent and what backend returned. This is an important skill for debugging problems.
+
+---
+
+### Exercise 6: Return Different Responses Based on Keywords (Extended)
+
+**Goal:** Make the hardcoded AI a bit more "intelligent".
+
+**What to do:**
+
+1. Modify the response logic in `api/index.py`:
+
+   ```python
+   user_message = messages[-1]['parts'][0]['text'] if messages else ""
+
+   if "project" in user_message.lower():
+       reply = """I have three main projects:
+
+   1. **AI Portfolio** - Built with Next.js + AWS Bedrock
+   2. **Data Analytics Platform** - Real-time TB-scale data processing
+   3. **ML Model Deployment** - MLOps best practices
+
+   Which project would you like to know more about?"""
+
+   elif "skill" in user_message.lower():
+       reply = """My skills include:
+
+   - **Programming Languages**: Python, JavaScript, TypeScript
+   - **Frameworks**: React, Next.js, FastAPI
+   - **Cloud Services**: AWS (Bedrock, Lambda, S3)
+   - **AI/ML**: TensorFlow, PyTorch, LangChain"""
+
+   elif "contact" in user_message.lower():
+       reply = "You can reach me at: your@email.com"
+
+   else:
+       reply = f"I received your message: \"{user_message}\"\n\nAsk me about my **projects**, **skills**, or **contact info**!"
+   ```
+
+2. Save and test with different questions
+
+**What you'll notice:**
+
+Now your AI returns different responses based on keywords! Although this isn't real AI, it demonstrates an important pattern: **backend can execute different logic based on input data**.
+
+> **Key insight:** This exercise demonstrates the "data-driven logic" concept. When we integrate real AI later, we just need to replace the `if-else` logic with AI calls—the overall architecture stays the same.
 
 ---
 
@@ -426,31 +443,29 @@ AI can often identify components just from visual description. This is especiall
 
 After completing these exercises, you've learned:
 
-**The Top-Down approach:**
-- Start from what you can see (the UI)
-- Ask "where does this come from?"
-- Trace backwards to the source code
-- Keep following imports until you understand the full chain
+**The essence of frontend-backend separation**
+- Data and logic separation is the core concept
+- Frontend handles UI display and user interaction
+- Backend handles data processing and business logic
+- They communicate through APIs
 
-**Three practical techniques:**
-- Text Search: Search for visible strings in the codebase
-- DevTools: Inspect elements to find searchable attributes
-- AI Assistant: Screenshot and ask when other methods fail
+**Chat application architecture**
+- `useChat` hook encapsulates message state management
+- Frontend sends POST requests to `/api/chat`
+- Backend uses StreamingResponse to return streaming data
+- AI SDK automatically handles parsing and displaying streaming responses
 
-**How this project is structured:**
-- `app/layout.tsx` is the root layout (applies to all pages)
-- `app/(marketing)/layout.tsx` adds navigation to marketing pages
-- `app/(marketing)/page.tsx` is the home page entry point
-- `app/(marketing)/HomePageContent.tsx` is the main content
-- `app/(marketing)/_components/Hero.tsx` contains most UI elements
-- `app/_components/layouts/Navigation.tsx` creates the nav bar
-- `api/index.py` handles API endpoints
-- `next.config.js` configures routing between Next.js and FastAPI
+**Key file locations**
+- `app/chat/page.tsx` - Chat page entry
+- `components/chat/chat.tsx` - Core chat logic
+- `components/chat/multimodal-input.tsx` - Input component
+- `components/chat/message.tsx` - Message rendering component
+- `api/index.py` - Backend API handling
 
-**Most importantly:**
-- Knowing "how to find" is more valuable than knowing "where it is"
-- This skill transfers to any codebase, any framework
-- The more you practice exploration, the faster you become
+**Most importantly**
+- Understanding "why it's designed this way" is more valuable than remembering "where the code is"
+- Hardcoded responses are "fake", but the architecture is real
+- When we replace with real AI, frontend barely needs to change
 
 ---
 
@@ -458,67 +473,78 @@ After completing these exercises, you've learned:
 
 **Why this exercise matters:**
 
-I've seen many developers struggle when joining new projects. They wait for someone to explain the codebase, or they read documentation that's often outdated. The developers who thrive are those who can explore and learn independently.
+Today's content is information-dense, and you might feel a bit tired. But I want to congratulate you—because you've crossed an important threshold.
 
-This Top-Down skill isn't just for code. It's a fundamental learning approach that works for:
-- Learning a new product (start using it, then dig into how it works)
-- Understanding a new business (see the customer experience, then trace the processes)
-- Debugging problems (see the symptom, then trace to the cause)
+Most beginners learning programming only focus on "What does this line of code mean?" or "How do I change this feature?" They are **Doers**—executors who follow tutorials step by step.
+
+But today, you not only learned "how to do it", more importantly you understood "why it's done this way". You started thinking:
+- Why do we need frontend-backend separation?
+- Why do we need APIs?
+- Why use streaming responses?
+
+You're becoming a **Thinker**—someone who understands the principles and design philosophy behind things.
 
 **Key insights:**
 
-- **The best map is the one you draw yourself.** When you trace through code by hand, you build a mental model that no documentation can provide.
+- **Frameworks become obsolete, thinking patterns don't**. Angular was popular 5 years ago, React is popular now, something else might be popular in 5 years. But the "data and logic separation" thinking will never become obsolete.
 
-- **Don't be afraid to ask "dumb" questions.** AI assistants are judgment-free. Use them liberally when exploring. The goal is learning, not looking smart.
+- **The power of separation**. When you design a system well, future extensions become very simple. Today we use hardcoded responses, tomorrow we switch to AWS Bedrock, frontend code barely changes.
 
-- **Top-Down and Bottom-Up complement each other.** Use Top-Down to quickly understand what's relevant. Use Bottom-Up when you need deep, systematic understanding. Master both.
+- **Run first, understand later**. You might not fully understand every detail of Stream Protocol—that's completely fine. We'll learn it in depth in the next tutorial. Today's goal is understanding the overall architecture and seeing how data flows.
 
 **Next steps:**
 
-1. Try the same exploration technique on a different project
-2. When you encounter a bug, use Top-Down to trace from symptom to cause
-3. Practice explaining code paths to others—teaching reinforces learning
+1. Next tutorial: Deep dive into how Stream Protocol works
+2. Then: Configure AWS Bedrock and integrate real AI
+3. Finally: Build a personal knowledge base so AI becomes your personal assistant
+
+You've built the architectural foundation. The learning ahead will only get more interesting!
 
 ---
 
 ## Quick Reference
 
 **Start the development server:**
+
 ```bash
 mise run dev
 ```
 
-**Search for text in the codebase:**
-```bash
-# Using grep
-grep -r "search text" --include="*.tsx" --include="*.ts"
+**Switch to this tutorial's branch:**
 
-# Using your editor's search (Cmd+Shift+F in VS Code)
+```bash
+git checkout 08-Add-Hardcoded-AI-Interaction
 ```
 
-**Key files in this project:**
+**Key files:**
 
-- `app/layout.tsx` - Root layout, applies to all pages
-- `app/(marketing)/layout.tsx` - Marketing pages layout with navigation
-- `app/(marketing)/page.tsx` - Home page entry point
-- `app/(marketing)/HomePageContent.tsx` - Main content component
-- `app/(marketing)/_components/Hero.tsx` - Profile and about section
-- `app/_components/layouts/Navigation.tsx` - Navigation bar
-- `api/index.py` - FastAPI backend endpoints
-- `next.config.js` - Next.js configuration including API rewrites
+- `app/chat/page.tsx` - Chat page entry
+- `components/chat/chat.tsx` - Core chat component with `useChat` hook
+- `components/chat/multimodal-input.tsx` - Input box and send button
+- `components/chat/message.tsx` - Single message rendering logic
+- `api/index.py` - Backend API handling `/api/chat` requests
+
+**Data flow path:**
+
+1. User enters message in `multimodal-input.tsx`
+2. `chat.tsx`'s `handleSubmit` calls `sendMessage`
+3. AI SDK automatically sends POST request to `/api/chat`
+4. `api/index.py` processes request, returns StreamingResponse
+5. AI SDK parses streaming response, updates `messages` state
+6. `message.tsx` renders each message
 
 ---
 
 ## Reference Implementation
 
-This tutorial is designed for the `06-Explore-Codebase-Top-Down` branch.
+This tutorial corresponds to branch `08-Add-Hardcoded-AI-Interaction`.
 
-To verify your environment is set up correctly:
+Verify your environment is correct:
 
 ```bash
-git checkout 06-Explore-Codebase-Top-Down
+git checkout 08-Add-Hardcoded-AI-Interaction
 mise run inst
 mise run dev
 ```
 
-Then open http://localhost:3000 and follow the exercises above.
+Then open http://localhost:3000/chat and follow the exercises above.

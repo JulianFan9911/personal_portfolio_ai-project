@@ -1,138 +1,149 @@
-# Teaching Guide: AI-Assisted Programming with Card Components
+# Teaching Guide: Hardcoded AI Chat Interaction
 
 ## Learning Outcomes
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand what Context Engineering is and why it's the most important skill when working with AI
-2. **Skill outcome** - Successfully describe a UI design to AI and implement it in the codebase with AI's help
-3. **Mindset outcome** - Develop confidence to create things with AI assistance, embracing "do first, understand later"
+1. **Cognitive outcome** - Understand frontend-backend separation as "data vs logic separation" and why this architectural pattern matters
+2. **Skill outcome** - Successfully implement a hardcoded API response and trace the data flow from user input to displayed output
+3. **Mindset outcome** - Appreciate that good architecture enables easy future changes (hardcoded today, real AI tomorrow)
 
 ## Concept Sequence
 
 Teach concepts in this order:
 
-### Phase 1: Quick Context (5 minutes)
+### Phase 1: Conceptual Foundation (10-15 minutes)
 
-1. **Brief intro to the tech stack** - Mention React components and Tailwind CSS exist, but explicitly say "we'll learn by doing first"
-2. **What is Context Engineering** - One sentence: giving AI enough background information so it understands your needs
+1. **What is frontend-backend separation?** - Not just "different folders" but the deeper idea of separating data from logic
+2. **Data vs Logic analogy** - Use the project card example: data is the JSON, logic is how to render it
+3. **Why separation matters** - The four problems of mixing data and logic (from README-cn.md)
+4. **API as the contract** - How frontend and backend agree on communication format
 
-### Phase 2: Hands-on Practice (Main focus)
+### Phase 2: Hands-on Exploration (Main focus)
 
-3. **Run and observe** - Exercise 1: Start the app, observe existing components
-4. **Find inspiration** - Exercise 2: Go to Pinterest, find a small UI element you like
-5. **Describe to AI** - Exercise 3: Use the prompt template to describe what you want
-6. **Apply and understand** - Exercise 4: Apply AI's code, use git diff to see changes
-7. **Iterate** - Exercise 5: Adjust based on results, ask AI for tweaks
+5. **Run and observe** - Exercise 1: Start the app, see the chat interface
+6. **Locate key files** - Exercise 2: Find the frontend components and backend API
+7. **Understand the backend** - Exercise 3: Look at `api/index.py`, understand the endpoint
+8. **Implement hardcoded response** - Exercise 4: Modify the response to echo user's message
+9. **Test and verify** - Exercise 5: Use DevTools to observe the network request
 
-### Phase 3: Concept Deepening (After hands-on)
+### Phase 3: Concept Reinforcement (After hands-on)
 
-8. **Context Engineering deep dive** - Now that they've experienced it, explain in detail
-9. **React components explained** - What they are, how to identify them, the "LEGO" analogy
-10. **Tailwind CSS explained** - Utility-first approach, common classes
-11. **Framework for learning any new component** - Categorize → Visualize → Practice
+10. **Stream Protocol high-level** - Just enough to understand why responses appear "one character at a time"
+11. **The power of separation** - Discuss: "What would we change to add real AI?" Answer: Just the backend.
+12. **Trace the full flow** - Draw the path from user input to displayed response
 
 ### Phase 4: Reflection
 
-12. **What did you create?** - Let student share what they built
-13. **What did you learn?** - Focus on the process, not the specific code
+13. **What did you implement?** - Let student describe what they did
+14. **What did you learn about architecture?** - Focus on the separation concept, not the code details
 
 ## Common Struggles
 
-**Struggle:** Student's prompt is too vague
-- **Signs:** "Help me make this look better" or "Add something cool"
-- **Intervention:** Guide them through the prompt template. Ask: "What specifically do you want? Shape? Color? Position? Interaction?"
+**Struggle:** Student doesn't understand why we need a "fake" AI first
+- **Signs:** "Why don't we just connect to the real AI?"
+- **Intervention:** Explain the learning approach: "We want to understand the architecture first. Once you see the data flow clearly, adding real AI is just changing one piece."
 
-**Struggle:** Student copies code without reading AI's explanation
-- **Signs:** Immediately pastes code, then confused when asked what it does
-- **Intervention:** Before they paste, ask: "What file are you modifying? What will this code do?" Make them read the explanation first.
+**Struggle:** Student is confused by Stream Protocol format
+- **Signs:** Looking at the `yield` statements and `data:` format with confusion
+- **Intervention:** Say "Don't worry about the exact format now. Just know that it sends data in pieces so the UI can show text appearing gradually. We'll dive deep into this in the next lesson."
 
-**Struggle:** Student can't find what to modify
-- **Signs:** "AI told me to add this but I don't know where"
-- **Intervention:** Use the Top-Down skills from the previous lesson. "What component does this belong to? Let's trace from the UI."
+**Struggle:** Student can't find the right file to modify
+- **Signs:** Looking in `app/` folder for backend code
+- **Intervention:** Remind them: "Frontend code is in `app/` and `components/`. Backend code is in `api/`. The chat endpoint is in `api/index.py`."
 
-**Struggle:** Code doesn't work after pasting
-- **Signs:** Error in browser, white screen
-- **Intervention:** Don't panic. Check browser console. Ask AI to help debug by sharing the error message. This is a learning opportunity about iteration.
+**Struggle:** Changes don't appear after saving
+- **Signs:** Modified code but chat still shows old response
+- **Intervention:** Check if the dev server restarted. Sometimes need to save the file again or restart `mise run dev`.
 
-**Struggle:** Student picks too complex a design element
-- **Signs:** Chooses an entire page layout or complex animation
-- **Intervention:** Redirect to smaller scope. "Let's start with just that button/icon/card. We can add more later."
+**Struggle:** Student copies code without understanding the data flow
+- **Signs:** "It works but I don't know how"
+- **Intervention:** Ask them to trace it step by step: "Where does the user type? Where does it send? Where does it receive? Where does it display?" Use DevTools Network tab as proof.
 
-**Struggle:** Student doesn't understand why the code works
-- **Signs:** "It works but I have no idea why"
-- **Intervention:** This is okay for now! Emphasize that understanding comes gradually. Ask them to identify just ONE thing they understand about the code.
+**Struggle:** Student gets lost in frontend code complexity
+- **Signs:** Trying to understand every line of the React components
+- **Intervention:** "You don't need to understand React deeply today. Just know that `useChat` sends messages and `messages` array contains the conversation. Focus on the backend - that's what you're changing."
 
 ## Teaching Tips
 
-- **Embrace "do first, understand later"** - This is the core philosophy. Don't feel compelled to explain everything before they try.
+- **Start with the "why"** - Spend time on the conceptual foundation. The data/logic separation idea is more valuable than the implementation details.
 
-- **Let them pick their own design** - Student motivation increases dramatically when they're building something they chose.
+- **Use the analogy** - The project card example (JSON data vs rendering logic) is concrete and relatable. Refer back to it when explaining the chat flow.
 
-- **Model the AI interaction** - Show how YOU would prompt an AI. Think aloud: "I want this button... it's in Hero.tsx... I want blue with hover effect..."
+- **DevTools is your friend** - Show students how to use the Network tab. It makes the invisible visible. Seeing the actual request/response is much more convincing than theoretical explanation.
 
-- **Celebrate rough implementations** - First version doesn't need to be perfect. "It shows up? Great! Now let's iterate."
+- **Keep Stream Protocol light** - Don't get bogged down in SSE details. Say "we'll cover this in the next lesson" and move on. Today is about architecture, not protocol.
 
-- **Use git diff as a teaching tool** - After they apply code, walk through the diff together. "See? We only changed these 10 lines to get that effect."
+- **Celebrate the echo** - When their hardcoded response works, celebrate it! "See? The backend changed, but the frontend didn't. That's the power of separation."
 
-- **Connect to real work** - "In professional development, you'll often copy patterns from other sites. This skill of translating visual → code is exactly that."
+- **Connect to real work** - "In production systems, we often prototype with hardcoded data first, then add real logic. This is how professionals work too."
 
-- **Normalize not understanding everything** - "React and Tailwind take months to master. Today you just need to understand WHAT they are, not HOW they work in depth."
+- **The "Doer to Thinker" message** - Use the mentor's note theme: today is about understanding WHY, not just WHAT. Frame the learning as becoming an architect, not just a coder.
 
 ## Assessment Ideas
 
-- **Simple check:** Ask student: "What did you add? Show me the UI and show me the code that creates it."
+- **Data flow check:** Ask student to trace a message from typing to display
+  - Good answer names: input field → sendMessage → POST /api/chat → backend handler → StreamingResponse → useChat → messages array → message component
 
-- **Context Engineering check:** Ask: "If your code didn't work, what extra information would you give AI to help debug?"
-  - Good answer: error message, file path, what you expected vs what happened
+- **Architecture understanding:** Ask "If we wanted to add real AI, what would we change?"
+  - Good answer: "Just the backend - replace the hardcoded response with an AI API call"
+  - This demonstrates they understand the separation
 
-- **Understanding check:** Point to any Tailwind class in their code and ask: "What does this class do?"
-  - They don't need to know ALL classes, but should be able to guess or look up one.
+- **File location check:** Ask "Which files are frontend? Which are backend?"
+  - Frontend: `app/`, `components/`
+  - Backend: `api/`
 
-- **Process check:** "If you wanted to add another element tomorrow, what would you do?"
-  - Good answer: Find inspiration → describe to AI with context → apply → iterate
+- **Quick verification:** Send a message, see if response includes the original message
+  - Pass: Response shows "I received: [their message]" or similar
+  - Fail: No response, or response doesn't include their message
 
 ## Pacing Guide
 
-- **Exercise 1 (Start app, observe):** 5 minutes
-  - Quick run and identify components
+- **Conceptual foundation:** 10-15 minutes
+  - Data vs logic explanation with project card example
+  - Why separation matters (the four problems)
+  - API as contract concept
 
-- **Exercise 2 (Find inspiration):** 10 minutes
-  - Browse Pinterest, pick ONE small element
-  - Don't let them spend too long browsing
+- **Exercise 1 (Run and observe):** 5 minutes
+  - Start the app
+  - Navigate to /chat
+  - Try sending a message (observe current behavior)
 
-- **Exercise 3 (Prompt AI):** 10 minutes
-  - Fill in the template
-  - Send to AI, read the response
+- **Exercise 2-3 (Locate and understand):** 10 minutes
+  - Find the key files
+  - Look at `api/index.py` structure
+  - Identify where to make changes
 
-- **Exercise 4 (Apply code):** 10 minutes
-  - Apply the code
-  - Check browser, use git diff
+- **Exercise 4 (Implement):** 10 minutes
+  - Modify the hardcoded response
+  - Include user's message in response
+  - Save and test
 
-- **Exercise 5 (Iterate):** 10 minutes
-  - Make adjustments
-  - Ask AI for tweaks
+- **Exercise 5 (DevTools):** 5 minutes
+  - Open Network tab
+  - Send a message
+  - Observe request/response
 
-- **Concept deep dive (if time):** 10-15 minutes
-  - Explain Context Engineering, React, Tailwind in detail
-  - Only after hands-on is complete
+- **Concept reinforcement:** 5-10 minutes
+  - Quick Stream Protocol overview
+  - Discuss future changes (real AI)
 
 - **Reflection:** 5 minutes
-  - What did you build?
-  - What was the most useful thing you learned?
+  - What did you implement?
+  - What's the key takeaway about architecture?
 
 **Total expected time:** 50-60 minutes
 
 ## Key Messages to Reinforce
 
-1. **Context is everything** - The quality of AI's output depends on the quality of your input. Be specific about project, location, current state, goal.
+1. **Separation is the core principle** - Frontend handles UI, backend handles logic. They communicate through APIs. This pattern is everywhere in modern software.
 
-2. **Do first, understand later** - You don't need to master React and Tailwind before using them. Learn by doing, deepen understanding over time.
+2. **Data vs Logic** - Data tells you "what", logic tells you "how". Keep them separate for flexibility.
 
-3. **Iterate, don't perfect** - First version won't be perfect. That's normal. Adjust, ask AI again, refine.
+3. **Architecture enables change** - Good architecture (like frontend-backend separation) makes future changes easy. Today: hardcoded. Tomorrow: real AI. Frontend stays the same.
 
-4. **Small scope wins** - Pick small, specific UI elements. "This one button" beats "redesign the whole page."
+4. **Run first, understand later** - You don't need to understand every line. Get it working, then deepen understanding over time.
 
-5. **AI explains, you verify** - Always ask AI to explain what the code does. Then verify by reading and testing.
+5. **DevTools reveals truth** - When in doubt, check the Network tab. Seeing actual data is more valuable than theoretical understanding.
 
-6. **These skills compound** - Each time you do this, you get faster and understand more. Day 1 is the hardest day.
+6. **This is professional practice** - Prototyping with hardcoded data before adding real logic is how production systems are built. You're learning real workflow.
