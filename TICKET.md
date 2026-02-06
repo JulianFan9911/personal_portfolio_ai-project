@@ -6,7 +6,7 @@ Set up Vercel deployment for your Next.js application so you can instantly verif
 
 This is a **preview deployment** (not production). The goal is to establish the deployment pipeline so that every time you push code, you can immediately see if it builds and deploys correctly. Think of it as TDD for deployment: push → see result → fix if needed → repeat.
 
-Read the tutorial: [Deploying Next.js App to Vercel](https://github.com/sanhehu/learn_personal_portfolio_ai-project/tree/05-Deploy-Hello-World-NextJs-App-to-Vercel)
+Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/05-Deploy-Hello-World-NextJs-App-to-Vercel/)
 
 ## Actionable Items
 
