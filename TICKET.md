@@ -11,6 +11,8 @@ You will learn Test-Driven Development (TDD) in a **multi-language project** by 
 
 This task card guides you through practicing TDD across Python and Node.js using the same logic but different syntax.
 
+Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/03-Setup-Node-Development-Environment/)
+
 ---
 
 ## Part 1: Python - multiply_two()
