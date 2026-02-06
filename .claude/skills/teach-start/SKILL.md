@@ -28,7 +28,7 @@ Tell the student:
 
 ## Step 2: Read Teaching Guide
 
-Read the teaching guide at [TEACHING.md](../../TEACHING.md) to understand:
+Read the teaching guide at [.claude/TEACHING.md](../../TEACHING.md) to understand:
 - Learning outcomes
 - Concept sequence (what to teach first, second, etc.)
 - Teaching phases and their objectives
