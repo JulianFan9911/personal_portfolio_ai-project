@@ -4,7 +4,7 @@
 
 Learn how Prompt Caching works and understand how it can save up to 75% on input token costs when you have repeated static content across multiple API calls.
 
-Read the [Tutorial](./README.md) | [中文教程](./README-cn.md)
+Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/11-Cached-Prompt/)
 
 ## Actionable Items
 
