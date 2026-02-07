@@ -61,3 +61,9 @@ GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起�
 一个约定，让 1000 个人省掉 9000 小时。协议不是技术细节，是让复杂系统能被分工的根本原因。
 
 📄 [09-The-Power-of-Protocol-CN.md](09-The-Power-of-Protocol-CN.md)
+
+## 10 - Always Have a Plan B
+
+飞机为什么有两个引擎？不是动力不够，是为了那万分之一的时刻。冗余不是浪费，是专业。
+
+📄 [10-Always-Have-a-Plan-B-CN.md](10-Always-Have-a-Plan-B-CN.md)
