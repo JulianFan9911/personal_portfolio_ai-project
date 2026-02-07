@@ -1,456 +1,246 @@
-# Exploring a Codebase: Top-Down Learning Method
+# Prompt Caching: Give AI a "Memo"
 
-> Learn how to navigate unfamiliar code by starting from what you can see (UI) and tracing back to the source.
-
-![Screenshot](./img/04-Setup-NextJs-FastAPI-Local-Dev-Env/01-example-hello-world-web-app.png)
+> When you need to repeat a lot of background information every time, Prompt Caching can save you money.
 
 ## Overview
 
-You've got the app running locally. Now what?
+Imagine this scenario: you're using AI to analyze a 500-page user manual. You ask 10 questions, and each time you have to send all 500 pages to the AI.
 
-Most tutorials stop here. They show you how to run the code, maybe explain what each file does, and move on. But that's like giving you a map without teaching you how to read it.
+Here's the problem—those 500 pages are the same every time, but you're paying for them 10 times. Even worse, the AI has to "read" those 500 pages again each time, like an assistant with amnesia who needs to be reintroduced at every meeting.
 
-This tutorial is different. Instead of telling you where things are, we'll teach you **how to find them yourself**. This is a skill that transfers to any codebase, any framework, any language.
+This clearly doesn't make sense. If only the AI could "remember" the content that doesn't change.
+
+That's exactly the problem Prompt Caching solves.
 
 ## Learning Objectives
 
-When you join a new team or start working on an unfamiliar project, you'll face codebases with hundreds or thousands of files. Nobody will hand you a map. You need to be able to explore on your own.
+In real-world AI applications, you'll often encounter this pattern:
 
-The developers who advance fastest aren't the ones who memorize file locations—they're the ones who can efficiently navigate any codebase they encounter. This exploration skill is what separates junior developers who always need guidance from senior developers who can onboard themselves.
+```
+[Large static background information] + [User's question]
+```
 
-By the end of this exercise, you will:
+For example, you might need to send the user's personal profile to the AI and then ask various questions; or send a product document to the AI so users can ask questions anytime; or send an entire codebase to the AI to help developers solve problems.
 
-1. Understand the Top-Down learning approach and why it's effective
-2. Learn three practical techniques for finding code from UI elements
-3. Practice tracing UI elements back to their source code
-4. Build the mental muscle for self-directed codebase exploration
+In all these scenarios, the background information is fixed—only the user's question changes. If you don't understand Prompt Caching, every API call will charge you for that repeated static content. In production environments, this creates significant cost waste.
+
+After completing this lesson, you will be able to:
+
+1. **Understand the value of Prompt Caching** — Know what problem it solves and which scenarios are suitable for it
+2. **Understand how it works** — Grasp the difference between cache write and cache read
+3. **Know the cost benefits** — Understand that cache reads in AWS Bedrock can save about 75% on input token costs
+4. **Implement Prompt Caching** — Use `cachePoint` in AWS Bedrock to mark cache boundaries
 
 ## Prerequisites
 
-- You have completed the previous tutorial and can run `mise run dev` successfully
-- You have a browser and can access http://localhost:3000
-- You have an AI assistant available (Claude, ChatGPT, etc.)
-
-## What You'll Build
-
-Nothing. You won't write any code in this tutorial.
-
-Instead, you'll build something more valuable: **the ability to explore any codebase confidently**. By the end, you'll know exactly which file creates each element on the screen, and more importantly, you'll know how to find this information yourself in any project.
+Before you begin, make sure you've completed the "Hello, AI!" lesson and can call the AWS Bedrock API. Your AWS credentials should be configured, and project dependencies should be installed (via `mise run inst`).
 
 ---
 
 ## Key Concepts
 
-### What is Top-Down Learning?
+### 1. The Problem: Repeatedly Sending Static Content
 
-**Top-Down learning** means starting from what you can see and working backwards to understand how it's built.
+Let's look at a typical conversation flow. Suppose you're developing a "personal assistant" app that needs to answer various questions based on a user's profile:
 
-Instead of:
-- Reading all the files from top to bottom
-- Memorizing the project structure
-- Following a linear tutorial
+**First question:**
+```
+[User profile 1000 tokens] + "What birthday gift would you recommend?"
+```
 
-You do:
-- See something on screen → ask "where does this come from?"
-- Find the answer → ask "how does this get loaded?"
-- Keep tracing → until you reach the entry point
+**Second question:**
+```
+[User profile 1000 tokens] + "Weekend activity recommendations?"
+```
 
-This approach is effective because:
-- You learn with immediate context (you can see what you're studying)
-- You only learn what's relevant (no wasted time on unused code)
-- You build a mental map naturally (connections, not isolated facts)
+**Third question:**
+```
+[User profile 1000 tokens] + "What music suits me?"
+```
 
-### The Alternative: Bottom-Up Learning
+See the problem? That 1000 tokens of user profile has to be sent every time, and you pay for it every time. If the user asks 10 questions, you've actually sent 10,000 tokens of user profile—but the content is exactly the same.
 
-**Bottom-Up learning** means starting from the foundation and building up understanding layer by layer.
+It's like having to repeat your ID number, address, and order history every time you call customer service. The system already has all this information—why repeat it over and over?
 
-For example:
-- Read the project structure documentation
-- Study the configuration files
-- Understand the build process
-- Then look at the components
+### 2. How Prompt Caching Works
 
-Both approaches have their place. Top-Down is great for quick exploration and understanding "what does this thing do?" Bottom-Up is better when you need deep understanding of a system's architecture.
+The core idea of Prompt Caching is actually quite simple: **let the AI remember the content that doesn't change**.
 
-**In this tutorial, we focus on Top-Down** because it's the skill most beginners lack, and it's the fastest way to become productive in a new codebase.
+How does it work exactly?
 
-### Three Techniques for Finding Code
+When you make your first API call (which we call **Cache Write**), you send the static content plus your question. The AI stores the static content in a cache, and you pay the normal price. This step is a necessary "investment."
 
-When you see something on screen and want to find its source code, you have three main approaches:
+Subsequent calls (which we call **Cache Read**) are different. You still send the same static content plus a new question, but the AI finds that this content is already in the cache, so it uses the cached version directly without reprocessing. At this point, you only pay about 25% of the price!
 
-**Technique 1: Text Search**
+This is just like browser image caching: the first time you visit a website, you download the images; after that, the browser finds they're already stored locally and uses the cache instead of downloading again.
 
-If the UI element contains visible text, search for that exact text in the codebase.
+### 3. Under the Hood: What's Being Saved?
 
-Example: You see "About Me" on screen → search for `"About Me"` in the code
+You might be curious: what exactly does caching save?
 
-This is the simplest and most reliable method when text is available.
+When you send text to an AI, the AI needs to **parse** that text. This process is called "tokenization" plus subsequent vector processing—simply put, it converts human text into an internal representation that the AI can understand.
 
-**Technique 2: Browser DevTools**
+This parsing process requires computational resources, so it costs money. The longer the text, the more computation, the higher the cost.
 
-If there's no searchable text (like an image or icon), use Chrome DevTools to inspect the element and find identifying information.
+Prompt Caching saves this "parsing" cost. On the first call, the AI parses the static content and stores it in the cache—you pay the normal price. On subsequent calls, the AI directly uses the already-parsed result from the cache, skipping the repeated parsing computation, so it only charges you about 25% of the price.
 
-Example: You see a profile image → right-click, Inspect → find class names, IDs, or src attributes → search for those
+One important note: this is primarily a **cost** savings, not a significant time improvement. Why? Because for modern AI models, the time to parse text is not the main bottleneck compared to the time to generate responses. Generating the response is the most time-consuming part. So you might not notice a significant speed improvement, but your bill will definitely get smaller.
 
-**Technique 3: Screenshot to AI**
+### 4. AWS Bedrock Implementation: cachePoint
 
-When other methods fail, take a screenshot, highlight the element you're curious about, and ask an AI assistant.
+Theory covered, let's see how to write the code.
 
-Example: "I see this button (circled in red). What file in my codebase creates this?"
+In AWS Bedrock, you use a marker called `cachePoint` to tell the AI: "From here on, please cache everything before this point."
 
-This is especially useful when you're not sure what to search for.
+```python
+messages = [
+    {
+        "role": "user",
+        "content": [
+            # Static content (will be cached)
+            {"text": static_context},
+
+            # Cache boundary marker—this is the key!
+            {"cachePoint": {"type": "default"}},
+
+            # Dynamic content (will not be cached)
+            {"text": question},
+        ],
+    }
+]
+```
+
+The rule is simple: content **before** `cachePoint` gets cached; content **after** it doesn't.
+
+So you need to put the unchanging content (like user profiles, document content) before `cachePoint`, and the content that changes every time (like the user's question) after it. This way, static content only needs to be parsed once, and all subsequent calls enjoy the price discount from caching.
+
+### 5. Important Limitation: Minimum Token Requirement
+
+Before you excitedly start using this feature, there's an important limitation to understand: **static content must be at least 1024 tokens**.
+
+Why this limitation? Because caching itself has costs—storage, management, and lookup all require resources. If the content is too short, the benefit from caching doesn't outweigh the caching overhead, making it counterproductive. So AWS sets a minimum threshold.
+
+More importantly, if your static content is too short, caching will **silently fail**—no error, the code runs normally, but there's no caching effect at all. You might think you're saving money when you're actually not. This is an easy trap to fall into.
+
+Different models have slightly different minimum requirements: Nova Micro/Lite/Pro needs 1024 tokens, Claude models need 1024 to 4096 tokens depending on the model. Check the official documentation for specific numbers.
+
+### 6. Cost Benefits
+
+Let's do some math so you have an intuitive understanding of the benefits.
+
+Using AWS Bedrock as an example, Cache Write (writing to cache) charges the normal price, while Cache Read (reading from cache) only charges about 25% of the price—equivalent to **saving about 75%**.
+
+Suppose your static content is 1000 tokens and the user asks 10 questions.
+
+Without caching, you pay for those 1000 tokens every call. 10 calls × 1000 tokens = 10,000 tokens, all charged at normal price.
+
+With caching? The first call pays normal price for 1000 tokens (while writing to cache), and the subsequent 9 calls each only pay 1000 × 25% = 250 tokens equivalent price. Total: 1000 + 250 × 9 = 3250 tokens equivalent cost.
+
+How much did you save? (10000 - 3250) / 10000 = **67.5%**.
+
+And the more questions asked, the closer the savings get to 75%. If the user asks 100 questions, the savings rate is (100000 - 1000 - 99 × 250) / 100000 ≈ **74.3%**.
+
+Of course, different AI providers have different pricing strategies. The 75% savings is AWS Bedrock data—other providers (like OpenAI, Anthropic direct API) may differ. Always check each platform's official pricing documentation.
 
 ---
 
 ## Exercises
 
-### Exercise 1: Start the Application
+Theory done, now let's get hands-on and see Prompt Caching in action.
 
-**Goal:** Get the app running and identify all the UI elements we'll trace.
+### Exercise 1: Run the Script and Observe Caching
 
-**What to do:**
+**Goal:** See the difference between cache write and cache read with your own eyes.
 
-1. Open your terminal and run:
-   ```bash
-   mise run dev
-   ```
+Before you start, spend two minutes browsing the script file `scripts/test_ai_aws_bedrock_with_cached_prompt.py` to get a general sense of the code structure. You don't need to understand every line—just know what it does: sends a user profile (static content), then asks three different questions.
 
-2. Open http://localhost:3000 in your browser
+Ready? Run the script:
 
-3. Look at the screen and identify these elements:
-   - The "Home" link in the navigation bar
-   - The profile picture (avatar)
-   - The name "John Doe" and title "AI Engineer"
-   - The "About Me" heading
-   - The paragraph of Lorem Ipsum text
-   - The "Test API Hello Endpoint" button
-   - The API Response area (appears after clicking the button)
+```bash
+python scripts/test_ai_aws_bedrock_with_cached_prompt.py
+```
 
-**What you'll notice:**
+After it runs, carefully observe the output. You'll see something like this:
 
-You're looking at a simple portfolio page. Every single element you see is created by code somewhere in this project. Your mission is to find that code.
+```
+TURN 1
+Q: Based on my profile, what birthday gift would you recommend?
+A: [AI's response]
+Tokens: input=XX, output=XX, total=XX
+Cache:  write=XXX, read=0  <-- Writing to cache
 
-> **Key insight:** Before searching for code, take a moment to really look at what's on screen. What text do you see? What could you search for?
+TURN 2
+Q: What weekend activity would suit me?
+A: [AI's response]
+Tokens: input=XX, output=XX, total=XX
+Cache:  write=0, read=XXX  <-- Cache hit (75% cheaper!)
+
+TURN 3
+Q: What music playlist matches my personality?
+A: [AI's response]
+Tokens: input=XX, output=XX, total=XX
+Cache:  write=0, read=XXX  <-- Cache hit (75% cheaper!)
+```
+
+Focus on the `Cache:` line. In Turn 1, the `write` value is greater than 0 while `read` is 0—this means the static content is being written to the cache. By Turn 2 and Turn 3, it's reversed—`write` becomes 0 and `read` becomes greater than 0. That's a cache hit! The AI read directly from the previously stored cache, and you only pay 25% of the price.
+
+> **Key insight:** The first call is an "investment," subsequent calls are the "return." The more questions asked, the higher the ROI. This is why Prompt Caching is especially suited for "set up once, ask many times" scenarios.
 
 ---
 
-### Exercise 2: Find the "Home" Navigation Link
+### Exercise 2: Calculate Your Savings
 
-**Goal:** Practice Technique 1 (Text Search) to find where the "Home" link is defined.
+**Goal:** Understand cost savings through actual numbers.
 
-**What to do:**
+Just looking at output isn't intuitive enough—let's do some calculations. Based on the output you saw in Exercise 1, fill in the following:
 
-1. Look at the navigation bar. You see the word "Home".
+1. Tokens written to cache in Turn 1 (the `write` value): ______
+2. Tokens read from cache in Turn 2 (the `read` value): ______
+3. Tokens read from cache in Turn 3 (the `read` value): ______
 
-2. **Try it yourself first:** Before reading further, try to find where this "Home" text is defined in the codebase. Use your editor's search function or `grep`.
+Now calculate the actual savings:
 
-3. **Stuck?** Here's how to do it: Search for the exact string `"Home"` in the project. You're looking for where this label is defined, not where it's rendered.
+4. Total tokens read from cache = Turn 2 + Turn 3 = ______
+5. These tokens would cost full price without caching; with caching you only pay 25%, so you save 75%
+6. Equivalent tokens saved = result from step 4 × 75% = ______
 
-4. Once you find the file, read the surrounding code. Try to understand:
-   - How is the navigation structure defined?
-   - How does this become a clickable link?
-   - How does this component get loaded into the page?
+If the script's profile is about 900 tokens and 2 out of 3 calls use the cache, you saved approximately 900 × 2 × 75% = 1350 tokens equivalent cost. This is just 3 calls. Imagine in a production environment, if users ask 100 questions per day, how much would you save over a month?
 
-**The answer (only read after trying yourself):**
-
-The "Home" link is defined in `app/_components/layouts/Navigation.tsx`:
-
-```typescript
-const DEFAULT_NAV_ITEMS: NavItem[] = [
-  { label: "Home", href: "/" },
-]
-```
-
-**Tracing the import chain:**
-
-1. `Navigation.tsx` exports a `Navigation` component
-2. `app/(marketing)/layout.tsx` imports and uses `<Navigation />`
-3. This layout wraps all pages in the `(marketing)` route group
-4. When you visit `/`, Next.js renders `layout.tsx` which includes `Navigation`
-
-> **Key insight:** The text you see on screen often appears as a string literal in the code. Searching for exact strings is usually the fastest way to find UI code.
+> **Key insight:** Prompt Caching is a classic "invest upfront, reap returns later" model. Looking at just the first call, there's no savings; but as call count increases, cumulative savings become considerable. That's why it's especially valuable in high-frequency production environments.
 
 ---
 
-### Exercise 3: Find the Profile Picture (Hero Image)
+### Exercise 3: Understand cachePoint Placement
 
-**Goal:** Practice Technique 2 (DevTools) when text search isn't obvious.
+**Goal:** Understand the role of `cachePoint` in the code and why it's placed where it is.
 
-**What to do:**
+Now open `scripts/test_ai_aws_bedrock_with_cached_prompt.py` and find the `send_message_with_cache` function. Around lines 95-122, you'll see the code that builds `messages`.
 
-1. Look at the circular profile picture on the left side of the page.
+Carefully observe the structure of this code, then answer these questions:
 
-2. There's no text to search for. So let's try DevTools.
+1. What content is placed before `cachePoint`?
+2. What content is placed after `cachePoint`?
+3. Why is it arranged this way? What would happen if the order were reversed?
 
-3. Right-click on the image → click "Inspect" (or press F12)
+Got your answers? Here's the reference:
 
-4. In the Elements panel, you'll see the HTML for this image. Look for:
-   - The `src` attribute (where does the image come from?)
-   - Any class names that might be searchable
+Before `cachePoint` is `static_context`, which is the user's profile—the content that doesn't change. After `cachePoint` is `question`, which is different every time.
 
-5. **Try it yourself:** What file path or class name do you see? Search for it.
+Why this arrangement? Because the value of caching is avoiding repeated processing of the same content. The user profile is the same every time, so it's worth caching; the question is different every time, so caching it makes no sense. If you reversed the order—putting the question first, then the profile—the question would get cached and the profile wouldn't. Next time you ask a different question, the cache would miss, completely defeating the purpose.
 
-**The answer (only read after trying yourself):**
-
-In DevTools, you'll see something like:
-```html
-<img src="/images/profile.png" alt="John Doe Profile Photo" ...>
-```
-
-Search for `profile.png` or `John Doe Profile Photo` in the codebase.
-
-You'll find it in `app/(marketing)/_components/Hero.tsx`:
-
-```tsx
-<Image
-  src="/images/profile.png"
-  alt="John Doe Profile Photo"
-  width={192}
-  height={192}
-  className="w-full h-full object-cover"
-/>
-```
-
-**Tracing the import chain:**
-
-1. `Hero.tsx` exports a `Hero` component
-2. `app/(marketing)/HomePageContent.tsx` imports `<Hero />`
-3. `app/(marketing)/page.tsx` imports `<HomePageContent />`
-4. When you visit `/`, Next.js renders `page.tsx`
-
-> **Key insight:** DevTools is your X-ray vision. When you can't search by text, inspect the HTML and search by attributes, class names, or file paths.
+> **Key insight:** The position of `cachePoint` determines what gets cached. Remember this principle: put unchanging content before `cachePoint`, put changing content after. This order cannot be reversed.
 
 ---
 
-### Exercise 4: Find "John Doe" and "AI Engineer"
+## Reflection
 
-**Goal:** Reinforce Technique 1 with multiple related elements.
+Let's review what we learned in this lesson.
 
-**What to do:**
+Prompt Caching solves a very practical problem: when you need to repeatedly send the same background information, how do you avoid paying multiple times for that repeated content? Its mechanism is intuitive—the first call writes static content to cache at normal price; subsequent calls read from cache at about 25% price. Under the hood, it saves the computational cost of AI parsing text.
 
-1. You see "John Doe" (large text) and "AI Engineer" (smaller, highlighted text) below the profile picture.
+In AWS Bedrock, usage is simple: use `cachePoint` to mark the cache boundary, put static content before it and dynamic questions after. But watch out for the minimum 1024 token requirement, otherwise caching silently fails.
 
-2. **Try it yourself:** Search for these strings in the codebase.
-
-3. Notice that both are in the same file. What does this tell you about the component structure?
-
-**The answer (only read after trying yourself):**
-
-Both are in `app/(marketing)/_components/Hero.tsx`:
-
-```tsx
-<h1 className="...">
-  John Doe
-</h1>
-<p className="...">
-  <span className="text-highlight">AI Engineer</span>
-</p>
-```
-
-**What this reveals:**
-
-The `Hero` component is responsible for the entire left-side profile area: the image, name, and title. This is a common pattern—grouping related UI elements into a single component.
-
-> **Key insight:** When you find one element, look around in the same file. Related elements are often nearby.
-
----
-
-### Exercise 5: Find the "About Me" Section
-
-**Goal:** Practice finding headings and their associated content.
-
-**What to do:**
-
-1. You see the "About Me" heading in cyan/teal color on the right side.
-
-2. **Try it yourself:** Search for this text and find where it's defined.
-
-3. Also find where the Lorem Ipsum paragraph text is defined.
-
-**The answer (only read after trying yourself):**
-
-Both are in `app/(marketing)/_components/Hero.tsx`:
-
-```tsx
-<h2 className="...">
-  About Me
-</h2>
-
-<p className="text-lg text-text-secondary mb-8 leading-relaxed">
-  Lorem Ipsum is simply dummy text of the printing and typesetting industry...
-</p>
-```
-
-**Notice the structure:**
-
-The `Hero` component contains both the left column (profile) and the right column (about text). It's a two-column layout within a single component.
-
-> **Key insight:** Component boundaries don't always match visual boundaries. One component can manage multiple visual sections.
-
----
-
-### Exercise 6: Find the "Test API Hello Endpoint" Button
-
-**Goal:** Find interactive elements and understand their behavior.
-
-**What to do:**
-
-1. Look at the clickable button that says "Test API Hello Endpoint".
-
-2. **Try it yourself:** Search for this text in the codebase.
-
-3. Once you find the button, look for:
-   - What happens when you click it? (Look for `onClick`)
-   - What function does it call?
-   - What API endpoint does it hit?
-
-**The answer (only read after trying yourself):**
-
-In `app/(marketing)/_components/Hero.tsx`:
-
-```tsx
-<button
-  onClick={handleApiCall}
-  disabled={isLoading}
-  className="..."
->
-  ...
-  {isLoading ? "Loading..." : "Test API Hello Endpoint"}
-  ...
-</button>
-```
-
-The `handleApiCall` function:
-
-```tsx
-const handleApiCall = async () => {
-  setIsLoading(true)
-  try {
-    const response = await fetch("/api/hello")
-    const data = await response.json()
-    setApiResponse(JSON.stringify(data, null, 2))
-  } catch (error) {
-    setApiResponse("Error fetching API response")
-  } finally {
-    setIsLoading(false)
-  }
-}
-```
-
-> **Key insight:** For interactive elements, finding the element is just step one. The real understanding comes from tracing what happens when you interact with it.
-
----
-
-### Exercise 7: Find the API Endpoint
-
-**Goal:** Trace from frontend to backend code.
-
-**What to do:**
-
-1. From Exercise 6, you know the button calls `/api/hello`.
-
-2. **Try it yourself:** Where is this API endpoint defined? Search for `"/api/hello"` or `@app.get` or similar API decorators.
-
-3. **Hint:** This project uses FastAPI for the backend. The API code isn't in the `app/` folder—look elsewhere.
-
-**The answer (only read after trying yourself):**
-
-The API is defined in `api/index.py`:
-
-```python
-@app.get("/api/hello")
-async def hello_world():
-    return JSONResponse(
-        content={
-            "message": "Hello from FastAPI!",
-            "status": "success"
-        }
-    )
-```
-
-**But wait—how does Next.js know to route `/api/hello` to FastAPI?**
-
-Check `next.config.js`:
-
-```javascript
-rewrites: async () => {
-  return [
-    {
-      source: "/api/:path*",
-      destination:
-        process.env.NODE_ENV === "development"
-          ? "http://127.0.0.1:8000/api/:path*"
-          : "/api/",
-    },
-    ...
-  ];
-},
-```
-
-This tells Next.js: "When someone requests `/api/anything`, forward it to FastAPI running on port 8000."
-
-> **Key insight:** Modern applications often have multiple services communicating. Tracing a request might lead you across service boundaries.
-
----
-
-### Exercise 8: Ask AI to Find Something (Technique 3)
-
-**Goal:** Practice using AI as an exploration tool.
-
-**What to do:**
-
-1. Take a screenshot of the running application.
-
-2. Draw a red circle around any element you're curious about.
-
-3. Ask your AI assistant: "In my Next.js + FastAPI project, which file creates [describe the circled element]?"
-
-4. **Example prompts you can try:**
-
-   - "I circled the navigation bar at the top. Which file creates this?"
-   - "I circled the glowing effect behind the profile. Where does this come from?"
-   - "I circled the API response box. Which component handles displaying this?"
-
-**What you'll notice:**
-
-AI can often identify components just from visual description. This is especially useful when:
-- You don't know the right terms to search for
-- The element is created dynamically
-- You want to understand how multiple pieces fit together
-
-> **Key insight:** AI is a power-multiplier for exploration. Don't hesitate to ask "dumb" questions—the goal is learning, not appearing smart.
-
----
-
-## Reflection: What Did We Learn?
-
-After completing these exercises, you've learned:
-
-**The Top-Down approach:**
-- Start from what you can see (the UI)
-- Ask "where does this come from?"
-- Trace backwards to the source code
-- Keep following imports until you understand the full chain
-
-**Three practical techniques:**
-- Text Search: Search for visible strings in the codebase
-- DevTools: Inspect elements to find searchable attributes
-- AI Assistant: Screenshot and ask when other methods fail
-
-**How this project is structured:**
-- `app/layout.tsx` is the root layout (applies to all pages)
-- `app/(marketing)/layout.tsx` adds navigation to marketing pages
-- `app/(marketing)/page.tsx` is the home page entry point
-- `app/(marketing)/HomePageContent.tsx` is the main content
-- `app/(marketing)/_components/Hero.tsx` contains most UI elements
-- `app/_components/layouts/Navigation.tsx` creates the nav bar
-- `api/index.py` handles API endpoints
-- `next.config.js` configures routing between Next.js and FastAPI
-
-**Most importantly:**
-- Knowing "how to find" is more valuable than knowing "where it is"
-- This skill transfers to any codebase, any framework
-- The more you practice exploration, the faster you become
+What scenarios suit Prompt Caching? Any "large background information + multiple questions" pattern. For example: analyzing a long document and asking multiple questions, personalized conversations based on user profiles, tasks that repeatedly reference the same background material.
 
 ---
 
@@ -458,67 +248,65 @@ After completing these exercises, you've learned:
 
 **Why this exercise matters:**
 
-I've seen many developers struggle when joining new projects. They wait for someone to explain the codebase, or they read documentation that's often outdated. The developers who thrive are those who can explore and learn independently.
+In my view, the value of learning Prompt Caching goes far beyond "mastering an API feature." It embodies a more important engineering principle: **understand the cost model of your tools**.
 
-This Top-Down skill isn't just for code. It's a fundamental learning approach that works for:
-- Learning a new product (start using it, then dig into how it works)
-- Understanding a new business (see the customer experience, then trace the processes)
-- Debugging problems (see the symptom, then trace to the cause)
+I've seen many people use AI APIs like tap water—just turn on the faucet, don't worry about metering. That's fine during learning, but in production environments, this attitude will make your bills spiral out of control. I once saw a team spending several thousand extra dollars per month because they didn't understand the token billing mechanism.
+
+When you understand how tokens are billed and how caching works, you can make smarter architectural decisions. You'll start asking yourself: should this content be cached? Where should static information be placed in the prompt? What's the expected calling pattern? These questions all require understanding the underlying cost model to answer.
 
 **Key insights:**
 
-- **The best map is the one you draw yourself.** When you trace through code by hand, you build a mental model that no documentation can provide.
+Saving money is a fundamental skill for engineers. Good engineers don't just aim for "it works"—they aim for "it works efficiently and economically." In a resource-limited real world, achieving the same results with less cost is a competitive advantage.
 
-- **Don't be afraid to ask "dumb" questions.** AI assistants are judgment-free. Use them liberally when exploring. The goal is learning, not looking smart.
+Also remember that context determines technology. Prompt Caching isn't a silver bullet—it only has value in "repeated static content + multiple calls" scenarios. If your application has completely different content each call, or has low call frequency, the benefits from caching might not justify the extra complexity. Technology selection should always be based on specific context.
 
-- **Top-Down and Bottom-Up complement each other.** Use Top-Down to quickly understand what's relevant. Use Bottom-Up when you need deep, systematic understanding. Master both.
+Additionally, I recommend forming this habit: when reading API documentation, don't skip the pricing section. That's where many optimization opportunities hide. Many developers only read feature docs, not pricing docs, and miss out on money-saving techniques.
 
 **Next steps:**
 
-1. Try the same exploration technique on a different project
-2. When you encounter a bug, use Top-Down to trace from symptom to cause
-3. Practice explaining code paths to others—teaching reinforces learning
+Next time you develop an AI application, ask yourself these three questions:
+
+1. How much of my prompt content is the same every time?
+2. How many questions will users ask? What's the call frequency?
+3. Is the ROI of enabling caching worth it? How many calls to break even?
+
+This cost-consciousness will make you stand out in your team. After all, in an era where AI applications are becoming increasingly common, engineers who can control costs are more valuable than engineers who can only call APIs.
 
 ---
 
 ## Quick Reference
 
-**Start the development server:**
-```bash
-mise run dev
-```
-
-**Search for text in the codebase:**
-```bash
-# Using grep
-grep -r "search text" --include="*.tsx" --include="*.ts"
-
-# Using your editor's search (Cmd+Shift+F in VS Code)
-```
-
-**Key files in this project:**
-
-- `app/layout.tsx` - Root layout, applies to all pages
-- `app/(marketing)/layout.tsx` - Marketing pages layout with navigation
-- `app/(marketing)/page.tsx` - Home page entry point
-- `app/(marketing)/HomePageContent.tsx` - Main content component
-- `app/(marketing)/_components/Hero.tsx` - Profile and about section
-- `app/_components/layouts/Navigation.tsx` - Navigation bar
-- `api/index.py` - FastAPI backend endpoints
-- `next.config.js` - Next.js configuration including API rewrites
-
----
-
-## Reference Implementation
-
-This tutorial is designed for the `06-Explore-Codebase-Top-Down` branch.
-
-To verify your environment is set up correctly:
+**Run the script:**
 
 ```bash
-git checkout 06-Explore-Codebase-Top-Down
-mise run inst
-mise run dev
+python scripts/test_ai_aws_bedrock_with_cached_prompt.py
 ```
 
-Then open http://localhost:3000 and follow the exercises above.
+**cachePoint usage:**
+
+```python
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {"text": static_context},           # Will be cached
+            {"cachePoint": {"type": "default"}}, # Cache boundary
+            {"text": question},                  # Will not be cached
+        ],
+    }
+]
+```
+
+**Cache metrics in response:**
+
+```python
+usage = response.get("usage", {})
+cache_write = usage.get("cacheWriteInputTokens", 0)  # Tokens written to cache
+cache_read = usage.get("cacheReadInputTokens", 0)    # Tokens read from cache
+```
+
+**Key files:**
+- `scripts/test_ai_aws_bedrock_with_cached_prompt.py` — Complete Prompt Caching example
+
+**Documentation:**
+- [AWS Bedrock Prompt Caching](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html)

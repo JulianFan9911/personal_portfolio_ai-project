@@ -49,3 +49,27 @@ GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起�
 不会设计？没关系。去 Pinterest 偷一个，让 AI 帮你实现。模仿不是终点，是起点。
 
 📄 [07-Steal-Like-An-Artist-CN.md](07-Steal-Like-An-Artist-CN.md)
+
+## 08 - The Fake Teaches You The Real
+
+用 hardcoded 的假 AI 跑通整个架构。替身演员先把走位排好，真正的主演上场时才能一条过。
+
+📄 [08-The-Fake-Teaches-You-The-Real-CN.md](08-The-Fake-Teaches-You-The-Real-CN.md)
+
+## 09 - The Power of Protocol
+
+一个约定，让 1000 个人省掉 9000 小时。协议不是技术细节，是让复杂系统能被分工的根本原因。
+
+📄 [09-The-Power-of-Protocol-CN.md](09-The-Power-of-Protocol-CN.md)
+
+## 10 - Always Have a Plan B
+
+飞机为什么有两个引擎？不是动力不够，是为了那万分之一的时刻。冗余不是浪费，是专业。
+
+📄 [10-Always-Have-a-Plan-B-CN.md](10-Always-Have-a-Plan-B-CN.md)
+
+## 11 - The First Rule of Business
+
+调用 AI API 就像用自来水，直到你看到账单。Prompt Caching 教会我的不只是省钱，而是理解工具的成本模型。
+
+📄 [11-The-First-Rule-of-Business-CN.md](11-The-First-Rule-of-Business-CN.md)

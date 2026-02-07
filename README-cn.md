@@ -1,572 +1,312 @@
-# AI 辅助编程：添加卡片组件与个人信息展示
+# Prompt Caching：给 AI 一个"备忘录"
 
-> 学习如何在 AI 辅助下为 personal portfolio 网站添加自定义 UI 组件。
-
-![Screenshot](./img/07-Add-Card-Components-And-Hero-Section/01-personal-info-and-card.png)
+> 当你每次都要重复大量背景信息时，Prompt Caching 能帮你省钱。
 
 ## Overview
 
-你已经学会了如何探索代码库、找到 UI 元素对应的源码。现在，是时候亲手创造一些东西了。
+想象一个场景：你在用 AI 分析一份 500 页的用户手册。你问了 10 个问题，每次提问都要把这 500 页的内容发给 AI。
 
-但这不是传统意义上的"写代码"——在 AI 时代，编程的核心技能变了。不再是记住语法、背诵 API，而是**学会如何清晰地向 AI 描述你想要什么**。
+问题来了——这 500 页的内容每次都一样，但你要付 10 次的钱。更糟的是，AI 每次都要重新"阅读"这 500 页，就像一个失忆的助手，每次见面都要重新介绍自己一样。
 
-这节课，你会体验一种全新的工作方式：**看到喜欢的设计 → 描述给 AI → 让 AI 帮你实现 → 理解代码如何工作**。这个技能将陪伴你整个职业生涯。
+这显然不合理。如果 AI 能"记住"那些不变的内容就好了。
 
-**关于技术栈：** 这个项目使用 React 组件和 Tailwind CSS。如果你不知道这些是什么，没关系——我们采用**先动手，后理解**的学习方式。先把东西做出来，看到效果，然后再回头理解原理。详细的概念介绍放在练习之后。
+这就是 Prompt Caching 要解决的问题。
 
 ## Learning Objectives
 
-为什么这很重要？
+在实际的 AI 应用中，你经常会遇到这种模式：
 
-当你浏览其他人的 portfolio 网站时，你会看到很多炫酷的设计——渐变按钮、悬浮卡片、动态图标。以前，你需要花几周时间学习 CSS 和 React 才能实现这些效果。现在，有了 AI，几分钟就能完成。
+```
+[大量静态背景信息] + [用户的问题]
+```
 
-但关键不是"让 AI 帮你写代码"这么简单。关键是：
+比如，你可能需要把用户的个人资料发给 AI，然后问各种问题；或者把一份产品文档发给 AI，让用户可以随时提问；又或者把整个代码库的内容发给 AI，帮助开发者解决问题。
 
-1. **你要能描述清楚你想要什么** — 模糊的描述只会得到模糊的结果
-2. **你要能理解 AI 给你的代码** — 不理解就无法调试、修改、扩展
-3. **你要能把学到的知识迁移到新场景** — 这才是真正的学习
+在所有这些场景中，背景信息是固定的，变化的只是用户的问题。如果你不了解 Prompt Caching，每次 API 调用都会为那些重复的静态内容付费。在生产环境中，这会造成显著的成本浪费。
 
-这三点，才是 AI 时代最重要的编程技能。
+完成本课后，你将能够：
 
-完成这节课后，你将：
-
-1. 学会如何从设计灵感到代码实现的完整流程
-2. 理解 React 组件和 Tailwind CSS 的基本工作原理
-3. 掌握向 AI 提需求的正确姿势——提供充足的 context
-4. 能够独立为自己的 portfolio 添加新的 UI 元素
+1. **理解 Prompt Caching 的价值** — 知道它解决什么问题，以及什么场景适合使用
+2. **理解工作原理** — 明白 cache write 和 cache read 的区别
+3. **了解成本收益** — 知道 AWS Bedrock 中缓存读取可节省约 75% 的输入 token 费用
+4. **实现 Prompt Caching** — 在 AWS Bedrock 中使用 `cachePoint` 标记缓存边界
 
 ## Prerequisites
 
-- 你已完成前面的教程，能运行 `mise run dev`
-- 浏览器可以访问 http://localhost:3000
-- 你有一个 AI assistant (Claude, ChatGPT 等)
-
-## What You'll Build
-
-你将为 personal portfolio 网站添加自己喜欢的 UI 效果。
-
-可能是一个炫酷的按钮、一个卡片悬浮效果、一个图标动画——具体是什么，由你决定。
-
-这节课的核心不是完成某个特定功能，而是**掌握从"我想要这个效果"到"代码跑起来了"的完整流程**。
+在开始之前，请确保你已经完成了 "Hello, AI!" 课程，能够调用 AWS Bedrock API。你的 AWS credentials 应该已经配置好，项目依赖也已安装（通过 `mise run inst`）。
 
 ---
 
-## Key Concepts（简要版）
+## Key Concepts
 
-> 这里只做简单介绍，让你知道有这些东西。详细的概念讲解在练习之后，我们先动手！
+### 1. 问题场景：重复发送静态内容
 
-### Context Engineering
+让我们看一个典型的对话流程。假设你正在开发一个"个人助理"应用，需要根据用户资料回答各种问题：
 
-**Context**（上下文）是和 AI 协作时最重要的技能。简单说，就是**给 AI 足够的背景信息**，让它能准确理解你的需求。
-
-后面的练习会教你怎么做。
-
-### React 组件
-
-React 组件就是**可复用的 UI 模块**，像乐高积木一样可以拼装。
-
-你会在代码里看到类似这样的东西：
-```tsx
-<Hero />
-<StatsSection />
-<ContactSection />
+**第一次提问：**
+```
+[用户资料 1000 tokens] + "推荐什么生日礼物？"
 ```
 
-每一个都是一个组件。先知道这个概念就够了，详细介绍在后面。
-
-### Tailwind CSS
-
-Tailwind CSS 是一种**用 class 名直接写样式**的方式：
-```tsx
-<button className="bg-blue-500 p-2 rounded">
-  点击我
-</button>
+**第二次提问：**
+```
+[用户资料 1000 tokens] + "周末活动推荐？"
 ```
 
-`bg-blue-500` 是蓝色背景，`p-2` 是内边距，`rounded` 是圆角。先知道这个概念就够了。
+**第三次提问：**
+```
+[用户资料 1000 tokens] + "什么音乐适合我？"
+```
+
+注意到问题了吗？那 1000 tokens 的用户资料每次都要发送，每次都要付费。如果用户问 10 个问题，你实际发送了 10,000 tokens 的用户资料——但内容完全相同。
+
+这就像每次打电话给客服都要重新报一遍身份证号、地址、历史订单。明明系统里都有，为什么要一遍遍重复？
+
+### 2. Prompt Caching 的工作原理
+
+Prompt Caching 的核心思想其实很简单：**让 AI 记住那些不变的内容**。
+
+具体是怎么工作的呢？
+
+当你第一次调用 API 时（我们称之为 **Cache Write**），你发送静态内容和问题，AI 会把静态内容存入缓存，你付正常价格。这一步是必要的"投资"。
+
+之后的调用（我们称之为 **Cache Read**）就不一样了。你仍然发送相同的静态内容和新问题，但 AI 会发现缓存里已经有这些内容了，于是直接使用缓存，不需要重新处理。这时候，你只需付约 25% 的价格！
+
+这就像浏览器缓存图片一样：第一次访问网站要下载图片，之后浏览器发现本地已经有了，就直接用缓存，不需要再次下载。
+
+### 3. 底层原理：节省的是什么？
+
+你可能会好奇：缓存到底节省了什么？
+
+当你把一段文本发给 AI 时，AI 需要**解析**这段文本。这个过程叫做"tokenization"加上后续的向量化处理——简单来说，就是把人类的文字转换成 AI 能理解的内部表示形式。
+
+这个解析过程需要计算资源，所以要收费。文本越长，计算量越大，费用越高。
+
+Prompt Caching 节省的就是这个"解析"的成本。第一次调用时，AI 解析静态内容并存入缓存，你付正常价格。后续调用时，AI 直接用缓存里已经解析好的结果，省去了重复解析的计算量，所以只收你约 25% 的价格。
+
+这里要说明一点：这主要是**成本**上的节省，而不是时间上的显著提升。为什么？因为对于现代 AI 模型来说，解析文本的时间相比生成回答的时间并不是主要瓶颈。生成回答才是最耗时的部分。所以你可能不会感觉到明显的速度提升，但账单会实实在在地变少。
+
+### 4. AWS Bedrock 的实现：cachePoint
+
+理论说完了，来看看代码怎么写。
+
+在 AWS Bedrock 中，你用一个叫 `cachePoint` 的标记来告诉 AI："从这里开始，前面的内容请缓存起来。"
+
+```python
+messages = [
+    {
+        "role": "user",
+        "content": [
+            # 静态内容（会被缓存）
+            {"text": static_context},
+
+            # 缓存边界标记——这是关键！
+            {"cachePoint": {"type": "default"}},
+
+            # 动态内容（不会被缓存）
+            {"text": question},
+        ],
+    }
+]
+```
+
+规则很简单：`cachePoint` **之前**的内容会被缓存，**之后**的内容不会被缓存。
+
+所以你需要把不变的内容（比如用户资料、文档内容）放在 `cachePoint` 前面，把每次都会变的内容（比如用户的问题）放在后面。这样，静态内容只需要解析一次，后续调用都能享受缓存带来的价格优惠。
+
+### 5. 重要限制：最低 Token 要求
+
+在你兴奋地准备使用这个功能之前，有一个重要的限制需要了解：**静态内容必须至少达到 1024 tokens**。
+
+为什么有这个限制？因为缓存本身也有成本——存储、管理、查找都需要资源。如果内容太短，缓存带来的收益还不够抵消缓存本身的开销，那就得不偿失了。所以 AWS 设置了一个最低门槛。
+
+更需要注意的是，如果你的静态内容太短，caching 会**静默失效**——不会报错，代码照常运行，只是不会有任何缓存效果。你可能以为在省钱，其实一分没省。这一点很容易踩坑。
+
+不同模型的最低要求略有不同：Nova Micro/Lite/Pro 需要 1024 tokens，Claude 模型需要 1024 到 4096 tokens 不等。具体数字请查阅官方文档。
+
+### 6. 成本收益
+
+来算一笔账，让你对收益有个直观的认识。
+
+以 AWS Bedrock 为例，Cache Write（写入缓存）按正常价格收费，而 Cache Read（读取缓存）只收约 25% 的价格，相当于**节省约 75%**。
+
+假设你的静态内容是 1000 tokens，用户问了 10 个问题。
+
+如果不使用缓存，每次调用都要为这 1000 tokens 付费。10 次调用 × 1000 tokens = 10,000 tokens，全部按正常价格计费。
+
+如果使用缓存呢？第一次调用付 1000 tokens 的正常价格（同时写入缓存），后续 9 次调用每次只付 1000 × 25% = 250 tokens 的等价价格。总计：1000 + 250 × 9 = 3250 tokens 的等价成本。
+
+节省了多少？(10000 - 3250) / 10000 = **67.5%**。
+
+而且，问的问题越多，节省比例越接近 75%。如果用户问 100 个问题，节省比例就是 (100000 - 1000 - 99 × 250) / 100000 ≈ **74.3%**。
+
+当然，不同 AI 服务商的定价策略不同。75% 的节省是 AWS Bedrock 的数据，其他供应商（比如 OpenAI、Anthropic 直接 API）可能有所不同。在实际使用时，请查阅各平台的官方定价文档。
 
 ---
 
 ## Exercises
 
-### Exercise 1: 启动项目，观察现有组件
+理论讲完了，现在让我们动手实践，亲眼看看 Prompt Caching 的效果。
 
-**Goal:** 熟悉项目当前的 UI 结构。
+### Exercise 1：运行脚本，观察缓存效果
 
-**What to do:**
+**Goal：** 亲眼看到 cache write 和 cache read 的区别。
 
-1. 启动开发服务器：
-   ```bash
-   mise run dev
-   ```
+在开始之前，建议你先花两分钟浏览一下脚本文件 `scripts/test_ai_aws_bedrock_with_cached_prompt.py`，大致了解代码结构。不需要理解每一行，只要知道它做了什么就行：发送一个用户 profile（静态内容），然后问三个不同的问题。
 
-2. 打开 http://localhost:3000
+准备好了吗？运行脚本：
 
-3. 观察页面上的这些元素：
-   - Hero section（头像、名字、简介）
-   - Social icons（GitHub、LinkedIn、Blog 图标）
-   - Stats cards（成就卡片 grid）
-   - Contact section（联系按钮）
+```bash
+python scripts/test_ai_aws_bedrock_with_cached_prompt.py
+```
 
-4. 用前一节课学的技能，尝试找到每个元素对应的代码文件。
+运行完成后，仔细观察输出。你会看到类似这样的结果：
 
-**What you'll notice:**
+```
+TURN 1
+Q: Based on my profile, what birthday gift would you recommend?
+A: [AI 的回答]
+Tokens: input=XX, output=XX, total=XX
+Cache:  write=XXX, read=0  <-- Writing to cache
 
-页面由多个组件构成：
-- `Hero.tsx` — 头像、名字、简介、社交图标
-- `StatsSection.tsx` — 成就卡片 grid
-- `ContactSection.tsx` — 联系区域
+TURN 2
+Q: What weekend activity would suit me?
+A: [AI 的回答]
+Tokens: input=XX, output=XX, total=XX
+Cache:  write=0, read=XXX  <-- Cache hit (75% cheaper!)
 
-这些组件在 `HomePageContent.tsx` 中被组合使用。
+TURN 3
+Q: What music playlist matches my personality?
+A: [AI 的回答]
+Tokens: input=XX, output=XX, total=XX
+Cache:  write=0, read=XXX  <-- Cache hit (75% cheaper!)
+```
 
-> **Key insight:** 大的页面由小的组件拼装而成。理解这种结构，你就能知道该在哪里修改代码。
+重点看 `Cache:` 那一行。在 Turn 1 中，`write` 的值大于 0 而 `read` 是 0，这说明静态内容正在被写入缓存。到了 Turn 2 和 Turn 3，情况反过来了——`write` 变成 0，`read` 变得大于 0。这就是缓存命中！AI 直接从缓存读取了之前存储的内容，你只需要付 25% 的价格。
+
+> **Key insight：** 第一次调用是"投资"，后续调用是"回报"。问的问题越多，投资回报率越高。这就是为什么 Prompt Caching 特别适合"一次设置，多次提问"的场景。
 
 ---
 
-### Exercise 2: 寻找设计灵感
+### Exercise 2：计算你的节省
 
-**Goal:** 找到你想添加到 portfolio 的 UI 效果。
+**Goal：** 用实际数字理解成本节省。
 
-**What to do:**
+光看输出还不够直观，让我们动手算一算。根据你在 Exercise 1 中看到的输出，填写以下内容：
 
-1. 打开 https://www.pinterest.com/（需要注册账号）
+1. Turn 1 写入缓存的 tokens 数（`write` 的值）：______
+2. Turn 2 从缓存读取的 tokens 数（`read` 的值）：______
+3. Turn 3 从缓存读取的 tokens 数（`read` 的值）：______
 
-2. 搜索 "personal portfolio website"
+现在来计算实际节省：
 
-3. 你会看到很多设计灵感：
+4. 总共从缓存读取的 tokens = Turn 2 + Turn 3 = ______
+5. 这些 tokens 如果不用缓存，要付全价；用了缓存只付 25%，所以节省了 75%
+6. 节省的等价 tokens = 第 4 步的结果 × 75% = ______
 
-![Pinterest Ideas](./img/07-Add-Card-Components-And-Hero-Section/02-personal-portfolio-ideas.png)
+如果脚本的 profile 约 900 tokens，3 次调用中有 2 次使用缓存，你大约节省了 900 × 2 × 75% = 1350 tokens 的等价成本。这只是 3 次调用的结果。想象一下在生产环境中，如果用户每天问 100 个问题，一个月下来能省多少？
 
-4. 浏览设计图，找到一个你喜欢的**小元素**：
-   - 一个有趣的按钮样式
-   - 一个卡片的悬浮效果
-   - 一个 skill bar 的设计
-   - 一个 timeline 组件
-   - 一个 icon 的动画效果
-
-5. **截图保存**，把你喜欢的那个小部分圈出来
-
-**Important:** 选择一个**小而具体**的元素，不要选整个页面。小元素更容易实现，更容易理解。
-
-**What you'll notice:**
-
-好的 portfolio 设计通常有这些共同点：
-- 简洁的布局
-- 吸引眼球的交互效果（悬浮、点击反馈）
-- 一致的配色方案
-- 适当的留白
-
-> **Key insight:** 设计灵感要具体化。"我想让网站更好看"太模糊；"我想要这个按钮的渐变效果"可以执行。
+> **Key insight：** Prompt Caching 是典型的"前期投资，后期回报"模式。单看第一次调用，没有任何节省；但随着调用次数增加，累积的节省会越来越可观。这就是为什么它在高频调用的生产环境中特别有价值。
 
 ---
 
-### Exercise 3: 向 AI 描述你想要的效果
+### Exercise 3：理解 cachePoint 的位置
 
-**Goal:** 学习如何清晰地向 AI 提需求。
+**Goal：** 理解代码中 `cachePoint` 的作用，以及为什么要放在那个位置。
 
-**What to do:**
+现在打开 `scripts/test_ai_aws_bedrock_with_cached_prompt.py`，找到 `send_message_with_cache` 函数。在大约第 95-122 行，你会看到 `messages` 的构建代码。
 
-1. 打开你的 AI assistant (Claude, ChatGPT 等)
+仔细观察这段代码的结构，然后回答以下问题：
 
-2. 使用以下 prompt 模板，把 `[...]` 替换成你的具体内容：
+1. `cachePoint` 之前放的是什么内容？
+2. `cachePoint` 之后放的是什么内容？
+3. 为什么要这样安排顺序？如果把顺序反过来会怎样？
 
-```
-我想将这张图片中的 [具体描述你圈出的那个元素] 加入到我的 personal portfolio 网站。
+想好了吗？这是参考答案：
 
-【项目背景】
-- 技术栈：Next.js + React + Tailwind CSS
-- 我想把这个元素添加到 [具体位置，比如"Hero section 的社交图标下方"]
-- 当前相关代码在 [文件路径，比如 app/(marketing)/_components/Hero.tsx]
+`cachePoint` 之前放的是 `static_context`，也就是用户的 profile——这是不变的内容。`cachePoint` 之后放的是 `question`，也就是每次都不同的问题。
 
-【我想要的效果】
-- 形状：[描述形状]
-- 颜色：[描述颜色]
-- 文字/图标：[描述内容]
-- 交互效果：[比如悬浮时放大/变色]
+为什么这样安排？因为缓存的价值在于避免重复处理相同的内容。用户 profile 每次都一样，所以值得缓存；而问题每次都不同，缓存它没有意义。如果把顺序反过来——先放问题，再放 profile——那问题会被缓存，profile 反而不会。下次换个问题，缓存就失效了，完全起不到省钱的效果。
 
-【我的要求】
-请使用对于新手最容易懂、代码量尽量少的方式实现。
-完成基础的设计功能即可，不需要过于复杂。
-请详细解释：
-1. 改了哪些代码
-2. 每段代码的作用是什么
-3. 为什么这样写能实现这个效果
-```
-
-3. 把截图一起发给 AI
-
-4. 仔细阅读 AI 的回复，确保你理解了每个步骤
-
-**Example prompt:**
-
-```
-我想将这张图片中的"带图标的技能进度条"加入到我的 personal portfolio 网站。
-
-【项目背景】
-- 技术栈：Next.js + React + Tailwind CSS
-- 我想把这个元素添加到 StatsSection 下方
-- 当前相关代码在 app/(marketing)/HomePageContent.tsx
-
-【我想要的效果】
-- 每个进度条有一个技能名称和一个图标
-- 进度条是渐变色的，从蓝色到紫色
-- 鼠标悬浮时进度条会轻微发光
-
-【我的要求】
-请使用对于新手最容易懂、代码量尽量少的方式实现。
-完成基础的设计功能即可，不需要过于复杂。
-请详细解释：
-1. 改了哪些代码
-2. 每段代码的作用是什么
-3. 为什么这样写能实现这个效果
-```
-
-> **Key insight:** 描述越具体，AI 给的代码越准确。如果结果不满意，补充更多 context 再问一次。
+> **Key insight：** `cachePoint` 的位置决定了什么被缓存。记住这个原则：把不变的内容放在 `cachePoint` 前面，把变化的内容放在后面。这个顺序不能搞反。
 
 ---
 
-### Exercise 4: 应用代码并理解
+## Reflection
 
-**Goal:** 把 AI 给的代码加入项目，并理解它是如何工作的。
+让我们回顾一下这节课学到的内容。
 
-**What to do:**
+Prompt Caching 解决的是一个很实际的问题：当你需要反复发送相同的背景信息时，如何避免为这些重复内容多次付费？它的工作原理也很直观——第一次调用把静态内容写入缓存，付正常价格；后续调用从缓存读取，只付约 25% 的价格。底层节省的是 AI 解析文本的计算成本。
 
-1. **仔细阅读 AI 的解释**，不要急着复制代码
+在 AWS Bedrock 中，使用方法很简单：用 `cachePoint` 标记缓存边界，把静态内容放前面，动态问题放后面。但要注意最低 1024 tokens 的限制，否则缓存会静默失效。
 
-2. **确认修改位置**：AI 应该告诉你要修改哪个文件的哪个位置
-
-3. **应用代码**：
-   - 打开对应的文件
-   - 按照 AI 的指示添加或修改代码
-   - 保存文件
-
-4. **查看效果**：刷新浏览器 http://localhost:3000
-
-5. **理解代码**：如果有任何不理解的地方，问 AI：
-
-```
-你给的代码中，这一行是什么意思？
-[粘贴那一行代码]
-```
-
-6. **使用 Git 查看改动**：
-   ```bash
-   git diff
-   ```
-
-   这会显示你修改了哪些文件、哪些行。
-
-**What you'll notice:**
-
-- 大多数 UI 效果只需要修改几十行代码
-- Tailwind CSS 的 class 名通常很直观
-- 组件的结构是嵌套的，大组件包含小组件
-
-> **Key insight:** "先做再理解"比"完全理解再做"更有效。看到效果后再去理解代码，印象更深刻。
-
----
-
-### Exercise 5: 微调和迭代
-
-**Goal:** 学会根据效果微调代码。
-
-**What to do:**
-
-1. 看着浏览器中的效果，思考：
-   - 颜色满意吗？
-   - 大小合适吗？
-   - 间距好看吗？
-   - 交互效果自然吗？
-
-2. 如果想调整，问 AI：
-
-```
-效果基本是我想要的，但我想做一些调整：
-- [具体调整，比如"按钮颜色从蓝色改成绿色"]
-- [具体调整，比如"悬浮时的放大效果减小一点"]
-
-请告诉我需要修改代码的哪个部分。
-```
-
-3. 应用 AI 的建议，再次查看效果
-
-4. 重复这个过程，直到满意为止
-
-**Iteration tips:**
-
-- 每次只改一件事，这样容易定位问题
-- 保存每次满意的状态（可以用 Git commit）
-- 不用追求完美，"差不多了"就行
-
-> **Key insight:** 编程是一个迭代过程。没有人能一次写出完美的代码。调试和微调是正常的工作流程。
-
----
-
-## Key Concepts（详细版）
-
-> 现在你已经动手做了，回过头来理解这些概念会更有感觉。
-
-### Context Engineering: AI 时代最重要的技能
-
-**Context**（上下文）是什么？
-
-想象你请朋友帮你做一件事。你不会只说"帮我做这个"，而是会告诉他：
-- 背景是什么？
-- 为什么要做？
-- 现在有什么资源？
-- 之前试过什么方法？
-
-这些信息就是 context。人类天生会收集和理解 context，但 AI 需要你**明确地提供**。
-
-**为什么 Context Engineering 这么重要？**
-
-同样一个需求，不同的描述方式会得到完全不同的结果：
-
-**糟糕的描述：**
-```
-帮我把卡片改成蓝色
-```
-
-AI 不知道：你在说哪个卡片？项目结构是什么？用的什么技术栈？
-
-**好的描述：**
-```
-我在做 personal portfolio 网站，使用 React + Tailwind CSS。
-卡片组件在 app/(marketing)/_components/StatsSection.tsx。
-现在卡片背景是深色的，我想把它改成浅蓝色。
-请告诉我应该修改哪里，改成什么代码。
-```
-
-看到区别了吗？好的描述包含：
-- **项目背景**（我在做什么）
-- **技术栈**（用什么工具）
-- **具体位置**（代码在哪）
-- **当前状态**（现在是什么样）
-- **目标需求**（我想要什么）
-
-这个技能不仅用于 AI 编程，也适用于你未来的工作沟通、团队协作、甚至日常生活中的问题解决。
-
-### React 组件：可复用的 UI 模块
-
-**什么是组件？用乐高来类比**
-
-想象你在搭乐高。每个乐高积木都是一个独立的单元——你可以把它用在城堡上，也可以用在汽车上。
-
-React 组件就是代码世界的乐高积木：
-
-```tsx
-// 这是一个"卡片"积木
-function Card({ title, description }) {
-  return (
-    <div className="border rounded-lg p-4">
-      <h3>{title}</h3>
-      <p>{description}</p>
-    </div>
-  )
-}
-```
-
-写一次，到处复用：
-
-```tsx
-<Card title="项目A" description="这是项目A的描述" />
-<Card title="项目B" description="这是项目B的描述" />
-<Card title="项目C" description="这是项目C的描述" />
-```
-
-**如何识别 React 组件？**
-
-- 它是一个函数（function）
-- 函数名是大写开头（如 `Card`、`Button`、`Hero`）
-- 函数返回 JSX（看起来像 HTML 的东西）
-
-**框架化思考：学习任何新组件的三个步骤**
-
-1. **分类体系** — 先知道有哪些类型的组件（按钮、卡片、表单、布局...）
-2. **建立概念** — 去组件库网站看看实际效果，点击、悬停、感受交互
-3. **动手实践** — 先模仿（从 1 到 10），再创造（从 0 到 1）
-
-**去哪里看组件效果？**
-
-问 AI："有哪些优秀的 React 组件库网站？我想看看常见组件的效果。"
-
-AI 会推荐一些网站，你可以去浏览 5-10 分钟，感受一下"组件"是什么样的。
-
-> **注意：** 组件库这个话题可以讲一个月。这里你只需要理解**组件是什么**、**设计理念是什么**就够了。具体的组件 API、属性配置，需要时再查文档或问 AI。
-
-### Tailwind CSS：用 class 直接写样式
-
-传统 CSS 需要在单独的文件里写样式：
-
-```css
-/* styles.css */
-.my-button {
-  background-color: blue;
-  padding: 10px;
-  border-radius: 5px;
-}
-```
-
-Tailwind CSS 让你直接在 HTML 里用 class 组合样式：
-
-```tsx
-<button className="bg-blue-500 p-2 rounded">
-  点击我
-</button>
-```
-
-每个 class 做一件事：
-- `bg-blue-500` — 蓝色背景（50-900 共 9 个色阶）
-- `text-white` — 白色文字
-- `p-2` — 内边距
-- `px-4` — 水平内边距
-- `py-2` — 垂直内边距
-- `m-4` — 外边距
-- `rounded` — 圆角
-- `shadow` — 阴影
-- `hover:bg-blue-600` — 鼠标悬停时的效果
-- `transition` — 过渡动画
-
-**为什么用 Tailwind？**
-
-1. **快** — 不用在文件之间跳转
-2. **直观** — 看 class 名就知道效果
-3. **一致性** — 提供统一的设计系统（颜色、间距、字号）
-4. **响应式** — 轻松适配不同屏幕（`md:text-lg` 表示中等屏幕时用大字）
-
-**常用的 Tailwind 类速查：**
-
-布局：`flex`、`grid`、`justify-center`、`items-center`
-间距：`p-4`、`m-4`、`space-x-4`、`gap-4`
-尺寸：`w-full`、`h-screen`、`max-w-4xl`
-颜色：`bg-blue-500`、`text-gray-700`、`border-gray-300`
-文字：`text-xl`、`font-bold`、`text-center`
-效果：`shadow`、`rounded`、`hover:scale-105`、`transition`
-
-> **注意：** Tailwind CSS 也可以讲一个月。这里你只需要理解**它是什么**、**设计理念是什么**就够了。具体的 class 名，需要时查文档（https://tailwindcss.com/docs）或问 AI。
-
----
-
-## Reflection: What Did We Learn?
-
-完成这些练习后，你学会了：
-
-**AI 辅助编程的完整流程：**
-1. 找到设计灵感（具体化你想要什么）
-2. 向 AI 描述需求（提供充足的 context）
-3. 应用代码并理解（先做再学）
-4. 迭代微调（小步快跑）
-
-**Context Engineering 的核心要素：**
-- 说明项目背景和技术栈
-- 指出具体的文件位置
-- 描述当前状态和目标状态
-- 明确你的约束和要求
-
-**React 和 Tailwind 的基本概念：**
-- 组件是可复用的 UI 模块
-- Tailwind 用 class 组合样式
-- 大页面由小组件拼装而成
-
-**最重要的是：**
-- 你不需要记住所有代码——需要时问 AI
-- 你需要能清晰描述你想要什么
-- 你需要能理解 AI 给你的代码
-- 这个技能适用于任何编程任务
+什么场景适合使用 Prompt Caching？任何"大量背景信息 + 多次提问"的模式都适合。比如分析长文档并问多个问题、基于用户资料的个性化对话、需要反复参考同一份背景资料的任务等。
 
 ---
 
 ## Mentor's Note
 
-**为什么这个练习如此重要：**
+**为什么这个练习重要：**
 
-我见过太多人这样学编程：看视频、记语法、背 API、做习题。学了很久，还是不会做东西。
+在我看来，Prompt Caching 这个知识点的价值，远不止于"学会一个 API 功能"。它体现了一个更重要的工程原则：**理解你的工具的成本模型**。
 
-真正的编程能力不是记忆，是**创造**——把脑子里的想法变成能运行的代码。
+我见过很多人用 AI API 就像用自来水——打开水龙头就行，不关心计量。这在学习阶段没问题，但在生产环境中，这种态度会让你的账单失控。我曾经见过一个团队，因为不了解 token 计费机制，每个月多花了几千美元。
 
-AI 改变了这个游戏。以前，从"想法"到"代码"需要几年的学习。现在，AI 帮你跨越了这道鸿沟。但 AI 不能替你做的是：
+当你理解了 token 是怎么计费的、缓存是怎么工作的，你就能做出更聪明的架构决策。你会开始问自己：这段内容是否该缓存？静态信息应该放在 prompt 的哪个位置？预期的调用模式是什么？这些问题，都需要你理解底层的成本模型才能回答。
 
-1. **知道自己想要什么** — 这需要你去看、去想、去选择
-2. **清晰地表达需求** — 这需要你练习 context engineering
-3. **理解代码为什么工作** — 这需要你追问、思考、验证
+**Key insights：**
 
-这三件事，才是 AI 时代的核心编程技能。
+省钱是工程师的基本功。好的工程师不是只追求"能用就行"，而是要"用得省、用得好"。在资源有限的现实世界里，能用更少的成本达到相同效果，就是一种竞争力。
 
-**Key insights:**
+同时也要记住，场景决定技术。Prompt Caching 不是银弹，它只有在"重复静态内容 + 多次调用"的场景才有价值。如果你的应用每次调用的内容都完全不同，或者调用频率很低，那缓存带来的收益可能不值得额外的复杂度。技术选型永远要基于具体场景。
 
-- **从模仿开始，不丢人。** 所有大师都是从模仿开始的。看到好的设计，想办法复现它，这是最好的学习方式。
+另外，我建议你养成一个习惯：阅读 API 文档时，不要跳过定价部分。那里藏着很多优化机会。很多开发者只看功能文档，不看定价文档，结果错过了很多省钱的技巧。
 
-- **完成比完美重要。** 一个"能用"的功能，比一个"完美但没做完"的功能有价值一万倍。先做出来，再慢慢改。
+**Next steps：**
 
-- **理解是渐进的。** 今天你可能只理解 50%，没关系。明天做另一个功能时，你会理解 60%。编程能力是这样一点点积累的。
+当你下次开发 AI 应用时，问自己这三个问题：
 
-- **深入学习可以持续很久。** 组件库、Tailwind CSS 这些话题，每个都可以学一个月。但现在，你只需要理解它们是什么、设计理念是什么。具体细节，在你需要的时候再深入。
+1. 我的 prompt 中有多少内容是每次都一样的？
+2. 用户会问多少次问题？调用频率如何？
+3. 开启缓存的 ROI 是否值得？需要多少次调用才能回本？
 
-**Next steps:**
-
-1. 继续给你的 portfolio 添加新元素——每做一个，你的技能就提升一点
-2. 尝试修改颜色、大小、间距——感受 Tailwind 的工作方式
-3. 当你做了 3-5 个小功能后，回头看第一个，你会发现自己进步了多少
+这种成本意识，会让你在团队中脱颖而出。毕竟，在 AI 应用越来越普及的今天，能控制成本的工程师，比只会调用 API 的工程师更有价值。
 
 ---
 
 ## Quick Reference
 
-**启动开发服务器：**
-```bash
-mise run dev
-```
-
-**查看代码改动：**
-```bash
-git diff
-```
-
-**AI Prompt 模板：**
-```
-我想将这张图片中的 [元素描述] 加入到我的 personal portfolio 网站。
-
-【项目背景】
-- 技术栈：Next.js + React + Tailwind CSS
-- 位置：[目标位置]
-- 相关文件：[文件路径]
-
-【效果描述】
-- 形状：[...]
-- 颜色：[...]
-- 交互：[...]
-
-【要求】
-请用最简单的方式实现，并详细解释代码的作用。
-```
-
-**项目关键文件：**
-- `app/(marketing)/HomePageContent.tsx` — 主页内容组装
-- `app/(marketing)/_components/Hero.tsx` — 头像、名字、简介
-- `app/(marketing)/_components/StatsSection.tsx` — 成就卡片
-- `app/(marketing)/_components/ContactSection.tsx` — 联系区域
-- `data/achievement-stats.ts` — 成就卡片数据
-
-**设计灵感来源：**
-- https://www.pinterest.com/ — 搜索 "personal portfolio website"
-- https://dribbble.com/ — 高质量设计作品
-- https://awwwards.com/ — 获奖网站设计
-
-**Tailwind CSS 文档：**
-- https://tailwindcss.com/docs — 官方文档，需要什么 class 就去查
-
----
-
-## Reference Implementation
-
-本教程对应 `07-Add-Card-Components-And-Profile-Display` branch。
-
-确认环境正常：
+**运行脚本：**
 
 ```bash
-git checkout 07-Add-Card-Components-And-Profile-Display
-mise run inst
-mise run dev
+python scripts/test_ai_aws_bedrock_with_cached_prompt.py
 ```
 
-然后打开 http://localhost:3000 查看效果。
+**cachePoint 用法：**
+
+```python
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {"text": static_context},           # 会被缓存
+            {"cachePoint": {"type": "default"}}, # 缓存边界
+            {"text": question},                  # 不会被缓存
+        ],
+    }
+]
+```
+
+**响应中的缓存指标：**
+
+```python
+usage = response.get("usage", {})
+cache_write = usage.get("cacheWriteInputTokens", 0)  # 写入缓存的 tokens
+cache_read = usage.get("cacheReadInputTokens", 0)    # 从缓存读取的 tokens
+```
+
+**Key files：**
+- `scripts/test_ai_aws_bedrock_with_cached_prompt.py` — 完整的 Prompt Caching 示例
+
+**Documentation：**
+- [AWS Bedrock Prompt Caching](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html)

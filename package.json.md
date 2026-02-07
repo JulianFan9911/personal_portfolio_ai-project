@@ -96,6 +96,15 @@ Radix Primitives provides unstyled, accessible React components. We style them w
 
 - `react-markdown` - Render Markdown as React components
 - `react-syntax-highlighter` - Syntax highlighting for code blocks
+- `remark-gfm` - GitHub Flavored Markdown plugin (tables, strikethrough, task lists, URLs)
+  - Used in: `components/chat/markdown.tsx` for rendering AI responses
+
+---
+
+## Animation
+
+- `framer-motion` - Production-ready animation library for React
+  - Used in: `components/chat/message.tsx`, `multimodal-input.tsx`, `overview.tsx` for smooth UI transitions
 
 ---
 
@@ -107,9 +116,20 @@ Radix Primitives provides unstyled, accessible React components. We style them w
 
 ---
 
+## React Hooks Utilities
+
+- `usehooks-ts` - Collection of commonly used React hooks (useLocalStorage, useWindowSize, etc.)
+  - Used in: `components/chat/multimodal-input.tsx` for local storage and window size detection
+
+---
+
 ## AI Integration
 
-- `ai` - Vercel AI SDK for calling AI models and handling streaming responses
+- `ai` - Vercel AI SDK core package for calling AI models and handling streaming responses
+- `@ai-sdk/react` - React hooks for AI SDK, provides `useChat` hook for managing chat state and API calls
+  - Used in: `components/chat/chat.tsx`
+- `@fingerprintjs/fingerprintjs` - Browser fingerprinting library for identifying unique visitors
+  - Used in: `components/chat/chat.tsx` to generate client fingerprint for rate limiting
 
 ---
 
