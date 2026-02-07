@@ -1,157 +1,164 @@
-# Teaching Guide: AI SDK and Stream Protocol Deep Dive
+# Teaching Guide: Prompt Caching
 
 ## Learning Outcomes
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand how Stream Protocol works (`text-start`, `text-delta`, `text-end`) and why protocols matter more than libraries
-2. **Skill outcome** - Successfully trace data flow from UI to backend by following import chains and reading code
-3. **Mindset outcome** - Appreciate that reading code is as important as writing code, and that understanding protocols gives you transferable knowledge
+1. **Cognitive outcome** - Understand why Prompt Caching exists (repeated static content = wasted money) and how it works (cache write vs cache read)
+2. **Skill outcome** - Read and interpret cache metrics from API responses, and understand where to place `cachePoint` in code
+3. **Mindset outcome** - Develop cost-consciousness when building AI applications, appreciating that understanding pricing models is an engineering skill
 
 ## Concept Sequence
 
 Teach concepts in this order:
 
-### Phase 1: Import Statement Mastery (10 minutes)
+### Phase 1: The Problem (5 minutes)
 
-1. **The three forms of import** - npm packages, relative paths, alias paths
-2. **Practice tracing** - Follow `./message` to find `message.tsx`
-3. **When to read docs vs code** - npm packages → docs; project files → code
+1. **The repeated content pattern** - Show the "user profile + question" scenario
+2. **Why this is expensive** - Same 1000 tokens sent 10 times = paying for 10,000 tokens
+3. **The customer service analogy** - Repeating your ID number every call
 
-### Phase 2: AI SDK Value Proposition (10 minutes)
+This phase establishes the "why" before introducing the solution. Learners should feel the pain before seeing the cure.
 
-4. **What you'd build without AI SDK** - Show the 100+ lines they'd need to write
-5. **What useChat gives you** - `messages`, `sendMessage`, `status`, `stop`
-6. **Convention over configuration** - Default `/api/chat` endpoint
+### Phase 2: The Solution (10 minutes)
 
-### Phase 3: Data Flow Tracing (15 minutes)
+4. **Cache Write vs Cache Read** - First call writes to cache (normal price), subsequent calls read from cache (75% cheaper)
+5. **Browser caching analogy** - First visit downloads images, subsequent visits use cache
+6. **What's actually being saved** - The "parsing" cost, not time. Clarify this is primarily about money, not speed
 
-7. **Step-by-step walkthrough** - User click → handleSubmit → sendMessage → POST → backend
-8. **Backend processing** - `@app.post("/api/chat")` decorator, parsing messages
-9. **Generator pattern** - Why `yield` creates streaming responses
+This phase introduces the core mechanism. Use the browser caching analogy—most learners understand that immediately.
 
-### Phase 4: Stream Protocol Deep Dive (15 minutes)
+### Phase 3: AWS Implementation (10 minutes)
 
-10. **Protocol vs Library** - The HTTP analogy: same protocol, different implementations
-11. **Three core message types** - `text-start`, `text-delta`, `text-end`
-12. **SSE format** - `data: {...}\n\n` structure
-13. **Why IDs matter** - Tracking multiple concurrent text segments
+7. **The cachePoint marker** - Show the code structure with static content, cachePoint, dynamic question
+8. **Placement rule** - Content BEFORE cachePoint gets cached; content AFTER doesn't
+9. **The 1024 token minimum** - Silent failure if too short (this is a common trap)
+
+Focus on the "before/after" rule. This is the most practical knowledge they need.
+
+### Phase 4: Cost Calculation (5 minutes)
+
+10. **75% savings on cache reads** - AWS Bedrock specific, other providers may differ
+11. **Break-even analysis** - First call is investment, ROI grows with call count
+12. **The 67.5% to 74.3% curve** - More calls = closer to maximum 75% savings
+
+Keep the math simple. The key insight is "invest upfront, profit later."
 
 ### Phase 5: Hands-on Exercises (15-20 minutes)
 
-14. **DevTools observation** - See the protocol in action
-15. **Import chain practice** - Find PreviewMessage definition
-16. **yield understanding** - Conceptual exercise
-17. **Delta modification** - Practical verification
+13. **Exercise 1: Run and observe** - See cache write vs read in actual output
+14. **Exercise 2: Calculate savings** - Fill in the blanks with real numbers
+15. **Exercise 3: Understand cachePoint** - Find it in code, understand why it's placed there
+
+The exercises reinforce through observation, not creation. This is intentional—understanding before building.
 
 ### Phase 6: Reflection (5 minutes)
 
-18. **Key takeaways** - What did you learn about reading code?
-19. **Protocol thinking** - How does this help when switching AI providers?
+16. **When to use caching** - "Large static content + multiple questions" pattern
+17. **Cost-conscious engineering** - Reading pricing docs is a real skill
+18. **Transferable knowledge** - Same concept applies to other providers
 
 ## Common Struggles
 
-**Struggle:** Student is confused about why we're not writing code
-- **Signs:** "When do we actually build something?"
-- **Intervention:** Explain: "In real work, you spend 70% of time reading code. Today we're building that skill. Once you can read code well, writing becomes much easier."
+**Struggle:** Student doesn't understand why this matters
+- **Signs:** "Tokens are cheap, why bother?"
+- **Intervention:** "Let's calculate. If you have 1000 users, each asking 100 questions per day, with 2000 tokens of static content... that's 200 million tokens daily. At $0.01 per 1K tokens, that's $2000/day. With caching, it's $500/day. $1500 saved daily, $45,000 monthly. Still think it doesn't matter?"
 
-**Struggle:** Student gets lost in import chains
-- **Signs:** Can't find where a component is defined
-- **Intervention:** Review the three import forms. Ask: "Does this path start with `.`, `@/`, or neither?" Then guide them to the right location.
+**Struggle:** Student confuses the cachePoint placement
+- **Signs:** Puts dynamic content before cachePoint
+- **Intervention:** "What gets cached is what comes BEFORE the marker. Ask yourself: what content is the same every time? That goes first. What changes? That goes after the marker."
 
-**Struggle:** Student doesn't understand why yield matters
-- **Signs:** "Can't we just use return?"
-- **Intervention:** Draw it out: "return = send everything at once, then stop. yield = send piece, pause, send piece, pause. Which gives better user experience?"
+**Struggle:** Student thinks caching makes things faster
+- **Signs:** "I expected faster responses"
+- **Intervention:** "Good observation! Caching saves money, not time. The AI still needs to generate the response, which is the slow part. Parsing text is fast; generating text is slow. We save on parsing cost, not generation time."
 
-**Struggle:** Student can't see Stream Protocol in DevTools
-- **Signs:** Looking at wrong tab or wrong request
-- **Intervention:** Make sure they: 1) Filter for "chat" in Network tab, 2) Click the request, 3) Look at Response tab (not Preview)
+**Struggle:** Student's cache isn't working
+- **Signs:** `write > 0` on every call, `read = 0` always
+- **Intervention:** Check two things: 1) Is static content at least 1024 tokens? 2) Is the static content EXACTLY the same each call (no timestamps, no random IDs)?
 
-**Struggle:** Student is overwhelmed by the code complexity
-- **Signs:** Trying to understand every line of React or Python
-- **Intervention:** "You don't need to understand everything. Focus on the data flow: where does data enter? where does it exit? That's what matters today."
-
-**Struggle:** Student modifies wrong file for delta exercise
-- **Signs:** Changed frontend instead of backend
-- **Intervention:** "Stream Protocol is about what the backend SENDS. The frontend just receives. Find `api/index.py` and look for `text-delta`."
+**Struggle:** Student can't find cachePoint in code
+- **Signs:** Looking in wrong function or file
+- **Intervention:** "Look for `send_message_with_cache`. Find the `messages` list. See the three items: text, cachePoint, text. That structure is the key."
 
 ## Teaching Tips
 
-- **Start with the "why read code"** - Many students feel guilty not writing code. Validate that reading is a real skill. "Professionals spend most time reading."
+- **Start with money, not technology** - Engineers respond to cost savings. Lead with "save 75% on AI costs" rather than "let me explain caching semantics."
 
-- **Use DevTools as proof** - When explaining Stream Protocol, immediately show it in DevTools. Seeing is believing. Theory alone doesn't stick.
+- **The customer service analogy resonates** - Everyone has experienced repeating their information to customer service. This frustration translates directly to understanding why caching matters.
 
-- **The HTTP analogy works well** - "HTTP lets any browser talk to any server. Stream Protocol lets any AI SDK frontend talk to any compliant backend." This clicks for most people.
+- **Don't oversell performance gains** - Be honest that caching primarily saves money, not time. Students appreciate honesty, and it prevents disappointment.
 
-- **Don't get stuck on SSE details** - SSE is just the transport. The protocol messages (`text-start`, etc.) are what matters. If students ask about SSE internals, say "That's how we send the data. What matters is what we send."
+- **Show the silent failure trap** - Demonstrate what happens when content is too short. This "gotcha" knowledge prevents future debugging headaches.
 
-- **Celebrate the "aha" moment** - When students see two `text-delta` events concatenate into "Hello World," that's the key insight. Pause and reinforce: "This is how ChatGPT works!"
+- **Connect to production thinking** - "In learning, cost doesn't matter. In production, it's everything. Today we're learning production thinking."
 
-- **Connect to future lessons** - "Now you understand the protocol. Next lesson, we just replace the hardcoded response with a real AI call. Frontend stays the same."
+- **Use the terminal output as proof** - The `Cache: write=XXX, read=0` vs `Cache: write=0, read=XXX` output is the "aha" moment. Let students see it themselves.
 
-- **Use the "protocol vs library" framing** - This is a powerful mental model. Libraries come and go, protocols persist. Understanding protocols makes you adaptable.
+- **Mention other providers briefly** - "AWS does 75% discount. Anthropic has similar caching. OpenAI too. The concept transfers; only implementation differs."
 
 ## Assessment Ideas
 
-- **Import chain quiz:** "If you see `import { X } from './foo'`, where do you look?"
-  - Good answer: "foo.tsx or foo/index.tsx in the same directory"
+- **Quick concept check:** "What's the difference between cache write and cache read?"
+  - Good answer: "Cache write is the first call where content is stored; cache read is subsequent calls where we use stored content and pay less"
 
-- **Protocol understanding:** "What are the three core message types?"
-  - Expected: `text-start`, `text-delta`, `text-end`
+- **Placement understanding:** "If I have a document and a question, where do I put cachePoint?"
+  - Good answer: "After the document, before the question. Document gets cached; question doesn't."
 
-- **yield vs return:** "Why does the backend use yield?"
-  - Good answer: "To send data piece by piece instead of all at once"
+- **Cost calculation:** "1000 tokens static, 5 questions. How much do you save vs no caching?"
+  - Good answer: "Without caching: 5000 tokens full price. With caching: 1000 + 4×250 = 2000 equivalent. Save 60%."
 
-- **Protocol value:** "If you wanted to switch from Python backend to Go backend, what would need to stay the same?"
-  - Good answer: "The Stream Protocol format - the same message types and SSE structure"
+- **Failure mode:** "Why might caching silently fail?"
+  - Good answer: "Static content less than 1024 tokens, or content changes between calls"
 
-- **Quick check:** Ask student to trace the data flow from button click to displayed message
-  - Good answer hits: handleSubmit → sendMessage → POST /api/chat → yield → StreamingResponse → useChat parsing → messages array → render
+- **Real-world application:** "Give an example where Prompt Caching would be valuable"
+  - Good answer: Anything with repeated static context—document analysis, personalized assistants, code review with same codebase, etc.
 
 ## Pacing Guide
 
-- **Import statement mastery:** 10 minutes
-  - Three forms explanation
-  - Quick practice finding a file
+- **Phase 1 (The Problem):** 5 minutes
+  - Show the pattern
+  - Calculate the waste
+  - Use the analogy
 
-- **AI SDK value:** 10 minutes
-  - Show what you'd build without it
-  - Show how simple useChat is
+- **Phase 2 (The Solution):** 10 minutes
+  - Cache Write vs Read
+  - Browser caching parallel
+  - What's actually saved
 
-- **Data flow tracing:** 15 minutes
-  - Walk through each step
-  - Show the code at each step
-  - Can use DevTools to show request/response
+- **Phase 3 (AWS Implementation):** 10 minutes
+  - Show the code
+  - Explain placement rule
+  - Warn about 1024 minimum
 
-- **Stream Protocol deep dive:** 15 minutes
-  - Protocol vs Library concept
-  - Three message types with examples
-  - SSE format overview
+- **Phase 4 (Cost Calculation):** 5 minutes
+  - 75% savings number
+  - Break-even concept
+  - More calls = more savings
 
-- **Hands-on exercises:** 15-20 minutes
-  - Exercise 1: DevTools observation (5 min)
-  - Exercise 2: Import tracing (3 min)
-  - Exercise 3: yield understanding (3 min)
-  - Exercise 4: Delta modification (5-7 min)
+- **Phase 5 (Exercises):** 15-20 minutes
+  - Exercise 1: Run script (5 min)
+  - Exercise 2: Calculate (5 min)
+  - Exercise 3: Code understanding (5-10 min)
 
-- **Reflection:** 5 minutes
-  - What did you learn?
-  - How does this help you?
+- **Phase 6 (Reflection):** 5 minutes
+  - When to use
+  - Cost consciousness
+  - Next steps
 
-**Total expected time:** 55-70 minutes
+**Total expected time:** 40-55 minutes
 
 ## Key Messages to Reinforce
 
-1. **Reading code is a fundamental skill** - 70% of professional work is reading, not writing. Today we're building that skill.
+1. **Prompt Caching is about money, not speed** - Don't oversell. Be clear about what it actually saves.
 
-2. **Protocols > Libraries** - A library is one implementation. A protocol is an agreement that enables many implementations. HTTP, HTML, Stream Protocol—understanding protocols gives you transferable knowledge.
+2. **The pattern: static content + multiple questions** - This is when caching pays off. Recognize this pattern in production apps.
 
-3. **Stream Protocol in three parts** - `text-start` (begin), `text-delta` (content), `text-end` (finish). That's the core. Everything else is details.
+3. **cachePoint placement matters** - Before = cached, After = not cached. Simple rule, critical to get right.
 
-4. **yield enables streaming** - Instead of waiting for all data, we send piece by piece. Better UX, feels like AI is "thinking."
+4. **Silent failure is a trap** - Less than 1024 tokens, content changes—caching fails without error. Know the gotchas.
 
-5. **Import statements have patterns** - npm packages (no `.`), relative paths (`./`), alias paths (`@/`). Know the pattern, find the code.
+5. **Cost consciousness is an engineering skill** - Reading pricing docs, calculating ROI, optimizing spend—these are professional skills, not distractions from "real" engineering.
 
-6. **DevTools reveals truth** - When in doubt, check the Network tab. See what's actually being sent and received.
+6. **First call is investment, subsequent calls are returns** - The mental model of "invest upfront, profit later" helps understand the economics.
 
-7. **Architecture enables change** - Understanding the protocol means you can swap backends, change AI providers, or modify the frontend—independently. That's good architecture.
+7. **The concept transfers across providers** - AWS, Anthropic, OpenAI—all have similar caching. Learn the concept once, apply everywhere.

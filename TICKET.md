@@ -1,43 +1,43 @@
-# Task Card: Hello, AI! - Your First AI API Call
+# Task Card: Prompt Caching - Save Money on AI API Calls
 
 ## Objective
 
-Complete your first AI API call using Python code. You'll call AWS Bedrock and at least one alternative AI service (Google Gemini or Zhipu GLM).
+Learn how Prompt Caching works and understand how it can save up to 75% on input token costs when you have repeated static content across multiple API calls.
 
 Read the [Tutorial](./README.md) | [中文教程](./README-cn.md)
 
 ## Actionable Items
 
-1. **Run AWS Bedrock Script (Required)**
-   - Open `scripts/test_ai_aws_bedrock.py`
-   - Understand each line of code
-   - Run: `python scripts/test_ai_aws_bedrock.py`
-   - Verify AI responds with something like "I'm an AI assistant..."
+1. **Run the Prompt Caching Script**
+   - Open `scripts/test_ai_aws_bedrock_with_cached_prompt.py`
+   - Spend 2 minutes browsing the code structure
+   - Run: `python scripts/test_ai_aws_bedrock_with_cached_prompt.py`
+   - Observe the output for all 3 turns
 
-2. **Complete One Alternative AI Service (Choose One)**
+2. **Observe Cache Behavior**
+   - Look at the `Cache:` line in each turn's output
+   - Turn 1: Should show `write > 0, read = 0` (writing to cache)
+   - Turn 2-3: Should show `write = 0, read > 0` (reading from cache)
 
-   **Option A: Google Gemini**
-   - Get API Key from [Google AI Studio](https://aistudio.google.com/)
-   - Set environment variable: `export GOOGLE_API_KEY="your-key"`
-   - Install: `pip install google-genai`
-   - Complete `scripts/test_ai_google_gemini.py` (read official docs, don't copy answers!)
-   - Run and verify it works
+3. **Calculate Your Savings**
+   - Record the `write` value from Turn 1
+   - Record the `read` values from Turn 2 and Turn 3
+   - Calculate: Total cached reads × 75% = equivalent tokens saved
 
-   **Option B: Zhipu GLM**
-   - Get API Key from [Zhipu AI Platform](https://open.bigmodel.cn/)
-   - Set environment variable: `export ZHIPU_API_KEY="your-key"`
-   - Install: `pip install zhipuai`
-   - Complete `scripts/test_ai_glm.py` (read official docs, don't copy answers!)
-   - Run and verify it works
+4. **Understand cachePoint Placement**
+   - Find the `send_message_with_cache` function in the script
+   - Locate where `cachePoint` is placed in the `messages` structure
+   - Understand why static content comes before `cachePoint` and dynamic questions come after
 
 **Estimated time:** 20-30 minutes
 
 ## Checklist
 
-- [ ] **Bedrock script runs** - `scripts/test_ai_aws_bedrock.py` executes successfully
-- [ ] **Understand the code** - Can explain what `bedrock.converse()` does
-- [ ] **Alternative service works** - Either Gemini or GLM script runs successfully
-- [ ] **Wrote code independently** - Completed the script by reading docs, not copying answers
+- [ ] **Script runs successfully** - All 3 turns complete without errors
+- [ ] **Observe cache write** - Turn 1 shows `write > 0, read = 0`
+- [ ] **Observe cache read** - Turn 2-3 show `write = 0, read > 0`
+- [ ] **Understand savings** - Can calculate how much was saved across the 3 calls
+- [ ] **Understand cachePoint** - Can explain why static content goes before the marker
 
 ---
 
@@ -48,9 +48,9 @@ When you're done:
 1. Run `/teach-check` to verify your work against the checklist
 
 2. Be ready to answer:
-   - "Which alternative AI service did you choose?"
-   - "Can you run the script and show it works?"
-   - "What does `bedrock.converse()` return?"
+   - "What's the difference between cache write and cache read?"
+   - "How much did you save in equivalent tokens across the 3 calls?"
+   - "Why is the static content placed before cachePoint?"
 
 3. Say "ship it" when complete to generate RESULT.md
 
@@ -60,46 +60,55 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-**Assessment method:** Script verification - check that scripts exist and run successfully.
+**Assessment method:** Observation-based verification - check understanding through output interpretation and code reading.
 
 **Core verification (required):**
 
-1. **Ask:** "Did you run the Bedrock script successfully?"
-   - Verify by running: `.venv/bin/python scripts/test_ai_aws_bedrock.py`
-   - Should print "AI response: ..." without errors
+1. **Run the script:**
+   - Execute: `.venv/bin/python scripts/test_ai_aws_bedrock_with_cached_prompt.py`
+   - Should complete all 3 turns without errors
+   - Should show cache metrics in output
 
-2. **Ask:** "Which alternative service did you complete - Gemini or GLM?"
-   - Note their answer for step 3
+2. **Verify cache behavior understanding:**
+   - Ask: "Looking at the output, which turn wrote to the cache?"
+   - Good answer: "Turn 1 - it shows write > 0 and read = 0"
+   - Ask: "Which turns read from the cache?"
+   - Good answer: "Turn 2 and Turn 3 - they show write = 0 and read > 0"
 
-3. **Verify the alternative script:**
-   - If Gemini: Check `scripts/test_ai_google_gemini.py` has code (not just placeholder)
-   - If GLM: Check `scripts/test_ai_glm.py` has code (not just placeholder)
-   - Try running: `.venv/bin/python scripts/test_ai_google_gemini.py` or `.venv/bin/python scripts/test_ai_glm.py`
-   - Note: This may fail if API key not set in current environment - that's OK, just verify the code exists
+3. **Verify cost understanding:**
+   - Ask: "How much money does cache reading save compared to normal pricing?"
+   - Good answer: "About 75% - you only pay 25% of the normal price"
+   - Ask: "If the profile is 900 tokens and 2 calls use cache, how many equivalent tokens did you save?"
+   - Good answer: "900 × 2 × 75% = 1350 tokens" (approximate calculation is fine)
 
-4. **Code quality check:**
-   - Open the script they completed
-   - Verify it's not just a copy-paste from the reference answer
-   - Ask: "Can you explain what this line does?" (point to a key line)
+4. **Verify cachePoint understanding:**
+   - Ask: "Open the script and show me where cachePoint is placed"
+   - Student should navigate to `send_message_with_cache` function
+   - Ask: "Why is the user profile placed before cachePoint?"
+   - Good answer: "Because it's static content that doesn't change between calls, so it should be cached"
 
 **Understanding verification (optional):**
 
-5. **Ask:** "What's the difference between `messages` and `system` in the Bedrock API?"
-   - Good answer: `messages` is the conversation history, `system` is the AI's persona/instructions
+5. **Ask:** "What happens if your static content is only 500 tokens?"
+   - Good answer: "Caching silently fails - it needs at least 1024 tokens"
 
-6. **Ask:** "Why do we use the cheapest model for testing?"
-   - Good answer: To save money during development, can switch to better models later
+6. **Ask:** "Does Prompt Caching make API calls faster?"
+   - Good answer: "Not really - it mainly saves money, not time. The AI still needs to generate the response."
+
+7. **Ask:** "In what scenario would Prompt Caching be most valuable?"
+   - Good answer: Anything involving repeated static context with multiple questions - document analysis, personalized chat, code review, etc.
 
 **What counts as "pass":**
 
-- Bedrock script runs without errors
-- One alternative script has code (even if API key prevents running)
-- Student can explain basic code concepts
+- Script runs and shows correct cache behavior (write on Turn 1, read on Turn 2-3)
+- Student can identify cache write vs cache read in the output
+- Student understands the basic cost savings (75% on cached reads)
+- Student can locate cachePoint in code and explain its purpose
 
 **What does NOT matter:**
 
-- Which alternative they chose (Gemini or GLM)
-- Whether the alternative script runs (API key may not be set)
-- Perfect code style
+- Exact token numbers (approximate understanding is sufficient)
+- Memorizing the exact minimum token requirement
+- Deep understanding of SSE or internal implementation
 
-**Key principle:** This is about getting hands-on experience with AI APIs. The focus is on running code and understanding the basics, not perfection.
+**Key principle:** This lesson is about understanding the concept and observing it in action. The focus is on interpreting output and understanding "why," not on writing code.

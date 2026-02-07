@@ -67,3 +67,9 @@ GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起�
 飞机为什么有两个引擎？不是动力不够，是为了那万分之一的时刻。冗余不是浪费，是专业。
 
 📄 [10-Always-Have-a-Plan-B-CN.md](10-Always-Have-a-Plan-B-CN.md)
+
+## 11 - The First Rule of Business
+
+调用 AI API 就像用自来水，直到你看到账单。Prompt Caching 教会我的不只是省钱，而是理解工具的成本模型。
+
+📄 [11-The-First-Rule-of-Business-CN.md](11-The-First-Rule-of-Business-CN.md)
