@@ -4,7 +4,7 @@
 
 Complete your first AI API call using Python code. You'll call AWS Bedrock and at least one alternative AI service (Google Gemini or Zhipu GLM).
 
-Read the [Tutorial](./README.md) | [中文教程](./README-cn.md)
+Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/10-Hello-AWS-Bedrock/)
 
 ## Actionable Items
 

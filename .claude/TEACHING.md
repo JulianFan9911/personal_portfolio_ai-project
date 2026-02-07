@@ -1,157 +1,156 @@
-# Teaching Guide: AI SDK and Stream Protocol Deep Dive
+# Teaching Guide: Hello, AI! - Your First AI API Call
 
-## Learning Outcomes
+## Lesson Overview
 
-By the end of this lesson, learners should be able to:
+| Aspect | Details |
+|--------|---------|
+| **Duration** | 20-30 minutes |
+| **Difficulty** | Beginner |
+| **Prerequisites** | AWS credentials configured, familiar with boto3.Session() |
+| **Key Concept** | AI models are functions: input → output |
 
-1. **Cognitive outcome** - Understand how Stream Protocol works (`text-start`, `text-delta`, `text-end`) and why protocols matter more than libraries
-2. **Skill outcome** - Successfully trace data flow from UI to backend by following import chains and reading code
-3. **Mindset outcome** - Appreciate that reading code is as important as writing code, and that understanding protocols gives you transferable knowledge
+## Learning Objectives
 
-## Concept Sequence
+By the end of this lesson, students will be able to:
+1. Call AWS Bedrock API using Python
+2. Understand the basic structure of AI API requests/responses
+3. Set up and call at least one alternative AI service (Gemini or GLM)
 
-Teach concepts in this order:
+## Lesson Flow
 
-### Phase 1: Import Statement Mastery (10 minutes)
+### 1. Introduction (2 min)
 
-1. **The three forms of import** - npm packages, relative paths, alias paths
-2. **Practice tracing** - Follow `./message` to find `message.tsx`
-3. **When to read docs vs code** - npm packages → docs; project files → code
+**Key message:** "Today you'll talk to AI through code, not a web interface."
 
-### Phase 2: AI SDK Value Proposition (10 minutes)
+Emphasize:
+- This is your first "real" AI call - not using ChatGPT's web UI
+- Once you understand this, you can build any AI application
+- It's simpler than you think: AI is just a function
 
-4. **What you'd build without AI SDK** - Show the 100+ lines they'd need to write
-5. **What useChat gives you** - `messages`, `sendMessage`, `status`, `stop`
-6. **Convention over configuration** - Default `/api/chat` endpoint
+### 2. Core Concept Explanation (3 min)
 
-### Phase 3: Data Flow Tracing (15 minutes)
+Draw or explain this diagram:
+```
+Your question → [AI Model] → AI's answer
+```
 
-7. **Step-by-step walkthrough** - User click → handleSubmit → sendMessage → POST → backend
-8. **Backend processing** - `@app.post("/api/chat")` decorator, parsing messages
-9. **Generator pattern** - Why `yield` creates streaming responses
+**Analogy:** You don't need to understand engine mechanics to drive a car. Similarly, you don't need to understand neural networks to call AI.
 
-### Phase 4: Stream Protocol Deep Dive (15 minutes)
+### 3. Bedrock Script Walkthrough (5 min)
 
-10. **Protocol vs Library** - The HTTP analogy: same protocol, different implementations
-11. **Three core message types** - `text-start`, `text-delta`, `text-end`
-12. **SSE format** - `data: {...}\n\n` structure
-13. **Why IDs matter** - Tracking multiple concurrent text segments
+Walk through `scripts/test_ai_aws_bedrock.py` line by line:
 
-### Phase 5: Hands-on Exercises (15-20 minutes)
+1. **Creating the client** - `boto3.Session()` and `client()`
+2. **Setting up the request** - `model_id`, `messages`, `system`
+3. **Making the call** - `bedrock.converse()`
+4. **Extracting the response** - Navigate the response JSON
 
-14. **DevTools observation** - See the protocol in action
-15. **Import chain practice** - Find PreviewMessage definition
-16. **yield understanding** - Conceptual exercise
-17. **Delta modification** - Practical verification
+**Demo:** Run the script live, show the output.
 
-### Phase 6: Reflection (5 minutes)
+### 4. Alternative Service Exercise (10-15 min)
 
-18. **Key takeaways** - What did you learn about reading code?
-19. **Protocol thinking** - How does this help when switching AI providers?
+**Important:** Let students struggle a bit before helping!
 
-## Common Struggles
+Instructions:
+1. Ask which service they'll choose (Gemini for international, GLM for China)
+2. Point them to the official documentation
+3. Let them try to figure it out themselves
+4. Only help if they're stuck for more than 5 minutes
 
-**Struggle:** Student is confused about why we're not writing code
-- **Signs:** "When do we actually build something?"
-- **Intervention:** Explain: "In real work, you spend 70% of time reading code. Today we're building that skill. Once you can read code well, writing becomes much easier."
+**Why this approach?**
+- Reading documentation is a crucial skill
+- Debugging their own code builds confidence
+- They'll remember better if they solve it themselves
 
-**Struggle:** Student gets lost in import chains
-- **Signs:** Can't find where a component is defined
-- **Intervention:** Review the three import forms. Ask: "Does this path start with `.`, `@/`, or neither?" Then guide them to the right location.
+### 5. Verification (5 min)
 
-**Struggle:** Student doesn't understand why yield matters
-- **Signs:** "Can't we just use return?"
-- **Intervention:** Draw it out: "return = send everything at once, then stop. yield = send piece, pause, send piece, pause. Which gives better user experience?"
+Run both scripts to verify:
+```bash
+.venv/bin/python scripts/test_ai_aws_bedrock.py
+.venv/bin/python scripts/test_ai_google_gemini.py  # or test_ai_glm.py
+```
 
-**Struggle:** Student can't see Stream Protocol in DevTools
-- **Signs:** Looking at wrong tab or wrong request
-- **Intervention:** Make sure they: 1) Filter for "chat" in Network tab, 2) Click the request, 3) Look at Response tab (not Preview)
+## Common Student Issues
 
-**Struggle:** Student is overwhelmed by the code complexity
-- **Signs:** Trying to understand every line of React or Python
-- **Intervention:** "You don't need to understand everything. Focus on the data flow: where does data enter? where does it exit? That's what matters today."
+### Issue 1: `AccessDeniedException`
 
-**Struggle:** Student modifies wrong file for delta exercise
-- **Signs:** Changed frontend instead of backend
-- **Intervention:** "Stream Protocol is about what the backend SENDS. The frontend just receives. Find `api/index.py` and look for `text-delta`."
+**Cause:** IAM permissions or Bedrock model access not enabled.
 
-## Teaching Tips
+**Solution:**
+1. Check IAM user has `AmazonBedrockFullAccess`
+2. In Bedrock console, enable model access for Nova Micro
 
-- **Start with the "why read code"** - Many students feel guilty not writing code. Validate that reading is a real skill. "Professionals spend most time reading."
+### Issue 2: `Could not find credentials`
 
-- **Use DevTools as proof** - When explaining Stream Protocol, immediately show it in DevTools. Seeing is believing. Theory alone doesn't stick.
+**Cause:** AWS credentials not configured.
 
-- **The HTTP analogy works well** - "HTTP lets any browser talk to any server. Stream Protocol lets any AI SDK frontend talk to any compliant backend." This clicks for most people.
+**Solution:**
+```bash
+aws sts get-caller-identity  # Test if credentials work
+cat ~/.aws/credentials       # Check file exists
+```
 
-- **Don't get stuck on SSE details** - SSE is just the transport. The protocol messages (`text-start`, etc.) are what matters. If students ask about SSE internals, say "That's how we send the data. What matters is what we send."
+### Issue 3: Alternative service script won't run
 
-- **Celebrate the "aha" moment** - When students see two `text-delta` events concatenate into "Hello World," that's the key insight. Pause and reinforce: "This is how ChatGPT works!"
+**Cause:** API key not set or dependency not installed.
 
-- **Connect to future lessons** - "Now you understand the protocol. Next lesson, we just replace the hardcoded response with a real AI call. Frontend stays the same."
+**Solution:**
+```bash
+# For Gemini
+export GOOGLE_API_KEY="..."
+pip install google-genai
 
-- **Use the "protocol vs library" framing** - This is a powerful mental model. Libraries come and go, protocols persist. Understanding protocols makes you adaptable.
+# For GLM
+export ZHIPU_API_KEY="..."
+pip install zhipuai
+```
 
-## Assessment Ideas
+### Issue 4: Student copies reference answer
 
-- **Import chain quiz:** "If you see `import { X } from './foo'`, where do you look?"
-  - Good answer: "foo.tsx or foo/index.tsx in the same directory"
+**Response:** This is OK for learning, but ask them to explain the code. Understanding is more important than typing.
 
-- **Protocol understanding:** "What are the three core message types?"
-  - Expected: `text-start`, `text-delta`, `text-end`
+## Key Teaching Points
 
-- **yield vs return:** "Why does the backend use yield?"
-  - Good answer: "To send data piece by piece instead of all at once"
+### 1. AI is a Function
 
-- **Protocol value:** "If you wanted to switch from Python backend to Go backend, what would need to stay the same?"
-  - Good answer: "The Stream Protocol format - the same message types and SSE structure"
+Reinforce this mental model throughout:
+- Input: messages (your question)
+- Processing: the AI model (black box)
+- Output: response (AI's answer)
 
-- **Quick check:** Ask student to trace the data flow from button click to displayed message
-  - Good answer hits: handleSubmit → sendMessage → POST /api/chat → yield → StreamingResponse → useChat parsing → messages array → render
+### 2. API Keys and Environment Variables
 
-## Pacing Guide
+Explain why we use environment variables:
+- Security: Don't commit secrets to git
+- Flexibility: Different keys for different environments
+- Best practice: Industry standard
 
-- **Import statement mastery:** 10 minutes
-  - Three forms explanation
-  - Quick practice finding a file
+### 3. Reading Documentation
 
-- **AI SDK value:** 10 minutes
-  - Show what you'd build without it
-  - Show how simple useChat is
+When students ask "how do I...":
+1. First, point them to the official docs
+2. Let them try for a few minutes
+3. Only then provide direct help
 
-- **Data flow tracing:** 15 minutes
-  - Walk through each step
-  - Show the code at each step
-  - Can use DevTools to show request/response
+This builds the skill of self-sufficiency.
 
-- **Stream Protocol deep dive:** 15 minutes
-  - Protocol vs Library concept
-  - Three message types with examples
-  - SSE format overview
+## Assessment Criteria
 
-- **Hands-on exercises:** 15-20 minutes
-  - Exercise 1: DevTools observation (5 min)
-  - Exercise 2: Import tracing (3 min)
-  - Exercise 3: yield understanding (3 min)
-  - Exercise 4: Delta modification (5-7 min)
+| Criteria | Pass | Fail |
+|----------|------|------|
+| Bedrock script | Runs and returns response | Errors or no output |
+| Alternative script | Has code (even if can't run) | Still placeholder only |
+| Understanding | Can explain basic concepts | Cannot explain anything |
 
-- **Reflection:** 5 minutes
-  - What did you learn?
-  - How does this help you?
+## Extension Activities
 
-**Total expected time:** 55-70 minutes
+For fast students:
+1. Try a different model (Claude instead of Nova)
+2. Modify the system prompt to change AI personality
+3. Build a simple loop for multi-turn conversation
 
-## Key Messages to Reinforce
+## Resources
 
-1. **Reading code is a fundamental skill** - 70% of professional work is reading, not writing. Today we're building that skill.
-
-2. **Protocols > Libraries** - A library is one implementation. A protocol is an agreement that enables many implementations. HTTP, HTML, Stream Protocol—understanding protocols gives you transferable knowledge.
-
-3. **Stream Protocol in three parts** - `text-start` (begin), `text-delta` (content), `text-end` (finish). That's the core. Everything else is details.
-
-4. **yield enables streaming** - Instead of waiting for all data, we send piece by piece. Better UX, feels like AI is "thinking."
-
-5. **Import statements have patterns** - npm packages (no `.`), relative paths (`./`), alias paths (`@/`). Know the pattern, find the code.
-
-6. **DevTools reveals truth** - When in doubt, check the Network tab. See what's actually being sent and received.
-
-7. **Architecture enables change** - Understanding the protocol means you can swap backends, change AI providers, or modify the frontend—independently. That's good architecture.
+- [AWS Bedrock Docs](https://docs.aws.amazon.com/bedrock/)
+- [Google Gemini Quickstart](https://ai.google.dev/gemini-api/docs/quickstart)
+- [Zhipu GLM API](https://open.bigmodel.cn/dev/api/normal-model/glm-4)
