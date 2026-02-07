@@ -1,49 +1,43 @@
-# Task Card: Deep Dive into AI SDK and Stream Protocol
+# Task Card: Hello, AI! - Your First AI API Call
 
 ## Objective
 
-Develop code reading skills by understanding how a ChatGPT-like chat application works under the hood—without writing any code.
+Complete your first AI API call using Python code. You'll call AWS Bedrock and at least one alternative AI service (Google Gemini or Zhipu GLM).
 
-This exercise focuses on **reading and understanding** rather than implementation. You'll trace data flow from frontend to backend, understand what AI SDK does for you, and master the Stream Protocol that powers real-time AI responses.
-
-Read the [TUTORIAL](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/09-AI-SDK-And-Stream-Protocol/)
+Read the [Tutorial](./README.md) | [中文教程](./README-cn.md)
 
 ## Actionable Items
 
-1. **Observe Stream Protocol with DevTools**
-   - Open http://localhost:3000/chat
-   - Open DevTools (F12), go to Network tab
-   - Send a message and find the `chat` request
-   - Examine the Response tab to see Stream Protocol format
-   - Identify `text-start`, `text-delta`, and `text-end` messages
+1. **Run AWS Bedrock Script (Required)**
+   - Open `scripts/test_ai_aws_bedrock.py`
+   - Understand each line of code
+   - Run: `python scripts/test_ai_aws_bedrock.py`
+   - Verify AI responds with something like "I'm an AI assistant..."
 
-2. **Trace the Import Chain**
-   - Open `components/chat/chat.tsx`
-   - Find the import: `import { PreviewMessage } from "./message"`
-   - Navigate to the source file `message.tsx`
-   - Locate how `PreviewMessage` renders AI messages
+2. **Complete One Alternative AI Service (Choose One)**
 
-3. **Understand the Role of yield**
-   - Open `api/index.py`
-   - Find the `ai_sdk_v5_message_generator()` function
-   - Understand why `yield` is used instead of `return`
-   - Explain: what would happen if we used `return` instead?
+   **Option A: Google Gemini**
+   - Get API Key from [Google AI Studio](https://aistudio.google.com/)
+   - Set environment variable: `export GOOGLE_API_KEY="your-key"`
+   - Install: `pip install google-genai`
+   - Complete `scripts/test_ai_google_gemini.py` (read official docs, don't copy answers!)
+   - Run and verify it works
 
-4. **Modify Delta Content (Hands-on Verification)**
-   - In `api/index.py`, find the `text-delta` yield statement
-   - Change it to send two separate deltas: "Hello " and "World"
-   - Save, refresh, and send a message
-   - Verify the frontend displays "Hello World" (deltas concatenated)
-   - Check DevTools to see two `text-delta` events
+   **Option B: Zhipu GLM**
+   - Get API Key from [Zhipu AI Platform](https://open.bigmodel.cn/)
+   - Set environment variable: `export ZHIPU_API_KEY="your-key"`
+   - Install: `pip install zhipuai`
+   - Complete `scripts/test_ai_glm.py` (read official docs, don't copy answers!)
+   - Run and verify it works
 
-**Estimated time:** 30-40 minutes
+**Estimated time:** 20-30 minutes
 
 ## Checklist
 
-- [ ] **DevTools observation** - Can see Stream Protocol messages in Network tab Response
-- [ ] **Import tracing** - Found `message.tsx` from the import statement in `chat.tsx`
-- [ ] **yield understanding** - Can explain why `yield` is used for streaming (vs `return`)
-- [ ] **Delta modification** - Successfully modified backend to send two deltas, verified concatenation
+- [ ] **Bedrock script runs** - `scripts/test_ai_aws_bedrock.py` executes successfully
+- [ ] **Understand the code** - Can explain what `bedrock.converse()` does
+- [ ] **Alternative service works** - Either Gemini or GLM script runs successfully
+- [ ] **Wrote code independently** - Completed the script by reading docs, not copying answers
 
 ---
 
@@ -54,13 +48,11 @@ When you're done:
 1. Run `/teach-check` to verify your work against the checklist
 
 2. Be ready to answer:
-   - "What are the three core message types in Stream Protocol?"
-   - "Why does AI SDK use `yield` instead of `return`?"
-   - "What happens when frontend receives a `text-delta` message?"
+   - "Which alternative AI service did you choose?"
+   - "Can you run the script and show it works?"
+   - "What does `bedrock.converse()` return?"
 
 3. Say "ship it" when complete to generate RESULT.md
-
-4. Share the RESULT.md file GitHub link with your instructor
 
 ---
 
@@ -68,47 +60,46 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-**Assessment method:** This is a code-reading exercise. Verification is conversation-based—ask if students completed each task.
+**Assessment method:** Script verification - check that scripts exist and run successfully.
 
 **Core verification (required):**
 
-1. **Ask:** "Did you observe the Stream Protocol in DevTools?"
-   - Student should confirm they saw `text-start`, `text-delta`, `text-end` in the Response tab
-   - No need to verify screenshot—verbal confirmation is sufficient
+1. **Ask:** "Did you run the Bedrock script successfully?"
+   - Verify by running: `.venv/bin/python scripts/test_ai_aws_bedrock.py`
+   - Should print "AI response: ..." without errors
 
-2. **Ask:** "Did you trace the import chain from chat.tsx to message.tsx?"
-   - Student should confirm they found the `PreviewMessage` component in `message.tsx`
-   - Can ask follow-up: "What directory is message.tsx in?"
+2. **Ask:** "Which alternative service did you complete - Gemini or GLM?"
+   - Note their answer for step 3
 
-3. **Ask:** "Can you explain the difference between yield and return?"
-   - Good answer: `return` ends function immediately; `yield` sends one piece and continues
-   - This is conceptual understanding, not code verification
+3. **Verify the alternative script:**
+   - If Gemini: Check `scripts/test_ai_google_gemini.py` has code (not just placeholder)
+   - If GLM: Check `scripts/test_ai_glm.py` has code (not just placeholder)
+   - Try running: `.venv/bin/python scripts/test_ai_google_gemini.py` or `.venv/bin/python scripts/test_ai_glm.py`
+   - Note: This may fail if API key not set in current environment - that's OK, just verify the code exists
 
-4. **Ask:** "Did you modify the delta to send two parts?"
-   - Student should confirm they changed the backend and saw "Hello World" in the UI
-   - Can ask: "Did you see two text-delta events in DevTools?"
+4. **Code quality check:**
+   - Open the script they completed
+   - Verify it's not just a copy-paste from the reference answer
+   - Ask: "Can you explain what this line does?" (point to a key line)
 
 **Understanding verification (optional):**
 
-5. **Ask:** "What are the three core message types in Stream Protocol?"
-   - Expected: `text-start`, `text-delta`, `text-end`
+5. **Ask:** "What's the difference between `messages` and `system` in the Bedrock API?"
+   - Good answer: `messages` is the conversation history, `system` is the AI's persona/instructions
 
-6. **Ask:** "Why is the field called 'delta' instead of 'content'?"
-   - Good answer: Because it's incremental—only the new part is sent each time
-
-7. **Ask:** "Why do we need an ID in each message?"
-   - Good answer: To track which deltas belong to which text segment (when AI generates multiple segments)
+6. **Ask:** "Why do we use the cheapest model for testing?"
+   - Good answer: To save money during development, can switch to better models later
 
 **What counts as "pass":**
 
-- Student verbally confirms completing all 4 exercises
-- Student can answer basic questions about Stream Protocol
-- Student understands the yield vs return difference
+- Bedrock script runs without errors
+- One alternative script has code (even if API key prevents running)
+- Student can explain basic code concepts
 
 **What does NOT matter:**
 
-- Whether the code modification is still in place
-- Perfect technical terminology
-- Deep understanding of SSE internals
+- Which alternative they chose (Gemini or GLM)
+- Whether the alternative script runs (API key may not be set)
+- Perfect code style
 
-**Key principle:** This exercise is about building mental models for code reading and protocol understanding. The goal is comprehension, not implementation. Ask questions, listen to understanding, not deliverables.
+**Key principle:** This is about getting hands-on experience with AI APIs. The focus is on running code and understanding the basics, not perfection.
