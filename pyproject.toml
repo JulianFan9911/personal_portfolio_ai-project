@@ -5,11 +5,15 @@ requires-python = ">=3.12,<4.0"
 
 # Core Dependencies
 dependencies = [
+    "func-args>=1.0.1,<2.0.0",      # inspect function/method arguments
     "fastapi>=0.118.0,<1.0.0",      # Web framework
     "uvicorn>=0.38.0,<1.0.0",       # ASGI server
     "boto3>=1.42.0,<2.0.0",         # AWS SDK for Python
+    "boto3-dataclass[bedrock-runtime]>=1.40.0,<2.0.0", # Transform boto3 dictionaries into type-safe dataclasses with full autocomplete support.
 #    "google-genai>=1.0.0,<2.0.0",   # Google Gemini SDK
 #    "zhipuai>=2.0.0,<3.0.0",        # Zhipu GLM SDK
+    "vercel-ai-sdk-mate>=5.0.1,<6.0.0", # Vercel AI SDK Python adaptor library
+    "rich>=14.0.0,<15.0.0",         # Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal
 ]
 
 [project.optional-dependencies]
