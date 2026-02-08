@@ -1,4 +1,4 @@
-# Task Card: Setting Up Node Development Environment with multiply_two
+# Learn Personal Portfolio AI 03 - Task Card: Setting Up Node Development Environment with multiply_two
 
 ## Prerequisites
 Ensure your environment is set up: `mise run venv-create`, `mise run inst`, and `source .venv/bin/activate`
