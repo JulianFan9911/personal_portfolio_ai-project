@@ -1,4 +1,4 @@
-# Task Card: Integrate Bedrock into FastAPI Backend
+# Learn Personal Portfolio AI 12 - Task Card: Integrate Bedrock into FastAPI Backend
 
 ## Objective
 
