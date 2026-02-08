@@ -1,234 +1,317 @@
-# Prompt Caching: Give AI a "Memo"
+# Integrating AI into Your Application: From Scripts to Product
 
-> When you need to repeat a lot of background information every time, Prompt Caching can save you money.
+> You've learned to call APIs, you've learned Prompt Caching—now it's time to put that knowledge into a real product.
 
 ## Overview
 
-Imagine this scenario: you're using AI to analyze a 500-page user manual. You ask 10 questions, and each time you have to send all 500 pages to the AI.
+In previous lessons, we've been experimenting with scripts—calling the Bedrock API, observing Prompt Cache behavior. Those scripts helped us understand the principles, but they're not production code.
 
-Here's the problem—those 500 pages are the same every time, but you're paying for them 10 times. Even worse, the AI has to "read" those 500 pages again each time, like an assistant with amnesia who needs to be reintroduced at every meeting.
+What does a real product look like? Users type questions in a frontend interface, the backend receives the request, calls the AI, and returns the response to the frontend. There's a lot of "translation" work in between: the data format from the frontend doesn't match what Bedrock expects, multi-turn conversation history needs to be managed, AWS connections need to be configured...
 
-This clearly doesn't make sense. If only the AI could "remember" the content that doesn't change.
-
-That's exactly the problem Prompt Caching solves.
+In this lesson, we'll "assemble" everything we've learned to make the frontend app actually use AWS Bedrock's AI inference capabilities.
 
 ## Learning Objectives
 
-In real-world AI applications, you'll often encounter this pattern:
-
-```
-[Large static background information] + [User's question]
-```
-
-For example, you might need to send the user's personal profile to the AI and then ask various questions; or send a product document to the AI so users can ask questions anytime; or send an entire codebase to the AI to help developers solve problems.
-
-In all these scenarios, the background information is fixed—only the user's question changes. If you don't understand Prompt Caching, every API call will charge you for that repeated static content. In production environments, this creates significant cost waste.
-
 After completing this lesson, you will be able to:
 
-1. **Understand the value of Prompt Caching** — Know what problem it solves and which scenarios are suitable for it
-2. **Understand how it works** — Grasp the difference between cache write and cache read
-3. **Know the cost benefits** — Understand that cache reads in AWS Bedrock can save about 75% on input token costs
-4. **Implement Prompt Caching** — Use `cachePoint` in AWS Bedrock to mark cache boundaries
+1. **Understand the value of encapsulation** — Know why scattered code should be organized into reusable tools
+2. **Understand the necessity of data transformation** — Recognize that frontend and backend use different data formats, requiring adapters to "translate"
+3. **Complete API integration** — Integrate Bedrock API calls and Prompt Caching into a FastAPI backend
+4. **Experience the "decompose → build tools → assemble" engineering mindset** — This is a universal approach to solving complex problems
 
 ## Prerequisites
 
-Before you begin, make sure you've completed the "Hello, AI!" lesson and can call the AWS Bedrock API. Your AWS credentials should be configured, and project dependencies should be installed (via `mise run inst`).
+Before you begin, make sure you've completed the previous lessons:
+- "Hello, AI!" lesson: Able to call the AWS Bedrock API
+- "Prompt Caching" lesson: Understand how to use cachePoint
+
+Your AWS credentials should be configured, and project dependencies should be installed (via `mise run inst`).
 
 ---
 
 ## Key Concepts
 
-### 1. The Problem: Repeatedly Sending Static Content
+### 1. From Scripts to Product: The Need for Encapsulation
 
-Let's look at a typical conversation flow. Suppose you're developing a "personal assistant" app that needs to answer various questions based on a user's profile:
-
-**First question:**
-```
-[User profile 1000 tokens] + "What birthday gift would you recommend?"
-```
-
-**Second question:**
-```
-[User profile 1000 tokens] + "Weekend activity recommendations?"
-```
-
-**Third question:**
-```
-[User profile 1000 tokens] + "What music suits me?"
-```
-
-See the problem? That 1000 tokens of user profile has to be sent every time, and you pay for it every time. If the user asks 10 questions, you've actually sent 10,000 tokens of user profile—but the content is exactly the same.
-
-It's like having to repeat your ID number, address, and order history every time you call customer service. The system already has all this information—why repeat it over and over?
-
-### 2. How Prompt Caching Works
-
-The core idea of Prompt Caching is actually quite simple: **let the AI remember the content that doesn't change**.
-
-How does it work exactly?
-
-When you make your first API call (which we call **Cache Write**), you send the static content plus your question. The AI stores the static content in a cache, and you pay the normal price. This step is a necessary "investment."
-
-Subsequent calls (which we call **Cache Read**) are different. You still send the same static content plus a new question, but the AI finds that this content is already in the cache, so it uses the cached version directly without reprocessing. At this point, you only pay about 25% of the price!
-
-This is just like browser image caching: the first time you visit a website, you download the images; after that, the browser finds they're already stored locally and uses the cache instead of downloading again.
-
-### 3. Under the Hood: What's Being Saved?
-
-You might be curious: what exactly does caching save?
-
-When you send text to an AI, the AI needs to **parse** that text. This process is called "tokenization" plus subsequent vector processing—simply put, it converts human text into an internal representation that the AI can understand.
-
-This parsing process requires computational resources, so it costs money. The longer the text, the more computation, the higher the cost.
-
-Prompt Caching saves this "parsing" cost. On the first call, the AI parses the static content and stores it in the cache—you pay the normal price. On subsequent calls, the AI directly uses the already-parsed result from the cache, skipping the repeated parsing computation, so it only charges you about 25% of the price.
-
-One important note: this is primarily a **cost** savings, not a significant time improvement. Why? Because for modern AI models, the time to parse text is not the main bottleneck compared to the time to generate responses. Generating the response is the most time-consuming part. So you might not notice a significant speed improvement, but your bill will definitely get smaller.
-
-### 4. AWS Bedrock Implementation: cachePoint
-
-Theory covered, let's see how to write the code.
-
-In AWS Bedrock, you use a marker called `cachePoint` to tell the AI: "From here on, please cache everything before this point."
+Remember those scripts we wrote before? They looked something like this:
 
 ```python
-messages = [
+# Previous script style
+client = boto3.Session().client("bedrock-runtime")
+response = client.converse(
+    modelId="...",
+    messages=[...],
+    system=[...]
+)
+# Manually parse the response dictionary...
+```
+
+This code works, but it has several problems:
+
+**Problem 1: Repetitive code.** Every API call requires writing the same configuration code.
+
+**Problem 2: Hard to maintain.** The API returns nested dictionaries, so accessing data requires writing `response["output"]["message"]["content"][0]["text"]`—ugly and error-prone.
+
+**Problem 3: Lack of reusability.** If you want to call AI from multiple places, you have to copy-paste this code.
+
+What's the solution? **Encapsulation.** Wrap common operations into functions or classes to make business code cleaner.
+
+That's what this lesson is about—we've prepared two "tools" for you, and you need to learn how to use them and integrate them into the API endpoint.
+
+### 2. Tool One: Data Format Adapter
+
+Our frontend uses the Vercel AI SDK, which sends data in this format:
+
+```json
+{
+  "messages": [
     {
-        "role": "user",
-        "content": [
-            # Static content (will be cached)
-            {"text": static_context},
-
-            # Cache boundary marker—this is the key!
-            {"cachePoint": {"type": "default"}},
-
-            # Dynamic content (will not be cached)
-            {"text": question},
-        ],
+      "role": "user",
+      "parts": [{"type": "text", "text": "Hello"}]
     }
+  ]
+}
+```
+
+But AWS Bedrock expects this format:
+
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": [{"text": "Hello"}]
+    }
+  ]
+}
+```
+
+Notice the difference? AI SDK uses `parts`, Bedrock uses `content`. The field names are different, and the structure varies too.
+
+We need a "translator" to do the conversion. That's what `ai_sdk_adapter.py` does:
+
+```
+learn_personal_portfolio_ai/ai_sdk_adapter.py
+```
+
+This module provides a core function `request_body_to_bedrock_converse_messages()` that takes requests from the frontend and outputs a format Bedrock can understand.
+
+It's based on an open-source library `vercel-ai-sdk-mate`, which wraps the JSON data from the frontend into Python classes, allowing us to use `message.role` instead of `message["role"]` to access data—cleaner and less error-prone.
+
+### 3. Tool Two: Multi-turn Conversation Manager
+
+Remember the multi-turn conversations we learned about? Every API call needs to include the complete conversation history.
+
+If managed manually, the code would look like this:
+
+```python
+messages = []
+
+# Turn 1
+messages.append({"role": "user", "content": [{"text": "Hello"}]})
+response = client.converse(messages=messages, ...)
+messages.append(response["output"]["message"])
+
+# Turn 2
+messages.append({"role": "user", "content": [{"text": "Who are you?"}]})
+response = client.converse(messages=messages, ...)
+messages.append(response["output"]["message"])
+
+# Every turn requires manually maintaining this messages list...
+```
+
+This code is tedious and error-prone. So we encapsulated a `ChatSession` class:
+
+```
+learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py
+```
+
+Using it, the code becomes much cleaner:
+
+```python
+session = ChatSession(client=client, model_id="...", system=[...])
+response = session.send_message([...])  # Automatically manages conversation history
+```
+
+This class is based on an open-source library `boto3-dataclass`, which converts the dictionaries returned by boto3 into typed dataclass objects. This means you can access data with `response.output.message.content[0].text`, and your IDE will provide autocomplete and type checking.
+
+### 4. Infrastructure: AWS Connection Configuration
+
+Before calling any AWS service, we need a configured client. This configuration lives in:
+
+```
+learn_personal_portfolio_ai/boto_ses.py
+```
+
+The code is simple:
+
+```python
+import boto3
+
+boto_ses = boto3.Session(region_name="us-east-1")
+bedrock_runtime_client = boto_ses.client("bedrock-runtime")
+```
+
+Why put it in a separate file? So we can import the same client instance from multiple places, avoiding repeated connection creation.
+
+### 5. Dependency Management
+
+The open-source libraries we use are declared in `pyproject.toml`:
+
+```toml
+dependencies = [
+    "boto3>=1.42.0,<2.0.0",         # AWS SDK
+    "boto3-dataclass[bedrock-runtime]>=1.40.0,<2.0.0", # Typed responses
+    "vercel-ai-sdk-mate>=5.0.1,<6.0.0", # AI SDK adapter
+    # ...
 ]
 ```
 
-The rule is simple: content **before** `cachePoint` gets cached; content **after** it doesn't.
+If you've run `mise run inst` before, these dependencies should already be installed.
 
-So you need to put the unchanging content (like user profiles, document content) before `cachePoint`, and the content that changes every time (like the user's question) after it. This way, static content only needs to be parsed once, and all subsequent calls enjoy the price discount from caching.
+### 6. Final Integration: API Endpoint
 
-### 5. Important Limitation: Minimum Token Requirement
+All tools are ready. The last step is to assemble them into the API endpoint. That's the job of `api/index.py`.
 
-Before you excitedly start using this feature, there's an important limitation to understand: **static content must be at least 1024 tokens**.
+Currently, the code is "hardcoded"—no matter what the user asks, it returns a fixed response. Your task is to modify it to actually call Bedrock.
 
-Why this limitation? Because caching itself has costs—storage, management, and lookup all require resources. If the content is too short, the benefit from caching doesn't outweigh the caching overhead, making it counterproductive. So AWS sets a minimum threshold.
+The code structure is divided into several logical blocks:
 
-More importantly, if your static content is too short, caching will **silently fail**—no error, the code runs normally, but there's no caching effect at all. You might think you're saving money when you're actually not. This is an easy trap to fall into.
+**Block 1: Import tools**
+```python
+from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client
+from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
+from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
+```
 
-Different models have slightly different minimum requirements: Nova Micro/Lite/Pro needs 1024 tokens, Claude models need 1024 to 4096 tokens depending on the model. Check the official documentation for specific numbers.
+**Block 2: Read request data**
+```python
+request_body_data = await request.json()
+request_body = RequestBody(**request_body_data)
+```
 
-### 6. Cost Benefits
+**Block 3: Initialize ChatSession and send message**
+```python
+chat_session = ChatSession(
+    client=bedrock_runtime_client,
+    model_id="us.amazon.nova-micro-v1:0",
+    system=[...],
+)
+# Set up conversation history...
+response = chat_session.send_message([])
+```
 
-Let's do some math so you have an intuitive understanding of the benefits.
-
-Using AWS Bedrock as an example, Cache Write (writing to cache) charges the normal price, while Cache Read (reading from cache) only charges about 25% of the price—equivalent to **saving about 75%**.
-
-Suppose your static content is 1000 tokens and the user asks 10 questions.
-
-Without caching, you pay for those 1000 tokens every call. 10 calls × 1000 tokens = 10,000 tokens, all charged at normal price.
-
-With caching? The first call pays normal price for 1000 tokens (while writing to cache), and the subsequent 9 calls each only pay 1000 × 25% = 250 tokens equivalent price. Total: 1000 + 250 × 9 = 3250 tokens equivalent cost.
-
-How much did you save? (10000 - 3250) / 10000 = **67.5%**.
-
-And the more questions asked, the closer the savings get to 75%. If the user asks 100 questions, the savings rate is (100000 - 1000 - 99 × 250) / 100000 ≈ **74.3%**.
-
-Of course, different AI providers have different pricing strategies. The 75% savings is AWS Bedrock data—other providers (like OpenAI, Anthropic direct API) may differ. Always check each platform's official pricing documentation.
+**Block 4: Return AI response to frontend**
+```python
+output_text = response.output.message.content[0].text
+# Return via SSE streaming...
+```
 
 ---
 
 ## Exercises
 
-Theory done, now let's get hands-on and see Prompt Caching in action.
+### Exercise 1: Read Existing Code
 
-### Exercise 1: Run the Script and Observe Caching
+**Goal:** Understand what each tool does.
 
-**Goal:** See the difference between cache write and cache read with your own eyes.
+Before modifying any code, spend 10 minutes reading these files:
 
-Before you start, spend two minutes browsing the script file `scripts/test_ai_aws_bedrock_with_cached_prompt.py` to get a general sense of the code structure. You don't need to understand every line—just know what it does: sends a user profile (static content), then asks three different questions.
+1. `learn_personal_portfolio_ai/boto_ses.py` — Where is the AWS client created?
+2. `learn_personal_portfolio_ai/ai_sdk_adapter.py` — What's the main conversion function?
+3. `learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py` — What methods does the `ChatSession` class provide?
 
-Ready? Run the script:
+Answer these questions:
 
-```bash
-python scripts/test_ai_aws_bedrock_with_cached_prompt.py
+- [ ] What type of object is `bedrock_runtime_client`?
+- [ ] What does `request_body_to_bedrock_converse_messages()` take as input and return?
+- [ ] How do you get the AI's response text from the response object returned by `ChatSession.send_message()`?
+
+### Exercise 2: Understand the Current Code's Problems
+
+**Goal:** Find what needs to be modified in `api/index.py`.
+
+Open `api/index.py` and find the `handle_chat_data` function. You'll notice:
+
+1. It doesn't import our tools (no `ChatSession`, no `bedrock_runtime_client`)
+2. It doesn't call the Bedrock API
+3. It returns a hardcoded `"Hello Alice"`
+
+```python
+# Current code (hardcoded)
+yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": "Hello Alice"})}\n\n'
 ```
 
-After it runs, carefully observe the output. You'll see something like this:
+Your task is to replace this hardcoded value with a real AI response.
 
+### Exercise 3: Complete the Integration
+
+**Goal:** Modify `api/index.py` to actually call Bedrock.
+
+We've prepared a reference implementation `api/index_example.py` that you can look at for structure. However—
+
+> **Warning: No copying allowed!**
+>
+> Copying and pasting directly won't help you learn. Understand what each block of code does, then write it yourself.
+
+Complete in this order:
+
+**Step 1: Add imports**
+
+Add the necessary import statements at the top of the file. You need to import:
+- `bedrock_runtime_client` (from `boto_ses` module)
+- `request_body_to_bedrock_converse_messages` (from `ai_sdk_adapter` module)
+- `ChatSession` (from `multi_round_bedrock_runtime_chat_manager` module)
+- `path_enum` (from `paths` module, for getting the system prompt)
+
+**Step 2: Parse request data**
+
+After reading the JSON, parse the request with the `RequestBody` class:
+```python
+request_body = RequestBody(**request_body_data)
 ```
-TURN 1
-Q: Based on my profile, what birthday gift would you recommend?
-A: [AI's response]
-Tokens: input=XX, output=XX, total=XX
-Cache:  write=XXX, read=0  <-- Writing to cache
 
-TURN 2
-Q: What weekend activity would suit me?
-A: [AI's response]
-Tokens: input=XX, output=XX, total=XX
-Cache:  write=0, read=XXX  <-- Cache hit (75% cheaper!)
+Remember to import `RequestBody` first (from `vercel_ai_sdk_mate.api`).
 
-TURN 3
-Q: What music playlist matches my personality?
-A: [AI's response]
-Tokens: input=XX, output=XX, total=XX
-Cache:  write=0, read=XXX  <-- Cache hit (75% cheaper!)
-```
+**Step 3: Create ChatSession**
 
-Focus on the `Cache:` line. In Turn 1, the `write` value is greater than 0 while `read` is 0—this means the static content is being written to the cache. By Turn 2 and Turn 3, it's reversed—`write` becomes 0 and `read` becomes greater than 0. That's a cache hit! The AI read directly from the previously stored cache, and you only pay 25% of the price.
+Create a `ChatSession` instance, configuring:
+- `client`: Use the imported `bedrock_runtime_client`
+- `model_id`: Use `"us.amazon.nova-micro-v1:0"`
+- `system`: Include system prompt and cachePoint
 
-> **Key insight:** The first call is an "investment," subsequent calls are the "return." The more questions asked, the higher the ROI. This is why Prompt Caching is especially suited for "set up once, ask many times" scenarios.
+**Step 4: Set up conversation context**
 
----
+Set up initial conversation history, including knowledge base content and cachePoint. You can reference the structure in `index_example.py` for this part.
 
-### Exercise 2: Calculate Your Savings
+**Step 5: Convert and append frontend messages**
 
-**Goal:** Understand cost savings through actual numbers.
+Use `request_body_to_bedrock_converse_messages()` to convert frontend messages to Bedrock format, then append to conversation history.
 
-Just looking at output isn't intuitive enough—let's do some calculations. Based on the output you saw in Exercise 1, fill in the following:
+**Step 6: Send message and get response**
 
-1. Tokens written to cache in Turn 1 (the `write` value): ______
-2. Tokens read from cache in Turn 2 (the `read` value): ______
-3. Tokens read from cache in Turn 3 (the `read` value): ______
+Call `chat_session.send_message([])` to get the AI's response, and extract the text content.
 
-Now calculate the actual savings:
+**Step 7: Return real response**
 
-4. Total tokens read from cache = Turn 2 + Turn 3 = ______
-5. These tokens would cost full price without caching; with caching you only pay 25%, so you save 75%
-6. Equivalent tokens saved = result from step 4 × 75% = ______
+Replace the hardcoded `"Hello Alice"` with the AI's real response `output_text`.
 
-If the script's profile is about 900 tokens and 2 out of 3 calls use the cache, you saved approximately 900 × 2 × 75% = 1350 tokens equivalent cost. This is just 3 calls. Imagine in a production environment, if users ask 100 questions per day, how much would you save over a month?
+### Exercise 4: Verify Results
 
-> **Key insight:** Prompt Caching is a classic "invest upfront, reap returns later" model. Looking at just the first call, there's no savings; but as call count increases, cumulative savings become considerable. That's why it's especially valuable in high-frequency production environments.
+**Goal:** Confirm the integration works.
 
----
+1. Start the development server:
+   ```bash
+   mise run dev
+   ```
 
-### Exercise 3: Understand cachePoint Placement
+2. Open a browser and visit the frontend interface
 
-**Goal:** Understand the role of `cachePoint` in the code and why it's placed where it is.
+3. Send a message and observe:
+   - Does the terminal show Bedrock API call logs?
+   - Does the frontend receive a real AI response (not "Hello Alice")?
 
-Now open `scripts/test_ai_aws_bedrock_with_cached_prompt.py` and find the `send_message_with_cache` function. Around lines 95-122, you'll see the code that builds `messages`.
-
-Carefully observe the structure of this code, then answer these questions:
-
-1. What content is placed before `cachePoint`?
-2. What content is placed after `cachePoint`?
-3. Why is it arranged this way? What would happen if the order were reversed?
-
-Got your answers? Here's the reference:
-
-Before `cachePoint` is `static_context`, which is the user's profile—the content that doesn't change. After `cachePoint` is `question`, which is different every time.
-
-Why this arrangement? Because the value of caching is avoiding repeated processing of the same content. The user profile is the same every time, so it's worth caching; the question is different every time, so caching it makes no sense. If you reversed the order—putting the question first, then the profile—the question would get cached and the profile wouldn't. Next time you ask a different question, the cache would miss, completely defeating the purpose.
-
-> **Key insight:** The position of `cachePoint` determines what gets cached. Remember this principle: put unchanging content before `cachePoint`, put changing content after. This order cannot be reversed.
+4. Send a second message to verify multi-turn conversation works
 
 ---
 
@@ -236,11 +319,15 @@ Why this arrangement? Because the value of caching is avoiding repeated processi
 
 Let's review what we learned in this lesson.
 
-Prompt Caching solves a very practical problem: when you need to repeatedly send the same background information, how do you avoid paying multiple times for that repeated content? Its mechanism is intuitive—the first call writes static content to cache at normal price; subsequent calls read from cache at about 25% price. Under the hood, it saves the computational cost of AI parsing text.
+What we did is actually simple: convert data from the frontend into a format Bedrock understands, call the API, and return the result to the frontend.
 
-In AWS Bedrock, usage is simple: use `cachePoint` to mark the cache boundary, put static content before it and dynamic questions after. But watch out for the minimum 1024 token requirement, otherwise caching silently fails.
+But to make this process clear and maintainable, we did two important things:
 
-What scenarios suit Prompt Caching? Any "large background information + multiple questions" pattern. For example: analyzing a long document and asking multiple questions, personalized conversations based on user profiles, tasks that repeatedly reference the same background material.
+**First, we built tools.** `ai_sdk_adapter.py` handles data format conversion, `multi_round_bedrock_runtime_chat_manager.py` manages conversation state. These two "tools" encapsulate complex logic, making the API endpoint code clean.
+
+**Second, we used open-source libraries.** `vercel-ai-sdk-mate` and `boto3-dataclass` handle many low-level details for us. Standing on the shoulders of giants, we can focus on business logic.
+
+These two points are actually core software engineering thinking: **decompose problems, then find or create appropriate tools for each sub-problem**.
 
 ---
 
@@ -248,65 +335,63 @@ What scenarios suit Prompt Caching? Any "large background information + multiple
 
 **Why this exercise matters:**
 
-In my view, the value of learning Prompt Caching goes far beyond "mastering an API feature." It embodies a more important engineering principle: **understand the cost model of your tools**.
+If you think back carefully, you'll realize we've been preparing for today throughout the previous lessons.
 
-I've seen many people use AI APIs like tap water—just turn on the faucet, don't worry about metering. That's fine during learning, but in production environments, this attitude will make your bills spiral out of control. I once saw a team spending several thousand extra dollars per month because they didn't understand the token billing mechanism.
+- Lesson one, we learned to call the Bedrock API—the "atomic operation"
+- Lesson two, we learned Prompt Caching—the "optimization technique"
+- This lesson, we assembled them into a real usable product
 
-When you understand how tokens are billed and how caching works, you can make smarter architectural decisions. You'll start asking yourself: should this content be cached? Where should static information be placed in the prompt? What's the expected calling pattern? These questions all require understanding the underlying cost model to answer.
+This is how engineers solve complex problems: **decompose into small problems, tackle each one, then assemble**.
 
-**Key insights:**
+Many beginners make this mistake: faced with a complex task, they try to write all the code in one go. The result is long, messy code, and when something goes wrong, they don't know where to look.
 
-Saving money is a fundamental skill for engineers. Good engineers don't just aim for "it works"—they aim for "it works efficiently and economically." In a resource-limited real world, achieving the same results with less cost is a competitive advantage.
+The correct approach is:
 
-Also remember that context determines technology. Prompt Caching isn't a silver bullet—it only has value in "repeated static content + multiple calls" scenarios. If your application has completely different content each call, or has low call frequency, the benefits from caching might not justify the extra complexity. Technology selection should always be based on specific context.
+1. **Analyze the problem** — What sub-problems does this task involve?
+2. **Solve each one** — Can each sub-problem be solved with existing tools? Do we need to build our own?
+3. **Verify each step** — Before assembling, ensure each tool works independently
+4. **Assemble and integrate** — Combine the tools to implement complete functionality
 
-Additionally, I recommend forming this habit: when reading API documentation, don't skip the pricing section. That's where many optimization opportunities hide. Many developers only read feature docs, not pricing docs, and miss out on money-saving techniques.
+The two "tools" in this lesson—the adapter and session manager—are products of this thinking. They're not advanced technology, but they embody engineering thinking: **make complex things simple, make repetitive things one-time**.
 
-**Next steps:**
+**Advice for students:**
 
-Next time you develop an AI application, ask yourself these three questions:
+When facing a complex task, don't rush to write code. First ask yourself:
 
-1. How much of my prompt content is the same every time?
-2. How many questions will users ask? What's the call frequency?
-3. Is the ROI of enabling caching worth it? How many calls to break even?
+- What steps can this task be divided into?
+- What input does each step need, and what output does it produce?
+- Are there existing tools we can use?
+- Which logic will be reused and is worth encapsulating into a tool?
 
-This cost-consciousness will make you stand out in your team. After all, in an era where AI applications are becoming increasingly common, engineers who can control costs are more valuable than engineers who can only call APIs.
+Learning this way of thinking is more important than learning any specific API. Because APIs change, but the ability to decompose problems is eternal.
 
 ---
 
 ## Quick Reference
 
-**Run the script:**
-
+**Start development server:**
 ```bash
-python scripts/test_ai_aws_bedrock_with_cached_prompt.py
-```
-
-**cachePoint usage:**
-
-```python
-messages = [
-    {
-        "role": "user",
-        "content": [
-            {"text": static_context},           # Will be cached
-            {"cachePoint": {"type": "default"}}, # Cache boundary
-            {"text": question},                  # Will not be cached
-        ],
-    }
-]
-```
-
-**Cache metrics in response:**
-
-```python
-usage = response.get("usage", {})
-cache_write = usage.get("cacheWriteInputTokens", 0)  # Tokens written to cache
-cache_read = usage.get("cacheReadInputTokens", 0)    # Tokens read from cache
+mise run dev
 ```
 
 **Key files:**
-- `scripts/test_ai_aws_bedrock_with_cached_prompt.py` — Complete Prompt Caching example
+- `api/index.py` — The API endpoint to modify
+- `api/index_example.py` — Reference implementation (don't copy!)
+- `learn_personal_portfolio_ai/ai_sdk_adapter.py` — Data format adapter
+- `learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py` — Conversation manager
+- `learn_personal_portfolio_ai/boto_ses.py` — AWS client configuration
 
-**Documentation:**
-- [AWS Bedrock Prompt Caching](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html)
+**Core imports:**
+```python
+from vercel_ai_sdk_mate.api import RequestBody
+from learn_personal_portfolio_ai.paths import path_enum
+from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client
+from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
+from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
+```
+
+**Get AI response text:**
+```python
+response = chat_session.send_message([])
+output_text = response.output.message.content[0].text
+```

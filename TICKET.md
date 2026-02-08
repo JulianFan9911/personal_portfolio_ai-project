@@ -1,43 +1,48 @@
-# Task Card: Prompt Caching - Save Money on AI API Calls
+# Task Card: Integrate Bedrock into FastAPI Backend
 
 ## Objective
 
-Learn how Prompt Caching works and understand how it can save up to 75% on input token costs when you have repeated static content across multiple API calls.
+Modify `api/index.py` to replace the hardcoded response with real AWS Bedrock AI inference. Learn how to use pre-built tools (adapter and session manager) to integrate AI into a production API endpoint.
 
-Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/11-Cached-Prompt/)
+Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/12-AI-Chat-Endpoint/)
 
 ## Actionable Items
 
-1. **Run the Prompt Caching Script**
-   - Open `scripts/test_ai_aws_bedrock_with_cached_prompt.py`
-   - Spend 2 minutes browsing the code structure
-   - Run: `python scripts/test_ai_aws_bedrock_with_cached_prompt.py`
-   - Observe the output for all 3 turns
+1. **Read the Tools (10 minutes)**
+   - Open `learn_personal_portfolio_ai/boto_ses.py` - understand where the AWS client comes from
+   - Open `learn_personal_portfolio_ai/ai_sdk_adapter.py` - understand what `request_body_to_bedrock_converse_messages()` does
+   - Open `learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py` - understand what `ChatSession` provides
 
-2. **Observe Cache Behavior**
-   - Look at the `Cache:` line in each turn's output
-   - Turn 1: Should show `write > 0, read = 0` (writing to cache)
-   - Turn 2-3: Should show `write = 0, read > 0` (reading from cache)
+2. **Identify the Problem**
+   - Open `api/index.py`
+   - Find the hardcoded `"Hello Alice"` in the SSE generator
+   - Note what's missing: no Bedrock imports, no API calls
 
-3. **Calculate Your Savings**
-   - Record the `write` value from Turn 1
-   - Record the `read` values from Turn 2 and Turn 3
-   - Calculate: Total cached reads × 75% = equivalent tokens saved
+3. **Complete the Integration**
+   - Follow the 7 steps in the tutorial to modify `api/index.py`
+   - Reference `api/index_example.py` for structure hints **only if stuck**
+   - **Do NOT copy-paste** - write the code yourself
 
-4. **Understand cachePoint Placement**
-   - Find the `send_message_with_cache` function in the script
-   - Locate where `cachePoint` is placed in the `messages` structure
-   - Understand why static content comes before `cachePoint` and dynamic questions come after
+4. **Verify Results**
+   - Run: `mise run dev`
+   - Open the frontend in browser
+   - Send a message and confirm you get a real AI response (not "Hello Alice")
+   - Send a second message to verify multi-turn conversation works
 
-**Estimated time:** 20-30 minutes
+**Estimated time:** 30-45 minutes
 
 ## Checklist
 
-- [ ] **Script runs successfully** - All 3 turns complete without errors
-- [ ] **Observe cache write** - Turn 1 shows `write > 0, read = 0`
-- [ ] **Observe cache read** - Turn 2-3 show `write = 0, read > 0`
-- [ ] **Understand savings** - Can calculate how much was saved across the 3 calls
-- [ ] **Understand cachePoint** - Can explain why static content goes before the marker
+- [ ] **Understand the tools** - Can explain what each tool does
+- [ ] **Added imports** - `bedrock_runtime_client`, `ChatSession`, `request_body_to_bedrock_converse_messages`, `path_enum`, `RequestBody`
+- [ ] **Created ChatSession** - With correct client, model_id, and system prompt
+- [ ] **Set up knowledge base** - Added to `_messages` with cachePoint
+- [ ] **Converted frontend messages** - Used adapter to transform AI SDK format
+- [ ] **Called Bedrock** - `chat_session.send_message([])` returns response
+- [ ] **Replaced hardcoded response** - `output_text` instead of `"Hello Alice"`
+- [ ] **Server runs** - `mise run dev` starts without errors
+- [ ] **Real AI responds** - Frontend shows actual AI response
+- [ ] **Multi-turn works** - AI remembers previous messages
 
 ---
 
@@ -48,9 +53,10 @@ When you're done:
 1. Run `/teach-check` to verify your work against the checklist
 
 2. Be ready to answer:
-   - "What's the difference between cache write and cache read?"
-   - "How much did you save in equivalent tokens across the 3 calls?"
-   - "Why is the static content placed before cachePoint?"
+   - "What does `request_body_to_bedrock_converse_messages()` do?"
+   - "Why do we use `ChatSession` instead of calling `client.converse()` directly?"
+   - "Where is the cachePoint placed and why?"
+   - "Walk me through the data flow from frontend to AI response"
 
 3. Say "ship it" when complete to generate RESULT.md
 
@@ -60,55 +66,72 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-**Assessment method:** Observation-based verification - check understanding through output interpretation and code reading.
+**Assessment method:** Code review + understanding verification. Must check for copy-paste.
 
 **Core verification (required):**
 
-1. **Run the script:**
-   - Execute: `.venv/bin/python scripts/test_ai_aws_bedrock_with_cached_prompt.py`
-   - Should complete all 3 turns without errors
-   - Should show cache metrics in output
+1. **Run the server:**
+   - Execute: `mise run dev`
+   - Should start without import errors or crashes
+   - Both Next.js and FastAPI should be running
 
-2. **Verify cache behavior understanding:**
-   - Ask: "Looking at the output, which turn wrote to the cache?"
-   - Good answer: "Turn 1 - it shows write > 0 and read = 0"
-   - Ask: "Which turns read from the cache?"
-   - Good answer: "Turn 2 and Turn 3 - they show write = 0 and read > 0"
+2. **Test functionality:**
+   - Open frontend in browser
+   - Send a message like "What is your name?"
+   - Response should be real AI output, not "Hello Alice"
+   - Send a follow-up message to verify multi-turn works
 
-3. **Verify cost understanding:**
-   - Ask: "How much money does cache reading save compared to normal pricing?"
-   - Good answer: "About 75% - you only pay 25% of the normal price"
-   - Ask: "If the profile is 900 tokens and 2 calls use cache, how many equivalent tokens did you save?"
-   - Good answer: "900 × 2 × 75% = 1350 tokens" (approximate calculation is fine)
+3. **Code review - check for required components:**
+   ```bash
+   # Check imports exist in index.py
+   grep -q "bedrock_runtime_client" api/index.py
+   grep -q "ChatSession" api/index.py
+   grep -q "request_body_to_bedrock_converse_messages" api/index.py
+   grep -q "RequestBody" api/index.py
+   ```
 
-4. **Verify cachePoint understanding:**
-   - Ask: "Open the script and show me where cachePoint is placed"
-   - Student should navigate to `send_message_with_cache` function
-   - Ask: "Why is the user profile placed before cachePoint?"
-   - Good answer: "Because it's static content that doesn't change between calls, so it should be cached"
+4. **Check for copy-paste (CRITICAL):**
+   - Compare `api/index.py` with `api/index_example.py`
+   - Look for identical code blocks, comments, variable names
+   - If suspicious, ask: "Explain what this line does"
 
-**Understanding verification (optional):**
+   ```bash
+   # Quick similarity check
+   diff api/index.py api/index_example.py | head -50
+   ```
 
-5. **Ask:** "What happens if your static content is only 500 tokens?"
-   - Good answer: "Caching silently fails - it needs at least 1024 tokens"
+   **If code is nearly identical to example:**
+   - Ask student to explain specific functions
+   - If they can't explain, they must re-implement while explaining
 
-6. **Ask:** "Does Prompt Caching make API calls faster?"
-   - Good answer: "Not really - it mainly saves money, not time. The AI still needs to generate the response."
+**Understanding verification (required):**
 
-7. **Ask:** "In what scenario would Prompt Caching be most valuable?"
-   - Good answer: Anything involving repeated static context with multiple questions - document analysis, personalized chat, code review, etc.
+5. **Ask:** "What does the adapter do?"
+   - Good answer: "Converts Vercel AI SDK message format to AWS Bedrock format"
+   - Bad answer: Can't explain or says "I don't know"
+
+6. **Ask:** "Why don't we just call `client.converse()` directly?"
+   - Good answer: "ChatSession manages conversation history automatically"
+   - Bad answer: "It's in the example"
+
+7. **Ask:** "What happens if you remove the cachePoint?"
+   - Good answer: "We'd pay full price for the knowledge base every request instead of saving 75%"
+
+8. **Ask:** "Trace a user message from frontend to response"
+   - Good answer: Mentions: frontend sends → adapter converts → session adds to history → Bedrock called → response extracted → SSE returns
 
 **What counts as "pass":**
 
-- Script runs and shows correct cache behavior (write on Turn 1, read on Turn 2-3)
-- Student can identify cache write vs cache read in the output
-- Student understands the basic cost savings (75% on cached reads)
-- Student can locate cachePoint in code and explain its purpose
+- Server runs and returns real AI responses
+- Code contains all required imports and components
+- Student can explain what each major piece does
+- Code shows evidence of being written, not copied (some differences from example)
 
-**What does NOT matter:**
+**What does NOT count as pass:**
 
-- Exact token numbers (approximate understanding is sufficient)
-- Memorizing the exact minimum token requirement
-- Deep understanding of SSE or internal implementation
+- Code works but is copied from `index_example.py` without understanding
+- Cannot explain what `request_body_to_bedrock_converse_messages` does
+- Cannot explain the data flow
+- "Hello Alice" still appears in responses
 
-**Key principle:** This lesson is about understanding the concept and observing it in action. The focus is on interpreting output and understanding "why," not on writing code.
+**Key principle:** This lesson is about integration AND understanding. Working code that the student can't explain is a failure. The no-copy rule exists because understanding is more important than completion.
