@@ -115,6 +115,31 @@ def request_body_to_bedrock_converse_messages(
     return messages
 
 
+def get_last_user_message_text(request_body: vercel_ai_sdk_mate.RequestBody) -> str | None:
+    """
+    Extract the text content from the last user message in the request.
+
+    This is useful for validation (e.g., message length check) before
+    processing. Returns None if extraction fails for any reason, allowing
+    the caller to gracefully skip validation rather than crash.
+
+    Args:
+        request_body: The parsed AI SDK request body.
+
+    Returns:
+        str: The text content of the last user message.
+        None: If extraction fails (no messages, wrong format, etc.).
+    """
+    try:
+        # The last message in the list is always the user's latest input
+        last_message = request_body.messages[-1]
+        # AI SDK stores text in parts[0].text for text messages
+        return last_message.parts[0].text
+    except (IndexError, AttributeError, TypeError):
+        # If anything goes wrong, return None to skip validation
+        return None
+
+
 async def debug_ai_sdk_request(request: Request) -> dict:
     """
     Debug: Log incoming request for troubleshooting

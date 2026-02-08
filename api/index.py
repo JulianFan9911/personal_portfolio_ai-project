@@ -28,8 +28,8 @@ from learn_personal_portfolio_ai.config import config
 from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
 from learn_personal_portfolio_ai.ai_sdk_adapter import debug_ai_sdk_request
 from learn_personal_portfolio_ai.ai_sdk_adapter import ai_sdk_message_generator
+from learn_personal_portfolio_ai.ai_sdk_adapter import get_last_user_message_text
 from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
-from learn_personal_portfolio_ai.config import config  # Centralized configuration
 # fmt: on
 
 # Add project root to sys.path for module imports
@@ -76,21 +76,16 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
     # --- Parse the incoming request into AI SDK format
     request_body = RequestBody(**request_body_data)
 
-    # # --- Check message length ---
-    # # Uncomment below to enable max message length check, preventing users from sending overly long messages
-    # last_user_message = request_body.messages[-1].content if request_body.messages else ""
-    # if len(last_user_message) > config.max_message_length:
-    #     # Return error response using AI SDK v5 Data Stream Protocol
-    #     def error_generator():
-    #         error_msg = f"Message too long. Maximum {config.max_message_length} characters allowed."
-    #         message_id = str(uuid.uuid4())
-    #         yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
-    #         yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": error_msg})}\n\n'
-    #         yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
-    #         yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
-    #         yield "data: [DONE]\n\n"
-    #
-    #     response = StreamingResponse(error_generator(), media_type="text/event-stream")
+    # --- Check message length ---
+    # Uncomment below to enable max message length check, preventing users from sending overly long messages
+    # last_user_message = get_last_user_message_text(request_body)
+    # If extraction failed, skip validation; otherwise check length
+    # if last_user_message and len(last_user_message) > config.max_message_length:
+    #     error_msg = f"Message too long. Maximum {config.max_message_length} characters allowed."
+    #     response = StreamingResponse(
+    #         ai_sdk_message_generator(output_text=error_msg),
+    #         media_type="text/event-stream",
+    #     )
     #     response.headers["x-vercel-ai-ui-message-stream"] = "v1"
     #     response.headers["Cache-Control"] = "no-cache"
     #     response.headers["Connection"] = "keep-alive"

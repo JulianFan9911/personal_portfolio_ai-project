@@ -88,6 +88,7 @@ class Config:
         aws_region: AWS region for all AWS services (e.g., "us-east-1")
         aws_access_key_id: AWS access key. None means use default credential chain.
         aws_secret_access_key: AWS secret key. None means use default credential chain.
+        model_id: Bedrock model ID
         max_message_length: Maximum allowed characters in user message. Prevents abuse.
     """
 
@@ -95,7 +96,7 @@ class Config:
     aws_access_key_id: str | None = dataclasses.field(default=None)
     aws_secret_access_key: str | None = dataclasses.field(default=None)
     model_id: str | None = dataclasses.field(default="us.amazon.nova-micro-v1:0")
-    max_message_length: int = dataclasses.field(default=1000)
+    # max_message_length: int = dataclasses.field(default=1000)
 
     @classmethod
     def new_in_local_runtime(cls):
