@@ -19,6 +19,12 @@ import uuid
 # fmt: off
 from fastapi import FastAPI, Request, Query
 from fastapi.responses import JSONResponse, StreamingResponse
+from vercel_ai_sdk_mate.api import RequestBody  # Parses AI SDK request format
+
+from learn_personal_portfolio_ai.paths import path_enum  # System prompt & knowledge base paths
+from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client  # Pre-configured Bedrock client
+from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
+from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
 # fmt: on
 
 # Add project root to sys.path for module imports
@@ -79,6 +85,61 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
 
     sys.stderr.flush()
 
+    # --- Parse the incoming request into AI SDK format ---
+    request_body = RequestBody(**request_body_data)
+
+    # --- Initialize Bedrock chat session ---
+    # Uses cross-region inference profile for automatic load balancing across regions
+    chat_session = ChatSession(
+        client=bedrock_runtime_client,
+        model_id="us.amazon.nova-micro-v1:0",  # Cross-region inference profile
+        system=[
+            {"text": path_enum.instruction_content},  # System prompt defining AI behavior
+            {"cachePoint": {"type": "default"}},  # Cache the system prompt to save costs
+        ],
+    )
+
+    # Restore session ID from frontend to maintain conversation continuity
+    chat_session._session_id = request_body.id
+
+    # --- Seed the conversation with knowledge base context ---
+    # This pre-populates the chat with background knowledge the AI should reference.
+    # The cachePoint ensures this large knowledge base is cached for cost savings.
+    chat_session._messages = [
+        {
+            "role": "user",
+            "content": [
+                {"text": path_enum.knowledge_base_content},
+                {"cachePoint": {"type": "default"}},  # Critical: cache the knowledge base
+            ],
+        },
+        {
+            "role": "assistant",
+            "content": [
+                {
+                    "text": "I've reviewed the knowledge base and I'm ready to answer questions based on it."
+                },
+            ],
+        },
+    ]
+
+    # --- Append conversation history from the frontend ---
+    # The AI SDK request contains all previous messages in the chat.
+    # We convert them to Bedrock's format to maintain multi-turn conversation context.
+    messages = request_body_to_bedrock_converse_messages(request_body)
+    chat_session._messages.extend(messages)
+
+    # --- Call AWS Bedrock to generate AI response ---
+    response = chat_session.send_message([])  # Empty list = no additional content
+
+    # Log response for debugging
+    debug("------ Chat response")
+    output_text = response.output.message.content[0].text
+    debug(output_text)
+    debug("------ Token Usage")
+    debug(str(response.usage))
+    sys.stderr.flush()
+
     # --- Stream response using AI SDK v5 Data Stream Protocol ---
     # SSE format: each line starts with "data: " followed by JSON payload.
     # Text streaming uses a three-phase pattern: start -> delta(s) -> end
@@ -89,7 +150,7 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
         yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
 
         # Phase 2: Send the actual text content (can be split into multiple deltas)
-        yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": "Hello Alice"})}\n\n'
+        yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
 
         # Phase 3: Signal that the text block is complete
         yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
