@@ -88,10 +88,12 @@ class Config:
         aws_region: AWS region for all AWS services (e.g., "us-east-1")
         aws_access_key_id: AWS access key. None means use default credential chain.
         aws_secret_access_key: AWS secret key. None means use default credential chain.
+        max_message_length: Maximum allowed characters in user message. Prevents abuse.
     """
     aws_region: str | None = dataclasses.field(default=None)
     aws_access_key_id: str | None = dataclasses.field(default=None)
     aws_secret_access_key: str | None = dataclasses.field(default=None)
+    max_message_length: int = dataclasses.field(default=1000)
 
     @classmethod
     def new_in_local_runtime(cls):
