@@ -14,7 +14,7 @@ Key components:
 
 import os
 import sys
-import uuid
+import json
 
 # fmt: off
 from fastapi import FastAPI, Request, Query
@@ -23,8 +23,13 @@ from vercel_ai_sdk_mate.api import RequestBody  # Parses AI SDK request format
 
 from learn_personal_portfolio_ai.paths import path_enum  # System prompt & knowledge base paths
 from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client  # Pre-configured Bedrock client
+from learn_personal_portfolio_ai.utils import debug
+from learn_personal_portfolio_ai.config import config
 from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
+from learn_personal_portfolio_ai.ai_sdk_adapter import debug_ai_sdk_request
+from learn_personal_portfolio_ai.ai_sdk_adapter import ai_sdk_message_generator
 from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
+from learn_personal_portfolio_ai.config import config  # Centralized configuration
 # fmt: on
 
 # Add project root to sys.path for module imports
@@ -33,11 +38,6 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 app = FastAPI()
-
-
-def debug(s: str):
-    """Print debug message to stderr (visible in server logs, not in response)."""
-    print(s, file=sys.stderr)
 
 
 @app.get("/api/hello")
@@ -70,32 +70,46 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
         request: The incoming HTTP request containing chat messages
         protocol: Stream protocol version (default: "data" for AI SDK v5)
     """
-    import json
-    import sys
+    # --- Log incoming request for troubleshooting
+    request_body_data = await debug_ai_sdk_request(request=request)
 
-    # --- Debug: Log incoming request for troubleshooting ---
-    debug("====== Incoming request")
-    debug("------ Request Headers")
-    for key, value in request.headers.items():
-        debug(f"{key}: {value}")
-    debug("------ Request Body")
-    request_body_data = await request.json()
-    request_body_formatted = json.dumps(request_body_data, indent=2, ensure_ascii=False)
-    debug(request_body_formatted)
-
-    sys.stderr.flush()
-
-    # --- Parse the incoming request into AI SDK format ---
+    # --- Parse the incoming request into AI SDK format
     request_body = RequestBody(**request_body_data)
+
+    # # --- Check message length ---
+    # # Uncomment below to enable max message length check, preventing users from sending overly long messages
+    # last_user_message = request_body.messages[-1].content if request_body.messages else ""
+    # if len(last_user_message) > config.max_message_length:
+    #     # Return error response using AI SDK v5 Data Stream Protocol
+    #     def error_generator():
+    #         error_msg = f"Message too long. Maximum {config.max_message_length} characters allowed."
+    #         message_id = str(uuid.uuid4())
+    #         yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
+    #         yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": error_msg})}\n\n'
+    #         yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
+    #         yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+    #         yield "data: [DONE]\n\n"
+    #
+    #     response = StreamingResponse(error_generator(), media_type="text/event-stream")
+    #     response.headers["x-vercel-ai-ui-message-stream"] = "v1"
+    #     response.headers["Cache-Control"] = "no-cache"
+    #     response.headers["Connection"] = "keep-alive"
+    #     return response
 
     # --- Initialize Bedrock chat session ---
     # Uses cross-region inference profile for automatic load balancing across regions
     chat_session = ChatSession(
         client=bedrock_runtime_client,
-        model_id="us.amazon.nova-micro-v1:0",  # Cross-region inference profile
+        model_id=config.model_id,  # Cross-region inference profile
         system=[
-            {"text": path_enum.instruction_content},  # System prompt defining AI behavior
-            {"cachePoint": {"type": "default"}},  # Cache the system prompt to save costs
+            # System prompt defining AI behavior
+            {
+                "text": path_enum.instruction_content
+            },
+            # Cache the system prompt to save costs
+            {
+                "cachePoint": {"type": "default"}
+            },
         ],
     )
 
@@ -105,12 +119,14 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
     # --- Seed the conversation with knowledge base context ---
     # This pre-populates the chat with background knowledge the AI should reference.
     # The cachePoint ensures this large knowledge base is cached for cost savings.
-    chat_session._messages = [
+    chat_session_messages = [
         {
             "role": "user",
             "content": [
                 {"text": path_enum.knowledge_base_content},
-                {"cachePoint": {"type": "default"}},  # Critical: cache the knowledge base
+                {
+                    "cachePoint": {"type": "default"}
+                },  # Critical: cache the knowledge base
             ],
         },
         {
@@ -127,47 +143,24 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
     # The AI SDK request contains all previous messages in the chat.
     # We convert them to Bedrock's format to maintain multi-turn conversation context.
     messages = request_body_to_bedrock_converse_messages(request_body)
-    chat_session._messages.extend(messages)
+    chat_session_messages.extend(messages)
+    chat_session._messages = chat_session_messages
 
     # --- Call AWS Bedrock to generate AI response ---
     response = chat_session.send_message([])  # Empty list = no additional content
 
     # Log response for debugging
-    debug("------ Chat response")
-    output_text = response.output.message.content[0].text
-    debug(output_text)
-    debug("------ Token Usage")
-    debug(str(response.usage))
-    sys.stderr.flush()
-
-    # --- Stream response using AI SDK v5 Data Stream Protocol ---
-    # SSE format: each line starts with "data: " followed by JSON payload.
-    # Text streaming uses a three-phase pattern: start -> delta(s) -> end
-    def ai_sdk_v5_message_generator():
-        message_id = str(uuid.uuid4())  # Unique ID for this text block
-
-        # Phase 1: Signal that a new text block is starting
-        yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
-
-        # Phase 2: Send the actual text content (can be split into multiple deltas)
-        yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
-
-        # Phase 3: Signal that the text block is complete
-        yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
-
-        # Signal that the entire message generation is finished
-        yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
-
-        # SSE stream termination marker
-        yield "data: [DONE]\n\n"
+    output_text = chat_session.debug_response(response)
 
     # --- Return SSE streaming response ---
     # AI SDK v5 uses "x-vercel-ai-ui-message-stream" header (not "x-vercel-ai-data-stream")
     response = StreamingResponse(
-        ai_sdk_v5_message_generator(),
+        ai_sdk_message_generator(output_text=output_text),
         media_type="text/event-stream",  # Standard MIME type for Server-Sent Events
     )
     response.headers["x-vercel-ai-ui-message-stream"] = "v1"  # Required for AI SDK v5
-    response.headers["Cache-Control"] = "no-cache"  # Disable caching for real-time streaming
+    response.headers["Cache-Control"] = (
+        "no-cache"  # Disable caching for real-time streaming
+    )
     response.headers["Connection"] = "keep-alive"  # Keep connection open for SSE
     return response

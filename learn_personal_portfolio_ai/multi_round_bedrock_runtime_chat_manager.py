@@ -19,12 +19,18 @@ Dependencies:
 """
 
 import typing as T
+import sys
 import dataclasses
 
-from func_args.api import OPT, remove_optional  # OPT marks optional fields, remove_optional strips them
+from func_args.api import (
+    OPT,
+    remove_optional,
+)  # OPT marks optional fields, remove_optional strips them
 import boto3_dataclass_bedrock_runtime  # Typed dataclass wrappers for Bedrock responses
 
 from rich import print as rprint  # Pretty printing for debugging
+
+from .utils import debug
 
 if T.TYPE_CHECKING:  # pragma: no cover
     from mypy_boto3_bedrock_runtime import Client
@@ -161,3 +167,15 @@ class ChatSession:
                 }
             ],
         )
+
+    def debug_response(self, response: "ConverseResponse") -> str:
+        """
+        Log response for debugging.
+        """
+        debug("------ Chat response")
+        output_text = response.output.message.content[0].text
+        debug(output_text)
+        debug("------ Token Usage")
+        debug(str(response.usage))
+        sys.stderr.flush()
+        return output_text

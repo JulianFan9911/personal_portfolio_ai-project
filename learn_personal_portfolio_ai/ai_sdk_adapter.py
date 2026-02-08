@@ -17,7 +17,14 @@ Dependencies:
   making it easier to work with the JSON data from the frontend.
 """
 
+import sys
+import json
+import uuid
+
+from fastapi import Request
 import vercel_ai_sdk_mate.api as vercel_ai_sdk_mate
+
+from .utils import debug
 
 
 def part_to_bedrock_content(part: vercel_ai_sdk_mate.T_PART) -> dict:
@@ -106,3 +113,43 @@ def request_body_to_bedrock_converse_messages(
         if bedrock_message is not None:
             messages.append(bedrock_message)
     return messages
+
+
+async def debug_ai_sdk_request(request: Request) -> dict:
+    """
+    Debug: Log incoming request for troubleshooting
+    """
+    debug("====== Incoming request")
+    debug("------ Request Headers")
+    for key, value in request.headers.items():
+        debug(f"{key}: {value}")
+    debug("------ Request Body")
+    request_body_data = await request.json()
+    request_body_formatted = json.dumps(request_body_data, indent=2, ensure_ascii=False)
+    debug(request_body_formatted)
+    sys.stderr.flush()
+    return request_body_data
+
+
+def ai_sdk_message_generator(output_text: str):
+    """
+    Stream response using AI SDK v5 Data Stream Protocol
+    SSE format: each line starts with "data: " followed by JSON payload.
+    Text streaming uses a three-phase pattern: start -> delta(s) -> end
+    """
+    message_id = str(uuid.uuid4())  # Unique ID for this text block
+
+    # Phase 1: Signal that a new text block is starting
+    yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
+
+    # Phase 2: Send the actual text content (can be split into multiple deltas)
+    yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
+
+    # Phase 3: Signal that the text block is complete
+    yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
+
+    # Signal that the entire message generation is finished
+    yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+
+    # SSE stream termination marker
+    yield "data: [DONE]\n\n"

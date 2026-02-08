@@ -90,9 +90,11 @@ class Config:
         aws_secret_access_key: AWS secret key. None means use default credential chain.
         max_message_length: Maximum allowed characters in user message. Prevents abuse.
     """
+
     aws_region: str | None = dataclasses.field(default=None)
     aws_access_key_id: str | None = dataclasses.field(default=None)
     aws_secret_access_key: str | None = dataclasses.field(default=None)
+    model_id: str | None = dataclasses.field(default="us.amazon.nova-micro-v1:0")
     max_message_length: int = dataclasses.field(default=1000)
 
     @classmethod
