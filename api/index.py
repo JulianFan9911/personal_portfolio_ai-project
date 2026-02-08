@@ -82,7 +82,7 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
     # --- Stream response using AI SDK v5 Data Stream Protocol ---
     # SSE format: each line starts with "data: " followed by JSON payload.
     # Text streaming uses a three-phase pattern: start -> delta(s) -> end
-    def ai_sdk_v5_message_generator():
+    def ai_sdk_message_generator():
         message_id = str(uuid.uuid4())  # Unique ID for this text block
 
         # Phase 1: Signal that a new text block is starting
@@ -103,7 +103,7 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
     # --- Return SSE streaming response ---
     # AI SDK v5 uses "x-vercel-ai-ui-message-stream" header (not "x-vercel-ai-data-stream")
     response = StreamingResponse(
-        ai_sdk_v5_message_generator(),
+        ai_sdk_message_generator(),
         media_type="text/event-stream",  # Standard MIME type for Server-Sent Events
     )
     response.headers["x-vercel-ai-ui-message-stream"] = "v1"  # Required for AI SDK v5
