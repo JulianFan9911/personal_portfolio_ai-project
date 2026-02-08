@@ -7,7 +7,7 @@ The Runtime class may seem redundant at first glance, but it's designed for
 ergonomic usage across the codebase. Import once and use everywhere:
 
     from .runtime import runtime
-    
+
     if runtime.is_local():
         ...
 
