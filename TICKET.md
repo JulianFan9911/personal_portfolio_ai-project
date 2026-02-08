@@ -1,4 +1,4 @@
-# Task Card: Test-Driven Development with multiply_two
+# Learn Personal Portfolio AI 02 - Task Card: Test-Driven Development with multiply_two
 
 ## Prerequisites
 Ensure your environment is set up: `mise run venv-create`, `mise run inst`, and `source .venv/bin/activate`
