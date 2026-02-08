@@ -1,41 +1,41 @@
-# Task Card: Deploy to Vercel with Environment Variables
+# Task Card: Config Management and Code Refactoring
 
 ## Objective
 
-Deploy your AI chat application to Vercel by configuring AWS credentials as environment variables. Learn how code adapts to different runtime environments.
+Understand the Config Management pattern and code refactoring principles — why we centralize configuration values and extract reusable code into separate modules. This makes code easier to maintain and scale.
 
-Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/13-Env-Vars-and-Deployment/)
+Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/14-Config-Management/)
 
 ## Actionable Items
 
-1. **Read the runtime detection code (5 minutes)**
-   - Open `learn_personal_portfolio_ai/runtime.py` - understand how we detect Vercel vs local
-   - Open `learn_personal_portfolio_ai/boto_ses.py` - understand how credentials are handled differently
+1. **Read the refactored code (10 minutes)**
+   - Open `api/index.py` — notice how the main function reads like English (Step 1, Step 2, Step 3...)
+   - Open `learn_personal_portfolio_ai/ai_sdk_adapter.py` — find `get_last_user_message_text()` and `ai_sdk_message_generator()`
+   - Think: Why are these functions in a separate module instead of `index.py`?
 
-2. **Configure environment variables on Vercel (5-10 minutes)**
-   - Go to your Vercel project → Settings → Environment Variables
-   - Add `AWS_ACCESS_KEY_ID` with your IAM user's access key
-   - Add `AWS_SECRET_ACCESS_KEY` with your IAM user's secret key
-   - Set scope to "All Environments"
+2. **Enable the message length limit feature (10 minutes)**
+   - Find the `max_message_length` field in `learn_personal_portfolio_ai/config.py`
+   - Search for "Uncomment" in `api/index.py` to find the disabled check code
+   - Uncomment the code to enable the message length check
+   - Test: run `mise run dev`, send a message > 1000 characters, verify you get "Message too long" error
+   - Notice: The error response reuses `ai_sdk_message_generator()` — same as normal responses!
 
-3. **Deploy and verify (5 minutes)**
-   - Push your code to GitHub (triggers automatic deployment)
-   - Wait for Preview deployment to complete
-   - Open the Preview URL and test the chat
-   - Take a screenshot showing working chat with the Vercel domain visible
+3. **Run the test (2 minutes)**
+   - Run `mise run test-python`
+   - Verify the config test passes
 
-**Estimated time:** 20-30 minutes
+**Estimated time:** 20-25 minutes
 
 ## Checklist
 
-- [ ] **Read runtime.py** - Understand what `runtime.is_vercel()` checks
-- [ ] **Read boto_ses.py** - Understand why credentials are passed differently on Vercel
-- [ ] **Added AWS_ACCESS_KEY_ID** - Environment variable configured in Vercel
-- [ ] **Added AWS_SECRET_ACCESS_KEY** - Environment variable configured in Vercel
-- [ ] **Scope set correctly** - Environment variables available to "All Environments"
-- [ ] **Deployment succeeded** - Preview deployment completed without errors
-- [ ] **Chat works** - AI responds with real answers (not "Hello Alice")
-- [ ] **Screenshot taken** - Shows chat working with Vercel Preview URL in browser
+- [ ] **Read index.py** — Understand how the main function reads like English
+- [ ] **Read ai_sdk_adapter.py** — Found `get_last_user_message_text()` and `ai_sdk_message_generator()`
+- [ ] **Understand code reuse** — Can explain why functions are extracted into separate modules
+- [ ] **Found max_message_length** — Located the config field in config.py
+- [ ] **Enabled message length check** — Uncommented the check code in api/index.py
+- [ ] **Tested the feature** — Verified "Message too long" error appears for long messages
+- [ ] **Understand Single Source of Truth** — Can explain why config values should be defined in one place
+- [ ] **Test passes** — `mise run test-python` runs successfully
 
 ---
 
@@ -43,16 +43,12 @@ Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfoli
 
 When you're done:
 
-1. Run `/teach-check` to verify your work against the checklist
+1. Run `/teach-check` to verify your understanding
 
-2. Take a screenshot and send it to your instructor. The screenshot must show:
-   - The chat interface with a real AI response
-   - The browser URL bar showing your Vercel Preview domain (e.g., `your-project-xxx.vercel.app`)
-
-3. Be ready to answer:
-   - "What value does the VERCEL environment variable have on Vercel's servers?"
-   - "Why does boto_ses.py need to explicitly pass credentials on Vercel but not locally?"
-   - "What's the benefit of the Runtime class pattern?"
+2. Be ready to answer:
+   - "What is Single Source of Truth?"
+   - "Why are `get_last_user_message_text()` and `ai_sdk_message_generator()` in ai_sdk_adapter.py instead of index.py?"
+   - "If you want to change the message limit from 1000 to 2000, what file do you modify?"
 
 ---
 
@@ -60,42 +56,57 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-**Assessment method:** Screenshot verification + understanding check.
+**Assessment method:** Understanding verification through Q&A + hands-on demonstration.
 
-**Core verification (required):**
+**Core understanding (required):**
 
-1. **Screenshot shows working deployment:**
-   - Chat interface visible with AI response
-   - Browser URL shows Vercel domain (not localhost)
-   - Response is real AI output, not hardcoded "Hello Alice"
+1. **Ask:** "What is Single Source of Truth?"
+   - Good answer: "A value should be defined in only one place. Other places reference it instead of duplicating it."
+   - Acceptable: "If you need to change something, you only change it in one place."
+   - Bad answer: "I don't know" / Can't explain
 
-2. **Environment variables configured:**
-   - Student can describe what variables they added
-   - Variables are scoped to "All Environments" (or at least Preview)
+2. **Ask:** "Why is the main function in index.py so short and simple?"
+   - Good answer: "It only has flow control. Each step is a function call. The detailed logic is in separate modules for reuse."
+   - Acceptable: "It's like reading English, step by step"
+   - Bad answer: "Because that's how it was written"
 
-**Understanding verification (required):**
+3. **Ask:** "Why are `get_last_user_message_text()` and `ai_sdk_message_generator()` in ai_sdk_adapter.py?"
+   - Good answer: "They're reusable. ai_sdk_message_generator is used for both normal responses and error responses. If it were inline, we'd have to write it twice."
+   - Acceptable: "For reuse, so we don't repeat code"
+   - Bad answer: Can't explain
 
-3. **Ask:** "What does `os.environ.get('VERCEL')` return on Vercel's servers?"
-   - Good answer: "1" or "The string '1'"
-   - Bad answer: "True" / "I don't know"
+4. **Ask:** "What does 'main function reads like English' mean?"
+   - Good answer: "You can read the function and understand the flow: parse request, check length, call AI, return response. Each step is a function call with a clear name."
+   - Bad answer: Can't explain
 
-4. **Ask:** "Why does boto_ses.py check `runtime.is_vercel()` before creating the session?"
-   - Good answer: "On Vercel there's no ~/.aws/credentials file, so we need to explicitly pass credentials from environment variables. Locally, boto3 finds credentials automatically."
-   - Bad answer: "Because the tutorial said so"
+**Hands-on verification (required):**
 
-5. **Ask:** "Why do we use a Runtime class instead of checking os.environ directly everywhere?"
-   - Good answer: "Centralizes the logic in one place. If detection method changes, only one file needs updating. Makes other code cleaner."
-   - Acceptable: "One place complex, everywhere else simple"
+5. **Ask:** "Show me where you uncommented the code in api/index.py"
+   - Student should be able to navigate to the message length check code
+   - Code should be uncommented and functional
+
+6. **Ask:** "Notice how the error response uses ai_sdk_message_generator(). Why is this good design?"
+   - Good answer: "It's the same function used for normal responses. If the AI SDK protocol changes, we only update one function."
+   - Bad answer: "I don't know" / Can't explain the reuse benefit
+
+7. **Ask:** "What happens if you want to change the limit from 1000 to 2000 characters?"
+   - Good answer: "Change `max_message_length` in config.py, that's it"
+   - Bad answer: "Change it in api/index.py" / "Change it in multiple places"
 
 **What counts as "pass":**
 
-- Screenshot shows working chat on Vercel Preview URL
-- Student can explain what environment variables they configured
-- Student can explain the basic logic of runtime detection (checks VERCEL env var)
+- Student can explain Single Source of Truth in their own words
+- Student understands why code is extracted into separate modules (for reuse)
+- Student can explain "main function reads like English"
+- Student successfully enabled the message length check feature
+- Student can demonstrate that long messages return "Message too long" error
+- Student understands the reuse of ai_sdk_message_generator()
+- Test passes
 
 **What does NOT count as pass:**
 
-- Screenshot shows localhost instead of Vercel domain
-- Student configured env vars but deployment still fails
-- Student cannot explain what runtime.is_vercel() does
-- Screenshot shows "Hello Alice" instead of real AI response
+- Student cannot explain why we use a Config class
+- Student cannot explain why functions are in separate modules
+- Student couldn't find or enable the message length check code
+- Student doesn't notice the reuse of ai_sdk_message_generator()
+- Student just memorized answers without understanding the design philosophy

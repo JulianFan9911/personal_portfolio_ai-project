@@ -1,273 +1,293 @@
-# 环境变量：从本地到云端
+# Config Management: 让代码为扩展做好准备
 
-> 你的应用在本地跑得好好的——但云端怎么知道你的 AWS 密钥呢？
-
-![部署成功后的聊天界面](./img/13-Env-Vars-and-Deployment/04-env-var-and-deployment.png)
+> 功能已经跑通了，但在加新功能之前，我们先"回头整理"一下。
 
 ## 概述
 
-上一课，我们把 AWS Bedrock 集成到了 FastAPI 后端。在你的电脑上跑得很顺利。但问题来了——你的电脑上有 `~/.aws/credentials` 这个文件，Vercel 的服务器上可没有。
+上节课我们完成了部署，AI chat 在 Vercel 上跑得很好。功能完成了，任务结束了吗？
 
-当你把代码部署到云端时，代码运行的环境完全不一样了。你本地的文件？云端没有。你精心配置的环境？云端也没有。
+对于业余开发者来说，是的。但对于专业开发者来说，这只是开始。
 
-这时候就需要 **Environment Variables（环境变量）** 了。它是把配置信息——尤其是密钥这类敏感信息——传递给不同运行环境的标准方式。
+这节课我们做两件"看起来多余但很重要"的事：
+
+1. **Config Management** — 把配置值集中管理，为未来 scale 做准备
+2. **代码重构** — 让主函数逻辑清晰，把可复用的代码抽离到独立模块
 
 ## 学习目标
 
-你已经在本地把东西跑通了。现在是时候让全世界都能用上它了。但部署不只是点个按钮那么简单——你需要理解代码是如何适应不同运行环境的。
+这节课的重点不是"怎么写代码"，而是**为什么要这样组织代码**。这是设计哲学的传授。
 
 完成本课后，你将能够：
 
-1. **理解 Environment Variables** — 知道它是什么，为什么它是跨环境配置应用的标准方式
-2. **部署到 Vercel** — 把 AWS 密钥配置成环境变量，让你的 AI 应用在云端跑起来
-3. **编写环境感知代码** — 用 runtime detection 让代码在本地和云端表现不同
+1. **理解 Single Source of Truth 原则** — 明白为什么"一个值只在一个地方定义"是好的设计
+2. **理解代码复用思想** — 把通用逻辑抽离到独立模块，供多处调用
+3. **阅读清晰的主函数** — 读 `index.py` 应该像读英语，一步步做什么一目了然
 
-## 前置条件
+## 前提条件
 
-- 完成了上一课（AI 聊天端点在本地能跑通）
-- 有一个 Vercel 账号（免费版就够了）
-- 项目已经连接到 GitHub 并关联到 Vercel
+- 完成了上节课（部署成功，AI chat 在 Vercel 上工作）
+- 理解 runtime detection 的概念
 
 ---
 
 ## 核心概念
 
-### 1. 问题：本地 Runtime vs 云端 Runtime
+### 1. 为什么要做 Config Management？
 
-当你在本地运行代码时，你的电脑上有：
-- `~/.aws/credentials` 文件里存着你的 AWS 密钥
-- 你花时间配置好的各种环境
-- 日积月累装上的各种文件和配置
-
-当你的代码在 Vercel 上运行时，那边有：
-- 一个全新的、空的容器
-- 完全访问不到你本地的文件
-- 根本不知道你是谁，也不知道该用哪个 AWS 账号
-
-这就是核心挑战：**同样的代码，需要在完全不同的环境里跑起来**。
-
-### 2. 解决方案：Environment Variables
-
-Environment Variables（环境变量）是存在于代码之外的键值对。你可以把它想象成一个配置层，夹在你的应用程序和运行环境之间。
-
-关键的理解是：
-
-- **同样的 key，不同的 value** — `AWS_ACCESS_KEY_ID` 这个变量在本地和 Vercel 上都可以存在，但里面的值可以不一样
-- **key 可能不存在** — 你的本地电脑可能没有 `VERCEL` 这个变量，但 Vercel 的服务器上有
-- **值是在运行时注入的** — 你的代码不会把密钥写死在里面，而是从环境中读取
-
-这就是专业应用处理配置的方式。永远不要把密钥写死在代码里。永远从环境变量读取。
-
-想深入了解的话，可以读一读官方文档：
-- [Vercel Environment Variables](https://vercel.com/docs/environment-variables)
-- [System Environment Variables](https://vercel.com/docs/environment-variables/system-environment-variables) — Vercel 会自动设置一些变量，比如 `VERCEL`，你的代码可以用它来判断自己是不是在 Vercel 上运行
-
-### 3. 检测运行环境
-
-代码怎么知道自己是在本地运行还是在 Vercel 上运行呢？检查 `VERCEL` 这个环境变量就行了：
+假设你的代码里有这样的情况：
 
 ```python
-import os
+# boto_ses.py
+boto_ses = boto3.Session(region_name="us-east-1", ...)
 
-if os.environ.get("VERCEL") == "1":
-    print("正在 Vercel 上运行")
-else:
-    print("正在本地运行")
+# some_other_file.py
+client = boto3.client("s3", region_name="us-east-1")
+
+# yet_another_file.py
+REGION = "us-east-1"
 ```
 
-Vercel 会在它的服务器上自动设置 `VERCEL=1`。你的本地电脑没有这个变量（除非你自己设置）。这个简单的检查就能让代码根据环境调整行为。
+现在老板说："我们要把服务迁移到东京，改成 `ap-northeast-1`。"
 
-来看看我们是怎么在 `learn_personal_portfolio_ai/runtime.py` 里实现的：
+你需要：
+1. 找到所有出现 `us-east-1` 的地方
+2. 一个一个改
+3. 祈祷你没有漏改任何一个
+
+这就是 **配置散落** 带来的痛苦。
+
+**核心原则：Single Source of Truth**
+
+> **如果一个值可能被改动，它应该只在一个地方被定义。其他所有地方都是对它的引用。**
+
+判断标准很简单：**如果你改一个字符串/数值，需要去多个文件改——那这个值就应该被抽象到 config。**
+
+### 2. Config Pattern：dataclass + factory method
+
+看看我们的解决方案 [config.py](./learn_personal_portfolio_ai/config.py)：
 
 ```python
-class Runtime:
-    @cached_property
-    def name(self) -> str:
-        if os.environ.get("VERCEL", "NOTHING") == "1":
-            return RuntimeEnum.VERCEL.value
-        else:
-            return RuntimeEnum.LOCAL.value
+@dataclasses.dataclass
+class Config:
+    aws_region: str | None = dataclasses.field(default=None)
+    aws_access_key_id: str | None = dataclasses.field(default=None)
+    aws_secret_access_key: str | None = dataclasses.field(default=None)
+    max_message_length: int = dataclasses.field(default=1000)
 
-    def is_local(self) -> bool:
-        return self.name == RuntimeEnum.LOCAL.value
+    @classmethod
+    def new(cls):
+        if runtime.is_local():
+            return cls.new_in_local_runtime()
+        elif runtime.is_vercel():
+            return cls.new_in_vercel_runtime()
 
-    def is_vercel(self) -> bool:
-        return self.name == RuntimeEnum.VERCEL.value
-
-runtime = Runtime()
+config = Config.new()
 ```
 
-**为什么要这样设计？** 这个 `Runtime` class 乍一看好像有点多余——为什么不直接用 `os.environ.get()` 呢？答案是：用起来更舒服。有了这个设计，代码库里任何地方都可以这样写：
+**使用时只需要一行：**
 
 ```python
-from learn_personal_portfolio_ai.runtime import runtime
+from learn_personal_portfolio_ai.config import config
 
-if runtime.is_local():
-    # 本地专用的逻辑
+region = config.aws_region
+max_len = config.max_message_length
 ```
 
-一次 import，一个对象，IDE 会自动补全所有方法。复杂的逻辑被封装在一个文件里，其他地方都干干净净。这是一个常见的模式：**一个地方麻烦，换来所有地方简洁**。
+### 3. 代码重构：让主函数像读英语
 
-### 4. 环境感知的 AWS 配置
-
-现在来看 `learn_personal_portfolio_ai/boto_ses.py`：
+看看重构后的 [api/index.py](./api/index.py)：
 
 ```python
-from .runtime import runtime
+@app.post("/api/chat")
+async def handle_chat_data(request: Request):
+    # Step 1: Log incoming request
+    request_body_data = await debug_ai_sdk_request(request=request)
 
-if runtime.is_vercel():
-    boto_ses = boto3.Session(
-        region_name="us-east-1",
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-    )
-else:
-    boto_ses = boto3.Session(region_name="us-east-1")
+    # Step 2: Parse request
+    request_body = RequestBody(**request_body_data)
+
+    # Step 3: Check message length (commented out, you'll enable it!)
+    # last_user_message = get_last_user_message_text(request_body)
+    # if last_user_message and len(last_user_message) > config.max_message_length:
+    #     ...
+
+    # Step 4: Initialize chat session
+    chat_session = ChatSession(...)
+
+    # Step 5: Call Bedrock
+    response = chat_session.send_message([])
+
+    # Step 6: Return streaming response
+    return StreamingResponse(ai_sdk_message_generator(output_text=output_text), ...)
 ```
 
-**这里发生了什么？**
+**这就是好代码的样子：** 读主函数就像读英语，Step 1、Step 2、Step 3... 每一步做什么一目了然。
 
-- **在 Vercel 上：** 没有 `~/.aws/credentials` 文件，我们必须显式地从环境变量传入密钥。
-- **在本地：** boto3 的默认凭证链会自动找到你的 `~/.aws/credentials`，不需要特别指定。
+**核心思想：**
 
-这就是环境感知代码。同一个文件，同样的逻辑，但它会根据运行环境自动调整。
+- **主函数只有流程控制** — 每一步都是一个 function call
+- **具体逻辑放到独立模块** — 供复用，供测试
 
-### 5. Vercel 的环境：Production vs Preview
+### 4. 复用的威力
 
-Vercel 有多个环境：
+看看 [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) 里的函数：
 
-- **Production** — 你的正式部署，通常来自 `main` 分支
-- **Preview** — 来自其他分支的部署（比如 `13-Env-Vars-and-Deployment`）
+```python
+# 这个函数被复用了两次！
+def ai_sdk_message_generator(output_text: str):
+    """生成 AI SDK v5 格式的 SSE 流"""
+    message_id = str(uuid.uuid4())
+    yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
+    yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
+    yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
+    yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+    yield "data: [DONE]\n\n"
+```
 
-当你推送一个分支时，Vercel 会创建一个 Preview 部署，带有独特的 URL。这非常适合在合并到 production 之前测试。
+这个函数在 `index.py` 里被用了两次：
+1. 正常返回 AI 回复时
+2. 返回 "Message too long" 错误时
 
-环境变量可以限定到特定环境。在这节课里，我们把它们设置成 "All Environments"，这样 Production 和 Preview 都能用。
+如果这段逻辑写在 `index.py` 里两次，将来 AI SDK 协议变了，你要改两个地方。抽成函数后，只改一个地方。
 
-### 6. 关于 IAM 权限
+**这就是复用的威力：改一处，处处生效。**
 
-你可能正在用之前课程里创建的 IAM User。学习阶段这样没问题。在真正的生产环境里，你应该遵循最小权限原则——只给应用真正需要的权限（在我们的场景里，只需要 `bedrock:InvokeModel`）。
+### 5. 模块职责划分
 
-IAM 最佳实践我们这里不展开讲，但当你构建真实应用时要记住这一点。
+| 模块 | 职责 |
+|------|------|
+| [api/index.py](./api/index.py) | 主函数，只有流程控制 |
+| [config.py](./learn_personal_portfolio_ai/config.py) | 配置管理 |
+| [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) | AI SDK 格式转换、调试、SSE 生成 |
+| [boto_ses.py](./learn_personal_portfolio_ai/boto_ses.py) | AWS 客户端初始化 |
+| [utils.py](./learn_personal_portfolio_ai/utils.py) | 通用工具函数 |
+
+每个模块做一件事，做好一件事。
 
 ---
 
 ## 练习
 
-### 练习 1：理解 Runtime Detection 代码
+### 练习 1：阅读重构后的代码
 
-**目标：** 理解我们的代码是如何检测运行环境的。
+**目标：** 理解代码组织方式。
 
-阅读这两个文件：
-1. `learn_personal_portfolio_ai/runtime.py`
-2. `learn_personal_portfolio_ai/boto_ses.py`
+1. 打开 [api/index.py](./api/index.py)，通读 `handle_chat_data` 函数
+   - 注意它读起来是不是像英语？每一步在做什么？
+   - 找到被注释掉的 "Check message length" 部分
 
-回答这些问题：
-- [ ] 在 Vercel 服务器上，`os.environ.get("VERCEL")` 返回什么值？
-- [ ] 为什么 `boto_ses.py` 在 Vercel 上需要显式传入密钥，而本地不需要？
-- [ ] 用 `Runtime` class 模式相比到处直接用 `os.environ.get()` 有什么好处？
+2. 打开 [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py)，找到这两个函数：
+   - `get_last_user_message_text()` — 提取最后一条用户消息
+   - `ai_sdk_message_generator()` — 生成 SSE 流
 
-### 练习 2：在 Vercel 上配置环境变量
+3. 思考：为什么这两个函数放在 `ai_sdk_adapter.py` 而不是 `index.py`？
 
-**目标：** 在 Vercel dashboard 里设置 AWS 密钥。
+### 练习 2：启用消息长度限制
 
-**步骤 1：** 进入 Vercel 项目的 Settings
+**目标：** 动手启用一个 config 功能，体验复用的威力。
 
-![Vercel Settings - Environment Variables](./img/13-Env-Vars-and-Deployment/01-env-var-and-deployment.png)
+我们在 config 里添加了 `max_message_length = 1000`，用于限制用户消息长度。检查逻辑已经写好，但被注释掉了。
 
-导航到 **Settings** → **Environment Variables**。如果是第一次来，你会看到一个空列表。
+**你的任务：**
 
-**步骤 2：** 添加你的 AWS 密钥
+1. 打开 [config.py](./learn_personal_portfolio_ai/config.py)，找到 `max_message_length` 字段
 
-点击 "Add Environment Variable"，添加两个变量：
+2. 打开 [api/index.py](./api/index.py)，找到这段被注释的代码：
+   ```python
+   # --- Check message length ---
+   # Uncomment below to enable max message length check
+   # last_user_message = get_last_user_message_text(request_body)
+   # if last_user_message and len(last_user_message) > config.max_message_length:
+   #     error_msg = f"Message too long..."
+   #     response = StreamingResponse(
+   #         ai_sdk_message_generator(output_text=error_msg),  # 复用！
+   #         ...
+   #     )
+   #     return response
+   ```
 
-![Adding environment variables](./img/13-Env-Vars-and-Deployment/02-env-var-and-deployment.png)
+3. 取消注释（uncomment）那段代码
 
-- `AWS_ACCESS_KEY_ID` — 你的 IAM user 的 access key
-- `AWS_SECRET_ACCESS_KEY` — 你的 IAM user 的 secret key
+4. 启动开发服务器测试：
+   ```bash
+   mise run dev
+   ```
+   - 发送正常消息 → 应该正常工作
+   - 发送超过 1000 字符的消息 → 应该返回 "Message too long" 错误
 
-把范围设置成 "All Environments"，这样 Production 和 Preview 都能访问。
+**注意观察：** 错误响应用的是 `ai_sdk_message_generator()`——和正常响应用的是同一个函数！这就是复用。
 
-**步骤 3：** 保存，注意 redeploy 提示
+### 练习 3：运行测试
 
-![Environment variables added](./img/13-Env-Vars-and-Deployment/03-env-var-and-deployment.png)
+```bash
+mise run test-python
+```
 
-保存后，你会看到变量列表。注意右下角的提示：**"A new deployment is needed for changes to take effect."**
-
-> **为什么要重新部署？** 环境变量是在部署启动时注入的。如果你只改了环境变量（代码没变），Vercel 不会自动重新部署。你需要点 "Redeploy" 或者推送一个新的 commit 来让新的值生效。
-
-### 练习 3：部署并验证
-
-**目标：** 确认你的 AI 聊天在 Vercel 上能正常工作。
-
-1. 把代码推送到 GitHub（如果还没推的话）
-2. Vercel 会自动为你的分支创建一个 Preview 部署
-3. 等待部署完成
-4. 打开 Preview URL（类似 `your-project-git-branch-name.vercel.app`）
-5. 测试聊天——发送一条消息，验证你收到了真正的 AI 回复
-
-**提交内容：**
-
-截一张你的聊天在 Preview 部署上正常工作的图。截图应该包含：
-- 聊天界面，显示真正的 AI 回复（不是 "Hello Alice"）
-- 浏览器地址栏，显示你的 Vercel Preview 域名
-
-这能证明你的部署正在使用云端的密钥正常工作。
+测试代码在 [tests_python/test_config.py](./tests_python/test_config.py)，它验证 `Config.new()` 能成功创建实例。
 
 ---
 
 ## 反思
 
-今天学的东西看起来很简单：设置几个环境变量，部署，完事儿。
+这节课我们做了两件事：
 
-但背后的概念对专业软件开发来说是基础中的基础：
+1. **Config Management** — 把配置值集中到一个地方
+2. **代码重构** — 把可复用的逻辑抽离到独立模块
 
-**你的代码永远不应该假设自己在哪里运行。** 本地电脑、测试服务器、生产云端——同样的代码应该在所有地方都能跑。环境变量就是让这成为可能的桥梁。
+这些改动看起来很小，但它们让代码 **ready to scale**：
 
-我们用的模式——检测环境，然后调整行为——在真实应用中到处都是：
-- 开发/测试/生产环境用不同的数据库连接
-- 不同环境用不同的日志级别
-- 测试 vs 生产用不同的 API 端点
+- 新加一个配置？改 `config.py` 一个文件
+- AI SDK 协议变了？改 `ai_sdk_adapter.py` 一个文件
+- 新同事要理解代码？读 `index.py` 主函数就够了
 
-掌握这个模式，你就能把代码部署到任何地方。
+当你的项目从 3 个文件变成 30 个文件，从 1 个开发者变成 10 个开发者，你会感谢今天做的这些"看起来多余"的事。
 
 ---
 
 ## 导师寄语
 
-**为什么这个练习很重要：**
+**为什么这个练习重要：**
 
-今天的课可能感觉像是"只是配置一下"。但理解环境变量是开发者的一个成人礼。从这一刻起，你不再只是想"我的代码在我的电脑上"，而是开始想"我的代码在任何地方运行"。
+今天的改动看起来很小，但我想让你理解两个设计哲学：
 
-每个专业代码库都用环境变量。每个 CI/CD 流水线都注入它们。每个云平台都管理它们。这不只是 Vercel 的事——这就是软件工作的方式。
+**1. Single Source of Truth**
 
-**更深的道理：**
+一个值只在一个地方定义。其他地方都是引用。
 
-注意我们是怎么组织代码的。`runtime.py` 文件包含了所有环境检测的复杂逻辑。`boto_ses.py` 文件用一个简单的 `if runtime.is_vercel()` 就调用它了。这是刻意的设计。
+**2. 主函数像读英语**
 
-当你构建软件时，永远要问："这个复杂的东西应该放在哪里？"答案通常是："放在一个地方，让其他所有地方都保持简单。"
+好的代码，主函数应该能让人一眼看懂流程：
+- Step 1: 解析请求
+- Step 2: 检查长度
+- Step 3: 调用 AI
+- Step 4: 返回响应
 
-一个文件处理乱七八糟的环境检测逻辑。其他所有文件只需要问一句 `runtime.is_vercel()` 就能拿到一个干净的布尔值答案。这就是保持大型代码库可维护的方法。
+具体怎么"解析请求"？怎么"调用 AI"？这些细节放到独立模块里。主函数只负责"指挥"，不负责"干活"。
+
+**判断代码质量的标准：**
+
+> "如果需求变了，我需要改多少个文件？"
+
+如果答案是"一个"，你的设计是好的。
 
 ---
 
 ## 快速参考
 
-**关键文件：**
-- `learn_personal_portfolio_ai/runtime.py` — Runtime 环境检测
-- `learn_personal_portfolio_ai/boto_ses.py` — 环境感知的 AWS 配置
+**核心文件：**
+- [config.py](./learn_personal_portfolio_ai/config.py) — 配置管理
+- [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) — AI SDK 适配器
+- [api/index.py](./api/index.py) — 主函数入口
 
-**检查是否在 Vercel 上运行：**
+**使用 Config：**
 ```python
-from learn_personal_portfolio_ai.runtime import runtime
+from learn_personal_portfolio_ai.config import config
 
-if runtime.is_vercel():
-    # 云端专用代码
+region = config.aws_region
+max_len = config.max_message_length
 ```
 
-**Vercel 文档：**
-- [Environment Variables](https://vercel.com/docs/environment-variables)
-- [System Environment Variables](https://vercel.com/docs/environment-variables/system-environment-variables)
-
-**Vercel 上需要的环境变量：**
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
+**运行测试：**
+```bash
+mise run test-python
+```

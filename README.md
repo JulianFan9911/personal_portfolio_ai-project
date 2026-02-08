@@ -1,234 +1,244 @@
-# Environment Variables: From Local to Cloud
+# Config Management: Making Your Code Ready to Scale
 
-> Your app works locally—but how does the cloud know your AWS credentials?
-
-![Deployed chat working on Vercel](./img/13-Env-Vars-and-Deployment/04-env-var-and-deployment.png)
+> The feature works. But before adding more, let's "step back and refactor."
 
 ## Overview
 
-In the previous lesson, we integrated AWS Bedrock into our FastAPI backend. It runs perfectly on your laptop. But here's the thing—your laptop has the `~/.aws/credentials` file, Vercel's servers don't.
+In the previous lesson, we deployed our AI chat to Vercel. It works great. Is the task done?
 
-When you deploy code to the cloud, the runtime environment is completely different. Your local files? Not there. The environment you carefully configured? Also not there.
+For amateur developers, yes. But for professional developers, this is just the beginning.
 
-This is where **Environment Variables** come in. They're the standard way to pass configuration—especially secrets—to applications running in different environments.
+In this lesson, we do two things that "seem unnecessary but are important":
+
+1. **Config Management** — Centralize configuration values to prepare for future scaling
+2. **Code Refactoring** — Make the main function read like English, extract reusable code into separate modules
 
 ## Learning Objectives
 
-You've already got things working locally. Now it's time to make it available to the world. But deploying isn't just clicking a button—you need to understand how code adapts to different runtime environments.
+This lesson is not about "how to write code" but about **why we organize code this way**. This is a design philosophy lesson.
 
 After completing this lesson, you will be able to:
 
-1. **Understand Environment Variables** — Know what they are and why they're the standard way to configure applications across environments
-2. **Deploy to Vercel** — Configure AWS credentials as environment variables and get your AI app running in the cloud
-3. **Write environment-aware code** — Use runtime detection to make your code behave differently in local vs cloud environments
+1. **Understand Single Source of Truth** — Know why "define a value in only one place" is good design
+2. **Understand Code Reuse** — Extract common logic into separate modules for reuse
+3. **Read Clean Main Functions** — Reading `index.py` should be like reading English, with each step crystal clear
 
 ## Prerequisites
 
-- Completed the previous lesson (AI chat endpoint working locally)
-- A Vercel account (free tier is fine)
-- Your project connected to GitHub and linked to Vercel
+- Completed the previous lesson (deployment successful, AI chat working on Vercel)
+- Understand the runtime detection concept
 
 ---
 
 ## Key Concepts
 
-### 1. The Problem: Local Runtime vs Cloud Runtime
+### 1. Why Config Management?
 
-When you run code locally, your machine has:
-- Your AWS credentials stored in `~/.aws/credentials`
-- Various environments you've spent time configuring
-- Files and configurations accumulated over time
-
-When your code runs on Vercel, it has:
-- A fresh, empty container
-- No access to your local files whatsoever
-- No idea who you are or which AWS account to use
-
-This is the core challenge: **the same code needs to run in completely different environments**.
-
-### 2. The Solution: Environment Variables
-
-Environment Variables are key-value pairs that exist outside your code. Think of them as a configuration layer that sits between your application and the runtime environment.
-
-The key insights are:
-
-- **Same key, different values** — `AWS_ACCESS_KEY_ID` can exist both locally and on Vercel, but the values inside can be different
-- **Keys may not exist** — Your local machine might not have a `VERCEL` variable, but Vercel's servers do
-- **Values are injected at runtime** — Your code doesn't hardcode secrets; it reads them from the environment
-
-This is how professional applications handle configuration. Never hardcode secrets. Always read from environment variables.
-
-For deeper understanding, read the official documentation:
-- [Vercel Environment Variables](https://vercel.com/docs/environment-variables)
-- [System Environment Variables](https://vercel.com/docs/environment-variables/system-environment-variables) — Vercel automatically sets variables like `VERCEL` that your code can use to detect where it's running
-
-### 3. Detecting the Runtime Environment
-
-How does your code know if it's running locally or on Vercel? Check the `VERCEL` environment variable:
+Imagine this situation in your codebase:
 
 ```python
-import os
+# boto_ses.py
+boto_ses = boto3.Session(region_name="us-east-1", ...)
 
-if os.environ.get("VERCEL") == "1":
-    print("Running on Vercel")
-else:
-    print("Running locally")
+# some_other_file.py
+client = boto3.client("s3", region_name="us-east-1")
+
+# yet_another_file.py
+REGION = "us-east-1"
 ```
 
-Vercel automatically sets `VERCEL=1` on their servers. Your local machine doesn't have this variable (unless you set it yourself). This simple check lets your code adjust its behavior based on the environment.
+Now your boss says: "We're migrating to Tokyo. Change it to `ap-northeast-1`."
 
-Let's look at how we implemented this in `learn_personal_portfolio_ai/runtime.py`:
+You need to:
+1. Find every occurrence of `us-east-1`
+2. Change them one by one
+3. Pray you didn't miss any
+
+This is the pain of **scattered configuration**.
+
+**Core Principle: Single Source of Truth**
+
+> **If a value might change, it should be defined in only one place. Everywhere else should reference it.**
+
+The rule is simple: **If changing a string/value requires editing multiple files, that value should be abstracted into config.**
+
+### 2. Config Pattern: dataclass + factory method
+
+Check out our solution in [config.py](./learn_personal_portfolio_ai/config.py):
 
 ```python
-class Runtime:
-    @cached_property
-    def name(self) -> str:
-        if os.environ.get("VERCEL", "NOTHING") == "1":
-            return RuntimeEnum.VERCEL.value
-        else:
-            return RuntimeEnum.LOCAL.value
+@dataclasses.dataclass
+class Config:
+    aws_region: str | None = dataclasses.field(default=None)
+    aws_access_key_id: str | None = dataclasses.field(default=None)
+    aws_secret_access_key: str | None = dataclasses.field(default=None)
+    max_message_length: int = dataclasses.field(default=1000)
 
-    def is_local(self) -> bool:
-        return self.name == RuntimeEnum.LOCAL.value
+    @classmethod
+    def new(cls):
+        if runtime.is_local():
+            return cls.new_in_local_runtime()
+        elif runtime.is_vercel():
+            return cls.new_in_vercel_runtime()
 
-    def is_vercel(self) -> bool:
-        return self.name == RuntimeEnum.VERCEL.value
-
-runtime = Runtime()
+config = Config.new()
 ```
 
-**Why this design?** This `Runtime` class might look redundant at first glance—why not just use `os.environ.get()` directly? The answer is: it's more comfortable to use. With this design, anywhere in your codebase you can write:
+**Using it is just one line:**
 
 ```python
-from learn_personal_portfolio_ai.runtime import runtime
+from learn_personal_portfolio_ai.config import config
 
-if runtime.is_local():
-    # local-specific logic
+region = config.aws_region
+max_len = config.max_message_length
 ```
 
-One import, one object, and your IDE autocompletes all methods. The complex logic is encapsulated in one file; everywhere else stays clean. This is a common pattern: **one place complex, everywhere else simple**.
+### 3. Code Refactoring: Make the Main Function Read Like English
 
-### 4. Environment-Aware AWS Configuration
-
-Now look at `learn_personal_portfolio_ai/boto_ses.py`:
+Check out the refactored [api/index.py](./api/index.py):
 
 ```python
-from .runtime import runtime
+@app.post("/api/chat")
+async def handle_chat_data(request: Request):
+    # Step 1: Log incoming request
+    request_body_data = await debug_ai_sdk_request(request=request)
 
-if runtime.is_vercel():
-    boto_ses = boto3.Session(
-        region_name="us-east-1",
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-    )
-else:
-    boto_ses = boto3.Session(region_name="us-east-1")
+    # Step 2: Parse request
+    request_body = RequestBody(**request_body_data)
+
+    # Step 3: Check message length (commented out, you'll enable it!)
+    # last_user_message = get_last_user_message_text(request_body)
+    # if last_user_message and len(last_user_message) > config.max_message_length:
+    #     ...
+
+    # Step 4: Initialize chat session
+    chat_session = ChatSession(...)
+
+    # Step 5: Call Bedrock
+    response = chat_session.send_message([])
+
+    # Step 6: Return streaming response
+    return StreamingResponse(ai_sdk_message_generator(output_text=output_text), ...)
 ```
 
-**What's happening here?**
+**This is what good code looks like:** Reading the main function is like reading English. Step 1, Step 2, Step 3... each step is crystal clear.
 
-- **On Vercel:** There's no `~/.aws/credentials` file. We must explicitly pass credentials from environment variables.
-- **Locally:** boto3's default credential chain automatically finds your `~/.aws/credentials`. No need to specify anything.
+**Core Ideas:**
 
-This is environment-aware code. Same file, same logic, but it automatically adjusts based on the runtime environment.
+- **Main function only has flow control** — Each step is a function call
+- **Detailed logic lives in separate modules** — For reuse and testing
 
-### 5. Vercel Environments: Production vs Preview
+### 4. The Power of Reuse
 
-Vercel has multiple environments:
+Check out the functions in [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py):
 
-- **Production** — Your main deployment, typically from the `main` branch
-- **Preview** — Deployments from other branches (like `13-Env-Vars-and-Deployment`)
+```python
+# This function is reused twice!
+def ai_sdk_message_generator(output_text: str):
+    """Generate AI SDK v5 format SSE stream"""
+    message_id = str(uuid.uuid4())
+    yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
+    yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
+    yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
+    yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
+    yield "data: [DONE]\n\n"
+```
 
-When you push a branch, Vercel creates a Preview deployment with a unique URL. This is perfect for testing before merging to production.
+This function is used twice in `index.py`:
+1. When returning normal AI responses
+2. When returning "Message too long" errors
 
-Environment variables can be scoped to specific environments. In this lesson, we'll set them to "All Environments" so both Production and Preview can use them.
+If this logic were written twice in `index.py`, when the AI SDK protocol changes, you'd have to update two places. Extracted as a function, you only update one place.
 
-### 6. A Note on IAM Permissions
+**This is the power of reuse: change once, effective everywhere.**
 
-You're probably using an IAM User created in earlier lessons. That's fine for learning. In a real production environment, you should follow the principle of least privilege—only grant the permissions your application actually needs (in our case, just `bedrock:InvokeModel`).
+### 5. Module Responsibility Breakdown
 
-We won't go deep into IAM best practices here, but keep this in mind when building real applications.
+- [api/index.py](./api/index.py) — Main function, only flow control
+- [config.py](./learn_personal_portfolio_ai/config.py) — Configuration management
+- [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) — AI SDK format conversion, debugging, SSE generation
+- [boto_ses.py](./learn_personal_portfolio_ai/boto_ses.py) — AWS client initialization
+- [utils.py](./learn_personal_portfolio_ai/utils.py) — General utility functions
+
+Each module does one thing, and does it well.
 
 ---
 
 ## Exercises
 
-### Exercise 1: Understand the Runtime Detection Code
+### Exercise 1: Read the Refactored Code
 
-**Goal:** Understand how our code detects the runtime environment.
+**Goal:** Understand the code organization.
 
-Read these two files:
-1. `learn_personal_portfolio_ai/runtime.py`
-2. `learn_personal_portfolio_ai/boto_ses.py`
+1. Open [api/index.py](./api/index.py), read through the `handle_chat_data` function
+   - Notice how it reads like English? What does each step do?
+   - Find the commented-out "Check message length" section
 
-Answer these questions:
-- [ ] What value does `os.environ.get("VERCEL")` return on Vercel's servers?
-- [ ] Why does `boto_ses.py` need to explicitly pass credentials on Vercel but not locally?
-- [ ] What's the benefit of the `Runtime` class pattern vs using `os.environ.get()` directly everywhere?
+2. Open [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py), find these two functions:
+   - `get_last_user_message_text()` — Extracts the last user message
+   - `ai_sdk_message_generator()` — Generates SSE stream
 
-### Exercise 2: Configure Environment Variables on Vercel
+3. Think: Why are these functions in `ai_sdk_adapter.py` instead of `index.py`?
 
-**Goal:** Set up AWS credentials in Vercel's dashboard.
+### Exercise 2: Enable Message Length Limit
 
-**Step 1:** Go to your project's Settings in Vercel
+**Goal:** Enable a config feature hands-on, experience the power of reuse.
 
-![Vercel Settings - Environment Variables](./img/13-Env-Vars-and-Deployment/01-env-var-and-deployment.png)
+We added `max_message_length = 1000` in config to limit user message length. The check logic is already written but commented out.
 
-Navigate to **Settings** → **Environment Variables**. If this is your first time, you'll see an empty list.
+**Your task:**
 
-**Step 2:** Add your AWS credentials
+1. Open [config.py](./learn_personal_portfolio_ai/config.py), find the `max_message_length` field
 
-Click "Add Environment Variable" and add two variables:
+2. Open [api/index.py](./api/index.py), find this commented code:
+   ```python
+   # --- Check message length ---
+   # Uncomment below to enable max message length check
+   # last_user_message = get_last_user_message_text(request_body)
+   # if last_user_message and len(last_user_message) > config.max_message_length:
+   #     error_msg = f"Message too long..."
+   #     response = StreamingResponse(
+   #         ai_sdk_message_generator(output_text=error_msg),  # Reuse!
+   #         ...
+   #     )
+   #     return response
+   ```
 
-![Adding environment variables](./img/13-Env-Vars-and-Deployment/02-env-var-and-deployment.png)
+3. Uncomment that code
 
-- `AWS_ACCESS_KEY_ID` — Your IAM user's access key
-- `AWS_SECRET_ACCESS_KEY` — Your IAM user's secret key
+4. Start the dev server and test:
+   ```bash
+   mise run dev
+   ```
+   - Send a normal message → Should work normally
+   - Send a message over 1000 characters → Should return "Message too long" error
 
-Set the scope to "All Environments" so both Production and Preview can access them.
+**Notice:** The error response uses `ai_sdk_message_generator()` — the same function as normal responses! That's reuse.
 
-**Step 3:** Save and note the redeploy message
+### Exercise 3: Run Tests
 
-![Environment variables added](./img/13-Env-Vars-and-Deployment/03-env-var-and-deployment.png)
+```bash
+mise run test-python
+```
 
-After saving, you'll see the variable list. Notice the message in the bottom right: **"A new deployment is needed for changes to take effect."**
-
-> **Why redeploy?** Environment variables are injected when a deployment starts. If you only changed environment variables (no code changes), Vercel won't automatically redeploy. You need to click "Redeploy" or push a new commit to pick up the new values.
-
-### Exercise 3: Deploy and Verify
-
-**Goal:** Confirm your AI chat works on Vercel.
-
-1. Push your code to GitHub (if you haven't already)
-2. Vercel will automatically create a Preview deployment for your branch
-3. Wait for the deployment to complete
-4. Open the Preview URL (something like `your-project-git-branch-name.vercel.app`)
-5. Test the chat—send a message and verify you receive a real AI response
-
-**What to submit:**
-
-Take a screenshot of your chat working on the Preview deployment. The screenshot should include:
-- The chat interface showing a real AI response (not "Hello Alice")
-- The browser URL bar showing your Vercel Preview domain
-
-This proves your deployment is working with cloud credentials.
+The test code is in [tests_python/test_config.py](./tests_python/test_config.py). It verifies that `Config.new()` can successfully create an instance.
 
 ---
 
 ## Reflection
 
-What we learned today looks simple: set a few environment variables, deploy, done.
+In this lesson, we did two things:
 
-But the underlying concept is foundational to professional software development:
+1. **Config Management** — Centralized configuration values in one place
+2. **Code Refactoring** — Extracted reusable logic into separate modules
 
-**Your code should never assume where it's running.** Local machine, staging server, production cloud—the same code should work everywhere. Environment variables are the bridge that makes this possible.
+These changes seem small, but they make the code **ready to scale**:
 
-The pattern we used—detect the environment, then adjust behavior—appears everywhere in real-world applications:
-- Different database connections for dev/staging/prod
-- Different log levels for different environments
-- Different API endpoints for testing vs production
+- Need a new config? Edit `config.py`, one file
+- AI SDK protocol changes? Edit `ai_sdk_adapter.py`, one file
+- New teammate needs to understand the code? Read the `index.py` main function, that's enough
 
-Master this pattern, and you can deploy your code anywhere.
+When your project grows from 3 files to 30, from 1 developer to 10, you'll thank yourself for doing these "seemingly unnecessary" things today.
 
 ---
 
@@ -236,38 +246,46 @@ Master this pattern, and you can deploy your code anywhere.
 
 **Why this exercise matters:**
 
-Today's lesson might feel like "just configuration." But understanding environment variables is a rite of passage for developers. From this moment on, you stop thinking "my code on my machine" and start thinking "my code running anywhere."
+Today's changes seem small, but I want you to understand two design philosophies:
 
-Every professional codebase uses environment variables. Every CI/CD pipeline injects them. Every cloud platform manages them. This isn't just a Vercel thing—this is how software works.
+**1. Single Source of Truth**
 
-**The deeper lesson:**
+A value is defined in only one place. Everywhere else is a reference.
 
-Notice how we organized the code. The `runtime.py` file contains all the complex environment detection logic. The `boto_ses.py` file uses it with a simple `if runtime.is_vercel()`. This is intentional design.
+**2. Main Function Reads Like English**
 
-When building software, always ask: "Where should this complexity live?" The answer is usually: "In one place, so everywhere else stays simple."
+Good code, the main function should let people understand the flow at a glance:
+- Step 1: Parse request
+- Step 2: Check length
+- Step 3: Call AI
+- Step 4: Return response
 
-One file handles the messy environment detection logic. Every other file just asks `runtime.is_vercel()` and gets a clean boolean answer. This is how you keep large codebases maintainable.
+How exactly to "parse request"? How to "call AI"? Those details go in separate modules. The main function only "directs," it doesn't "do the work."
+
+**Judging Code Quality:**
+
+> "If requirements change, how many files do I need to modify?"
+
+If the answer is "one," your design is good.
 
 ---
 
 ## Quick Reference
 
 **Key files:**
-- `learn_personal_portfolio_ai/runtime.py` — Runtime environment detection
-- `learn_personal_portfolio_ai/boto_ses.py` — Environment-aware AWS configuration
+- [config.py](./learn_personal_portfolio_ai/config.py) — Configuration management
+- [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) — AI SDK adapter
+- [api/index.py](./api/index.py) — Main function entry point
 
-**Check if running on Vercel:**
+**Using Config:**
 ```python
-from learn_personal_portfolio_ai.runtime import runtime
+from learn_personal_portfolio_ai.config import config
 
-if runtime.is_vercel():
-    # cloud-specific code
+region = config.aws_region
+max_len = config.max_message_length
 ```
 
-**Vercel documentation:**
-- [Environment Variables](https://vercel.com/docs/environment-variables)
-- [System Environment Variables](https://vercel.com/docs/environment-variables/system-environment-variables)
-
-**Required environment variables on Vercel:**
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
+**Run tests:**
+```bash
+mise run test-python
+```

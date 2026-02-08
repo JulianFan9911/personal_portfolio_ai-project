@@ -85,3 +85,9 @@ GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起�
 13 个 branch，技术债为零，App 终于活在云端。第一个里程碑，不是终点，而是起跑线。
 
 📄 [13-The-First-Milestone-From-Zero-to-Live-CN.md](13-The-First-Milestone-From-Zero-to-Live-CN.md)
+
+## 14 - The Art of Going Back
+
+AI 能写出能跑的代码，但回头整理才能让你真正 handle 它。起跑之前，先把鞋带系好。
+
+📄 [14-The-Art-of-Going-Back-CN.md](14-The-Art-of-Going-Back-CN.md)

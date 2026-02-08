@@ -1,142 +1,144 @@
-# Teaching Guide: Environment Variables and Deployment
+# Teaching Guide: Config Management and Code Refactoring
 
 ## Learning Outcomes
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand that environment variables are the standard way to pass configuration across different runtime environments, and that the same code can detect and adapt to where it's running
-2. **Skill outcome** - Configure environment variables on Vercel and deploy an AI-powered application that works in the cloud
-3. **Mindset outcome** - Start thinking "my code runs anywhere" instead of "my code on my machine"
+1. **Cognitive outcome** - Understand Single Source of Truth: why configuration values should be defined in one place, and why main functions should read like English with logic extracted into reusable modules
+2. **Skill outcome** - Enable a feature by uncommenting config-driven code, demonstrating understanding of how config values flow through the codebase
+3. **Mindset outcome** - Start thinking "ready to scale" instead of "it works" — the habit of refactoring after features are complete
 
 ## Concept Sequence
 
 Teach concepts in this order:
 
-### Phase 1: The Problem (5 minutes)
+### Phase 1: The "Why Refactor?" Motivation (5 minutes)
 
-1. **Local vs Cloud Runtime** - Your laptop has `~/.aws/credentials`, Vercel doesn't
-2. **The Core Challenge** - Same code must work in completely different environments
-3. **Why This Matters** - Without solving this, your app only works on your machine
+1. **Feature is Done, But...** - The app works on Vercel. Why do more work?
+2. **Amateur vs Professional** - Amateur: "it works." Professional: "ready to scale"
+3. **The Pain of Scattered Config** - Imagine changing `us-east-1` to `ap-northeast-1` across 5 files
 
-This phase establishes the "aha moment" - the realization that deployment isn't just uploading code.
+This phase establishes the "aha moment" - refactoring isn't extra work, it's professional practice.
 
-### Phase 2: The Solution (10 minutes)
+### Phase 2: Single Source of Truth (10 minutes)
 
-4. **Environment Variables Concept** - Key-value pairs outside your code
-5. **Three Key Insights** - Same key/different values, keys may not exist, values injected at runtime
-6. **The VERCEL Variable** - How to detect where code is running
-7. **Official Documentation** - Point students to Vercel docs for deeper understanding
+4. **The Core Principle** - A value should be defined in only one place
+5. **The Judgment Rule** - If changing a value requires editing multiple files, abstract it to config
+6. **Config Pattern** - dataclass + factory method + singleton
+7. **Using Config** - One import, one object: `config.aws_region`
 
-Focus on the mental model, not memorizing APIs.
+Focus on the design philosophy, not memorizing the pattern.
 
-### Phase 3: Code Walkthrough (10 minutes)
+### Phase 3: Main Function Reads Like English (10 minutes)
 
-8. **runtime.py Design** - Why wrap environment detection in a class
-9. **The "One Place Complex" Pattern** - Encapsulate complexity, expose simplicity
-10. **boto_ses.py Logic** - if/else based on runtime, different credential sources
-11. **Why This Design Matters** - Maintainability at scale
+8. **The Goal** - Reading `index.py` should tell you the flow: Step 1, Step 2, Step 3...
+9. **Flow Control Only** - Main function only "directs," doesn't "do the work"
+10. **Extract to Modules** - Detailed logic lives in separate modules
+11. **The Power of Reuse** - `ai_sdk_message_generator()` used for both normal and error responses
 
-Students should understand the design philosophy, not just copy the code.
+Students should understand why clean main functions matter for maintainability.
 
 ### Phase 4: Hands-on (15-20 minutes)
 
-12. **Read the Code** - Understand runtime.py and boto_ses.py
-13. **Configure Vercel** - Add AWS credentials as environment variables
-14. **The Redeploy Requirement** - Why changing env vars requires redeployment
-15. **Deploy and Test** - Verify chat works on Preview URL
+12. **Read the Code** - Understand index.py flow and ai_sdk_adapter.py functions
+13. **Enable Message Length Check** - Find config field, uncomment code, test
+14. **Notice the Reuse** - Error response uses same generator as normal response
+15. **Run Tests** - Verify config works
 
 ### Phase 5: Wrap-up (5 minutes)
 
-16. **The Universal Pattern** - Detect environment, adapt behavior
-17. **Real-World Applications** - Database connections, log levels, API endpoints
-18. **The Developer Milestone** - Thinking globally about where code runs
+16. **Two Design Philosophies** - Single Source of Truth + Main Function Reads Like English
+17. **The Quality Question** - "If requirements change, how many files do I modify?"
+18. **Ready to Scale** - When 3 files become 30, you'll thank yourself
 
 ## Common Struggles
 
-**Struggle:** Student doesn't understand why local credentials don't work on Vercel
-- **Signs:** "But it works on my machine!"
-- **Intervention:** Ask: "Where is your `~/.aws/credentials` file? Does Vercel's server have access to your laptop's files?" Make the physical separation concrete.
+**Struggle:** Student doesn't understand why we refactor working code
+- **Signs:** "But it already works!"
+- **Intervention:** Ask: "If your boss says change the region, how many files do you touch?" or "If a new teammate joins, how do they understand the flow?"
 
-**Struggle:** Student forgets to redeploy after adding environment variables
-- **Signs:** Deployment shows old behavior, credentials seem ignored
-- **Intervention:** "Environment variables are injected when deployment starts. You added them after the last deployment. What needs to happen?" Point to the toast message in screenshot 03.
+**Struggle:** Student doesn't see the benefit of extracting functions to modules
+- **Signs:** "Why not just write it inline?"
+- **Intervention:** Point to `ai_sdk_message_generator()`: "This is used twice — for normal responses and error responses. If it were inline, you'd write it twice. If the protocol changes, you'd update it twice. Which is better?"
 
-**Struggle:** Student doesn't understand why we use a Runtime class
-- **Signs:** "Why not just use os.environ.get() directly?"
-- **Intervention:** Ask them to imagine writing `os.environ.get("VERCEL", "NOTHING") == "1"` in 10 different files. Then ask: "What if Vercel changes this to `VERCEL=true`? How many files do you change?" The class centralizes the logic.
+**Struggle:** Student finds the config pattern over-engineered
+- **Signs:** "This is just a few values, why a whole class?"
+- **Intervention:** "Right now it's 3 values. In 6 months it might be 15. The pattern scales. And factory methods let different environments have different values without if/else everywhere."
 
-**Struggle:** Student copies code without understanding
-- **Signs:** Can deploy but can't explain what runtime.is_vercel() does
-- **Intervention:** Ask: "What happens inside is_vercel()? What environment variable does it check? What value does it look for?" If they can't answer, have them re-read the code.
+**Struggle:** Student can't find the commented code
+- **Signs:** Takes too long searching
+- **Intervention:** "Search for 'Uncomment' in index.py"
 
-**Struggle:** Student sets environment variables for wrong environment
-- **Signs:** Works in Production but not Preview, or vice versa
-- **Intervention:** Check the environment scope in Vercel dashboard. Should be "All Environments" for this lesson.
+**Struggle:** Student doesn't notice the reuse of ai_sdk_message_generator
+- **Signs:** Completes the task but misses the teaching point
+- **Intervention:** "Look at the error response code you just uncommented. What function does it use? Now look at the normal response at the bottom. Same function, right?"
 
 ## Teaching Tips
 
-- **Start with the "why"** - Don't jump into Vercel configuration. First establish why environment variables exist at all.
+- **Start with the pain** - Don't jump into config patterns. First make them feel the pain of scattered configuration.
 
-- **Use the "two computers" analogy** - Your laptop is one computer, Vercel's server is another. They don't share files. Environment variables are how you tell each computer its own secrets.
+- **Use the "6 months from now" frame** - "Imagine in 6 months, 10 files have region hardcoded. Someone needs to change it. How do they know which files?"
 
-- **The screenshot sequence matters** - Show screenshot 04 first (working result), then 01-03 (how to get there). End with success, not process.
+- **Walk through index.py like reading** - Literally read it aloud: "First, we log the request. Then, we parse it. Then, we check the length..." This demonstrates the "reads like English" principle.
 
-- **Don't over-explain IAM** - This lesson is about environment variables, not AWS permissions. Mention least privilege briefly, move on.
+- **Highlight the reuse moment** - When they uncomment the message length check, pause: "See that `ai_sdk_message_generator`? Same function as the normal response. That's reuse."
 
-- **Let them discover the redeploy requirement** - If a student's deployment doesn't work after adding env vars, ask "What does the message in the bottom right say?" before telling them to redeploy.
+- **Connect to professional practice** - "Every production codebase I've worked on has a config module. This is industry standard."
 
-- **Connect to professional practice** - "Every production system you'll ever work on uses environment variables. This is industry standard."
+- **The quality question** - Ask repeatedly: "If requirements change, how many files?" This becomes a mental habit.
 
 ## Assessment Ideas
 
-- **Quick concept check:** "What's the difference between hardcoding a secret and using an environment variable?"
-  - Good answer: "Hardcoding puts the secret in code (bad for security, same everywhere). Environment variables keep secrets outside code and can be different per environment."
+- **Quick concept check:** "What is Single Source of Truth?"
+  - Good answer: "A value is defined in one place. Everywhere else references it."
 
-- **Code understanding:** "What does `runtime.is_vercel()` return, and how does it know?"
-  - Good answer: "Returns True or False. Checks if the VERCEL environment variable equals '1'. Vercel sets this automatically on their servers."
+- **Code organization understanding:** "Why is the main function in index.py so short?"
+  - Good answer: "It only has flow control. Each step is a function call. Details are in separate modules."
 
-- **Design understanding:** "Why do we use a Runtime class instead of checking os.environ everywhere?"
-  - Good answer: "Centralizes the logic in one place. If the detection method changes, we only update one file. Makes other code cleaner."
+- **Reuse understanding:** "Why is ai_sdk_message_generator in a separate module?"
+  - Good answer: "It's used twice — for normal and error responses. If it were inline, we'd duplicate code."
 
-- **Deployment verification:** Student submits screenshot showing:
-  - Working chat with real AI response
-  - Browser URL bar showing Vercel Preview domain (not localhost)
+- **Hands-on verification:** Student can:
+  - Navigate to the uncommented message length check
+  - Demonstrate that long messages return errors
+  - Point out where ai_sdk_message_generator is called twice
 
 ## Pacing Guide
 
-- **Phase 1 (The Problem):** 5 minutes
-  - Establish that local != cloud
-  - Create the "aha" moment
+- **Phase 1 (Motivation):** 5 minutes
+  - Establish why refactoring matters
+  - Create the "pain of scattered config" realization
 
-- **Phase 2 (The Solution):** 10 minutes
-  - Explain environment variables conceptually
-  - Introduce the VERCEL detection variable
-  - Point to official docs
+- **Phase 2 (Single Source of Truth):** 10 minutes
+  - Explain the principle
+  - Walk through config.py
+  - Show how boto_ses.py uses it
 
-- **Phase 3 (Code Walkthrough):** 10 minutes
-  - Walk through runtime.py design
-  - Walk through boto_ses.py logic
-  - Emphasize the "one place complex" pattern
+- **Phase 3 (Main Function Reads Like English):** 10 minutes
+  - Walk through index.py
+  - Point out the function calls
+  - Highlight ai_sdk_message_generator reuse
 
 - **Phase 4 (Hands-on):** 15-20 minutes
   - Exercise 1: Read code (5 min)
-  - Exercise 2: Configure Vercel (5-10 min)
-  - Exercise 3: Deploy and verify (5 min)
+  - Exercise 2: Enable message length check (10 min)
+  - Exercise 3: Run tests (2 min)
 
 - **Phase 5 (Wrap-up):** 5 minutes
-  - Connect to broader patterns
-  - Reinforce the mindset shift
+  - Reinforce the two design philosophies
+  - The quality question
+  - Connect to "ready to scale" mindset
 
 **Total expected time:** 45-50 minutes
 
 ## Key Messages to Reinforce
 
-1. **Environment variables are the standard** - Not a Vercel thing, not an AWS thing. This is how all professional software handles configuration.
+1. **Single Source of Truth** - A value is defined in one place. Everywhere else references it. If you need to change it, you change one file.
 
-2. **Same code, different environments** - Your code should never assume where it's running. It should detect and adapt.
+2. **Main function reads like English** - Good code, you can read the main function and understand the flow. Details are in separate modules.
 
-3. **One place complex, everywhere else simple** - The Runtime class exemplifies good software design. Centralize complexity, expose clean interfaces.
+3. **Extract for reuse** - If you write the same code twice, extract it to a function. Change once, effective everywhere.
 
-4. **Secrets never in code** - Environment variables solve the security problem of keeping secrets out of source control.
+4. **The quality question** - "If requirements change, how many files do I modify?" If the answer is "one," your design is good.
 
-5. **The developer milestone** - Understanding environment variables marks the transition from "my machine" thinking to "deployed software" thinking.
+5. **Ready to scale mindset** - "It works" is the beginning. "Ready to scale" is the end. This is what separates amateurs from professionals.
