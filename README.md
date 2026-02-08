@@ -1,333 +1,234 @@
-# Integrating AI into Your Application: From Scripts to Product
+# Environment Variables: From Local to Cloud
 
-> You've learned to call APIs, you've learned Prompt Caching—now it's time to put that knowledge into a real product.
+> Your app works locally—but how does the cloud know your AWS credentials?
+
+![Deployed chat working on Vercel](./img/13-Env-Vars-and-Deployment/04-env-var-and-deployment.png)
 
 ## Overview
 
-In previous lessons, we've been experimenting with scripts—calling the Bedrock API, observing Prompt Cache behavior. Those scripts helped us understand the principles, but they're not production code.
+In the previous lesson, we integrated AWS Bedrock into our FastAPI backend. It runs perfectly on your laptop. But here's the thing—your laptop has the `~/.aws/credentials` file, Vercel's servers don't.
 
-What does a real product look like? Users type questions in a frontend interface, the backend receives the request, calls the AI, and returns the response to the frontend. There's a lot of "translation" work in between: the data format from the frontend doesn't match what Bedrock expects, multi-turn conversation history needs to be managed, AWS connections need to be configured...
+When you deploy code to the cloud, the runtime environment is completely different. Your local files? Not there. The environment you carefully configured? Also not there.
 
-In this lesson, we'll "assemble" everything we've learned to make the frontend app actually use AWS Bedrock's AI inference capabilities.
+This is where **Environment Variables** come in. They're the standard way to pass configuration—especially secrets—to applications running in different environments.
 
 ## Learning Objectives
 
+You've already got things working locally. Now it's time to make it available to the world. But deploying isn't just clicking a button—you need to understand how code adapts to different runtime environments.
+
 After completing this lesson, you will be able to:
 
-1. **Understand the value of encapsulation** — Know why scattered code should be organized into reusable tools
-2. **Understand the necessity of data transformation** — Recognize that frontend and backend use different data formats, requiring adapters to "translate"
-3. **Complete API integration** — Integrate Bedrock API calls and Prompt Caching into a FastAPI backend
-4. **Experience the "decompose → build tools → assemble" engineering mindset** — This is a universal approach to solving complex problems
+1. **Understand Environment Variables** — Know what they are and why they're the standard way to configure applications across environments
+2. **Deploy to Vercel** — Configure AWS credentials as environment variables and get your AI app running in the cloud
+3. **Write environment-aware code** — Use runtime detection to make your code behave differently in local vs cloud environments
 
 ## Prerequisites
 
-Before you begin, make sure you've completed the previous lessons:
-- "Hello, AI!" lesson: Able to call the AWS Bedrock API
-- "Prompt Caching" lesson: Understand how to use cachePoint
-
-Your AWS credentials should be configured, and project dependencies should be installed (via `mise run inst`).
+- Completed the previous lesson (AI chat endpoint working locally)
+- A Vercel account (free tier is fine)
+- Your project connected to GitHub and linked to Vercel
 
 ---
 
 ## Key Concepts
 
-### 1. From Scripts to Product: The Need for Encapsulation
+### 1. The Problem: Local Runtime vs Cloud Runtime
 
-Remember those scripts we wrote before? They looked something like this:
+When you run code locally, your machine has:
+- Your AWS credentials stored in `~/.aws/credentials`
+- Various environments you've spent time configuring
+- Files and configurations accumulated over time
 
-```python
-# Previous script style
-client = boto3.Session().client("bedrock-runtime")
-response = client.converse(
-    modelId="...",
-    messages=[...],
-    system=[...]
-)
-# Manually parse the response dictionary...
-```
+When your code runs on Vercel, it has:
+- A fresh, empty container
+- No access to your local files whatsoever
+- No idea who you are or which AWS account to use
 
-This code works, but it has several problems:
+This is the core challenge: **the same code needs to run in completely different environments**.
 
-**Problem 1: Repetitive code.** Every API call requires writing the same configuration code.
+### 2. The Solution: Environment Variables
 
-**Problem 2: Hard to maintain.** The API returns nested dictionaries, so accessing data requires writing `response["output"]["message"]["content"][0]["text"]`—ugly and error-prone.
+Environment Variables are key-value pairs that exist outside your code. Think of them as a configuration layer that sits between your application and the runtime environment.
 
-**Problem 3: Lack of reusability.** If you want to call AI from multiple places, you have to copy-paste this code.
+The key insights are:
 
-What's the solution? **Encapsulation.** Wrap common operations into functions or classes to make business code cleaner.
+- **Same key, different values** — `AWS_ACCESS_KEY_ID` can exist both locally and on Vercel, but the values inside can be different
+- **Keys may not exist** — Your local machine might not have a `VERCEL` variable, but Vercel's servers do
+- **Values are injected at runtime** — Your code doesn't hardcode secrets; it reads them from the environment
 
-That's what this lesson is about—we've prepared two "tools" for you, and you need to learn how to use them and integrate them into the API endpoint.
+This is how professional applications handle configuration. Never hardcode secrets. Always read from environment variables.
 
-### 2. Tool One: Data Format Adapter
+For deeper understanding, read the official documentation:
+- [Vercel Environment Variables](https://vercel.com/docs/environment-variables)
+- [System Environment Variables](https://vercel.com/docs/environment-variables/system-environment-variables) — Vercel automatically sets variables like `VERCEL` that your code can use to detect where it's running
 
-Our frontend uses the Vercel AI SDK, which sends data in this format:
+### 3. Detecting the Runtime Environment
 
-```json
-{
-  "messages": [
-    {
-      "role": "user",
-      "parts": [{"type": "text", "text": "Hello"}]
-    }
-  ]
-}
-```
-
-But AWS Bedrock expects this format:
-
-```json
-{
-  "messages": [
-    {
-      "role": "user",
-      "content": [{"text": "Hello"}]
-    }
-  ]
-}
-```
-
-Notice the difference? AI SDK uses `parts`, Bedrock uses `content`. The field names are different, and the structure varies too.
-
-We need a "translator" to do the conversion. That's what `ai_sdk_adapter.py` does:
-
-```
-learn_personal_portfolio_ai/ai_sdk_adapter.py
-```
-
-This module provides a core function `request_body_to_bedrock_converse_messages()` that takes requests from the frontend and outputs a format Bedrock can understand.
-
-It's based on an open-source library `vercel-ai-sdk-mate`, which wraps the JSON data from the frontend into Python classes, allowing us to use `message.role` instead of `message["role"]` to access data—cleaner and less error-prone.
-
-### 3. Tool Two: Multi-turn Conversation Manager
-
-Remember the multi-turn conversations we learned about? Every API call needs to include the complete conversation history.
-
-If managed manually, the code would look like this:
+How does your code know if it's running locally or on Vercel? Check the `VERCEL` environment variable:
 
 ```python
-messages = []
+import os
 
-# Turn 1
-messages.append({"role": "user", "content": [{"text": "Hello"}]})
-response = client.converse(messages=messages, ...)
-messages.append(response["output"]["message"])
-
-# Turn 2
-messages.append({"role": "user", "content": [{"text": "Who are you?"}]})
-response = client.converse(messages=messages, ...)
-messages.append(response["output"]["message"])
-
-# Every turn requires manually maintaining this messages list...
+if os.environ.get("VERCEL") == "1":
+    print("Running on Vercel")
+else:
+    print("Running locally")
 ```
 
-This code is tedious and error-prone. So we encapsulated a `ChatSession` class:
+Vercel automatically sets `VERCEL=1` on their servers. Your local machine doesn't have this variable (unless you set it yourself). This simple check lets your code adjust its behavior based on the environment.
 
-```
-learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py
-```
-
-Using it, the code becomes much cleaner:
+Let's look at how we implemented this in `learn_personal_portfolio_ai/runtime.py`:
 
 ```python
-session = ChatSession(client=client, model_id="...", system=[...])
-response = session.send_message([...])  # Automatically manages conversation history
+class Runtime:
+    @cached_property
+    def name(self) -> str:
+        if os.environ.get("VERCEL", "NOTHING") == "1":
+            return RuntimeEnum.VERCEL.value
+        else:
+            return RuntimeEnum.LOCAL.value
+
+    def is_local(self) -> bool:
+        return self.name == RuntimeEnum.LOCAL.value
+
+    def is_vercel(self) -> bool:
+        return self.name == RuntimeEnum.VERCEL.value
+
+runtime = Runtime()
 ```
 
-This class is based on an open-source library `boto3-dataclass`, which converts the dictionaries returned by boto3 into typed dataclass objects. This means you can access data with `response.output.message.content[0].text`, and your IDE will provide autocomplete and type checking.
-
-### 4. Infrastructure: AWS Connection Configuration
-
-Before calling any AWS service, we need a configured client. This configuration lives in:
-
-```
-learn_personal_portfolio_ai/boto_ses.py
-```
-
-The code is simple:
+**Why this design?** This `Runtime` class might look redundant at first glance—why not just use `os.environ.get()` directly? The answer is: it's more comfortable to use. With this design, anywhere in your codebase you can write:
 
 ```python
-import boto3
+from learn_personal_portfolio_ai.runtime import runtime
 
-boto_ses = boto3.Session(region_name="us-east-1")
-bedrock_runtime_client = boto_ses.client("bedrock-runtime")
+if runtime.is_local():
+    # local-specific logic
 ```
 
-Why put it in a separate file? So we can import the same client instance from multiple places, avoiding repeated connection creation.
+One import, one object, and your IDE autocompletes all methods. The complex logic is encapsulated in one file; everywhere else stays clean. This is a common pattern: **one place complex, everywhere else simple**.
 
-### 5. Dependency Management
+### 4. Environment-Aware AWS Configuration
 
-The open-source libraries we use are declared in `pyproject.toml`:
+Now look at `learn_personal_portfolio_ai/boto_ses.py`:
 
-```toml
-dependencies = [
-    "boto3>=1.42.0,<2.0.0",         # AWS SDK
-    "boto3-dataclass[bedrock-runtime]>=1.40.0,<2.0.0", # Typed responses
-    "vercel-ai-sdk-mate>=5.0.1,<6.0.0", # AI SDK adapter
-    # ...
-]
-```
-
-If you've run `mise run inst` before, these dependencies should already be installed.
-
-### 6. Final Integration: API Endpoint
-
-All tools are ready. The last step is to assemble them into the API endpoint. That's the job of `api/index.py`.
-
-Currently, the code is "hardcoded"—no matter what the user asks, it returns a fixed response. Your task is to modify it to actually call Bedrock.
-
-The code structure is divided into several logical blocks:
-
-**Block 1: Import tools**
 ```python
-from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client
-from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
-from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
+from .runtime import runtime
+
+if runtime.is_vercel():
+    boto_ses = boto3.Session(
+        region_name="us-east-1",
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    )
+else:
+    boto_ses = boto3.Session(region_name="us-east-1")
 ```
 
-**Block 2: Read request data**
-```python
-request_body_data = await request.json()
-request_body = RequestBody(**request_body_data)
-```
+**What's happening here?**
 
-**Block 3: Initialize ChatSession and send message**
-```python
-chat_session = ChatSession(
-    client=bedrock_runtime_client,
-    model_id="us.amazon.nova-micro-v1:0",
-    system=[...],
-)
-# Set up conversation history...
-response = chat_session.send_message([])
-```
+- **On Vercel:** There's no `~/.aws/credentials` file. We must explicitly pass credentials from environment variables.
+- **Locally:** boto3's default credential chain automatically finds your `~/.aws/credentials`. No need to specify anything.
 
-**Block 4: Return AI response to frontend**
-```python
-output_text = response.output.message.content[0].text
-# Return via SSE streaming...
-```
+This is environment-aware code. Same file, same logic, but it automatically adjusts based on the runtime environment.
+
+### 5. Vercel Environments: Production vs Preview
+
+Vercel has multiple environments:
+
+- **Production** — Your main deployment, typically from the `main` branch
+- **Preview** — Deployments from other branches (like `13-Env-Vars-and-Deployment`)
+
+When you push a branch, Vercel creates a Preview deployment with a unique URL. This is perfect for testing before merging to production.
+
+Environment variables can be scoped to specific environments. In this lesson, we'll set them to "All Environments" so both Production and Preview can use them.
+
+### 6. A Note on IAM Permissions
+
+You're probably using an IAM User created in earlier lessons. That's fine for learning. In a real production environment, you should follow the principle of least privilege—only grant the permissions your application actually needs (in our case, just `bedrock:InvokeModel`).
+
+We won't go deep into IAM best practices here, but keep this in mind when building real applications.
 
 ---
 
 ## Exercises
 
-### Exercise 1: Read Existing Code
+### Exercise 1: Understand the Runtime Detection Code
 
-**Goal:** Understand what each tool does.
+**Goal:** Understand how our code detects the runtime environment.
 
-Before modifying any code, spend 10 minutes reading these files:
-
-1. `learn_personal_portfolio_ai/boto_ses.py` — Where is the AWS client created?
-2. `learn_personal_portfolio_ai/ai_sdk_adapter.py` — What's the main conversion function?
-3. `learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py` — What methods does the `ChatSession` class provide?
+Read these two files:
+1. `learn_personal_portfolio_ai/runtime.py`
+2. `learn_personal_portfolio_ai/boto_ses.py`
 
 Answer these questions:
+- [ ] What value does `os.environ.get("VERCEL")` return on Vercel's servers?
+- [ ] Why does `boto_ses.py` need to explicitly pass credentials on Vercel but not locally?
+- [ ] What's the benefit of the `Runtime` class pattern vs using `os.environ.get()` directly everywhere?
 
-- [ ] What type of object is `bedrock_runtime_client`?
-- [ ] What does `request_body_to_bedrock_converse_messages()` take as input and return?
-- [ ] How do you get the AI's response text from the response object returned by `ChatSession.send_message()`?
+### Exercise 2: Configure Environment Variables on Vercel
 
-### Exercise 2: Understand the Current Code's Problems
+**Goal:** Set up AWS credentials in Vercel's dashboard.
 
-**Goal:** Find what needs to be modified in `api/index.py`.
+**Step 1:** Go to your project's Settings in Vercel
 
-Open `api/index.py` and find the `handle_chat_data` function. You'll notice:
+![Vercel Settings - Environment Variables](./img/13-Env-Vars-and-Deployment/01-env-var-and-deployment.png)
 
-1. It doesn't import our tools (no `ChatSession`, no `bedrock_runtime_client`)
-2. It doesn't call the Bedrock API
-3. It returns a hardcoded `"Hello Alice"`
+Navigate to **Settings** → **Environment Variables**. If this is your first time, you'll see an empty list.
 
-```python
-# Current code (hardcoded)
-yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": "Hello Alice"})}\n\n'
-```
+**Step 2:** Add your AWS credentials
 
-Your task is to replace this hardcoded value with a real AI response.
+Click "Add Environment Variable" and add two variables:
 
-### Exercise 3: Complete the Integration
+![Adding environment variables](./img/13-Env-Vars-and-Deployment/02-env-var-and-deployment.png)
 
-**Goal:** Modify `api/index.py` to actually call Bedrock.
+- `AWS_ACCESS_KEY_ID` — Your IAM user's access key
+- `AWS_SECRET_ACCESS_KEY` — Your IAM user's secret key
 
-We've prepared a reference implementation `api/index_example.py` that you can look at for structure. However—
+Set the scope to "All Environments" so both Production and Preview can access them.
 
-> **Warning: No copying allowed!**
->
-> Copying and pasting directly won't help you learn. Understand what each block of code does, then write it yourself.
+**Step 3:** Save and note the redeploy message
 
-Complete in this order:
+![Environment variables added](./img/13-Env-Vars-and-Deployment/03-env-var-and-deployment.png)
 
-**Step 1: Add imports**
+After saving, you'll see the variable list. Notice the message in the bottom right: **"A new deployment is needed for changes to take effect."**
 
-Add the necessary import statements at the top of the file. You need to import:
-- `bedrock_runtime_client` (from `boto_ses` module)
-- `request_body_to_bedrock_converse_messages` (from `ai_sdk_adapter` module)
-- `ChatSession` (from `multi_round_bedrock_runtime_chat_manager` module)
-- `path_enum` (from `paths` module, for getting the system prompt)
+> **Why redeploy?** Environment variables are injected when a deployment starts. If you only changed environment variables (no code changes), Vercel won't automatically redeploy. You need to click "Redeploy" or push a new commit to pick up the new values.
 
-**Step 2: Parse request data**
+### Exercise 3: Deploy and Verify
 
-After reading the JSON, parse the request with the `RequestBody` class:
-```python
-request_body = RequestBody(**request_body_data)
-```
+**Goal:** Confirm your AI chat works on Vercel.
 
-Remember to import `RequestBody` first (from `vercel_ai_sdk_mate.api`).
+1. Push your code to GitHub (if you haven't already)
+2. Vercel will automatically create a Preview deployment for your branch
+3. Wait for the deployment to complete
+4. Open the Preview URL (something like `your-project-git-branch-name.vercel.app`)
+5. Test the chat—send a message and verify you receive a real AI response
 
-**Step 3: Create ChatSession**
+**What to submit:**
 
-Create a `ChatSession` instance, configuring:
-- `client`: Use the imported `bedrock_runtime_client`
-- `model_id`: Use `"us.amazon.nova-micro-v1:0"`
-- `system`: Include system prompt and cachePoint
+Take a screenshot of your chat working on the Preview deployment. The screenshot should include:
+- The chat interface showing a real AI response (not "Hello Alice")
+- The browser URL bar showing your Vercel Preview domain
 
-**Step 4: Set up conversation context**
-
-Set up initial conversation history, including knowledge base content and cachePoint. You can reference the structure in `index_example.py` for this part.
-
-**Step 5: Convert and append frontend messages**
-
-Use `request_body_to_bedrock_converse_messages()` to convert frontend messages to Bedrock format, then append to conversation history.
-
-**Step 6: Send message and get response**
-
-Call `chat_session.send_message([])` to get the AI's response, and extract the text content.
-
-**Step 7: Return real response**
-
-Replace the hardcoded `"Hello Alice"` with the AI's real response `output_text`.
-
-### Exercise 4: Verify Results
-
-**Goal:** Confirm the integration works.
-
-1. Start the development server:
-   ```bash
-   mise run dev
-   ```
-
-2. Open a browser and visit the frontend interface
-
-3. Send a message and observe:
-   - Does the terminal show Bedrock API call logs?
-   - Does the frontend receive a real AI response (not "Hello Alice")?
-
-4. Send a second message to verify multi-turn conversation works
+This proves your deployment is working with cloud credentials.
 
 ---
 
 ## Reflection
 
-Let's review what we learned in this lesson.
+What we learned today looks simple: set a few environment variables, deploy, done.
 
-What we did is actually simple: convert data from the frontend into a format Bedrock understands, call the API, and return the result to the frontend.
+But the underlying concept is foundational to professional software development:
 
-But to make this process clear and maintainable, we did two important things:
+**Your code should never assume where it's running.** Local machine, staging server, production cloud—the same code should work everywhere. Environment variables are the bridge that makes this possible.
 
-**First, we built tools.** `ai_sdk_adapter.py` handles data format conversion, `multi_round_bedrock_runtime_chat_manager.py` manages conversation state. These two "tools" encapsulate complex logic, making the API endpoint code clean.
+The pattern we used—detect the environment, then adjust behavior—appears everywhere in real-world applications:
+- Different database connections for dev/staging/prod
+- Different log levels for different environments
+- Different API endpoints for testing vs production
 
-**Second, we used open-source libraries.** `vercel-ai-sdk-mate` and `boto3-dataclass` handle many low-level details for us. Standing on the shoulders of giants, we can focus on business logic.
-
-These two points are actually core software engineering thinking: **decompose problems, then find or create appropriate tools for each sub-problem**.
+Master this pattern, and you can deploy your code anywhere.
 
 ---
 
@@ -335,63 +236,38 @@ These two points are actually core software engineering thinking: **decompose pr
 
 **Why this exercise matters:**
 
-If you think back carefully, you'll realize we've been preparing for today throughout the previous lessons.
+Today's lesson might feel like "just configuration." But understanding environment variables is a rite of passage for developers. From this moment on, you stop thinking "my code on my machine" and start thinking "my code running anywhere."
 
-- Lesson one, we learned to call the Bedrock API—the "atomic operation"
-- Lesson two, we learned Prompt Caching—the "optimization technique"
-- This lesson, we assembled them into a real usable product
+Every professional codebase uses environment variables. Every CI/CD pipeline injects them. Every cloud platform manages them. This isn't just a Vercel thing—this is how software works.
 
-This is how engineers solve complex problems: **decompose into small problems, tackle each one, then assemble**.
+**The deeper lesson:**
 
-Many beginners make this mistake: faced with a complex task, they try to write all the code in one go. The result is long, messy code, and when something goes wrong, they don't know where to look.
+Notice how we organized the code. The `runtime.py` file contains all the complex environment detection logic. The `boto_ses.py` file uses it with a simple `if runtime.is_vercel()`. This is intentional design.
 
-The correct approach is:
+When building software, always ask: "Where should this complexity live?" The answer is usually: "In one place, so everywhere else stays simple."
 
-1. **Analyze the problem** — What sub-problems does this task involve?
-2. **Solve each one** — Can each sub-problem be solved with existing tools? Do we need to build our own?
-3. **Verify each step** — Before assembling, ensure each tool works independently
-4. **Assemble and integrate** — Combine the tools to implement complete functionality
-
-The two "tools" in this lesson—the adapter and session manager—are products of this thinking. They're not advanced technology, but they embody engineering thinking: **make complex things simple, make repetitive things one-time**.
-
-**Advice for students:**
-
-When facing a complex task, don't rush to write code. First ask yourself:
-
-- What steps can this task be divided into?
-- What input does each step need, and what output does it produce?
-- Are there existing tools we can use?
-- Which logic will be reused and is worth encapsulating into a tool?
-
-Learning this way of thinking is more important than learning any specific API. Because APIs change, but the ability to decompose problems is eternal.
+One file handles the messy environment detection logic. Every other file just asks `runtime.is_vercel()` and gets a clean boolean answer. This is how you keep large codebases maintainable.
 
 ---
 
 ## Quick Reference
 
-**Start development server:**
-```bash
-mise run dev
-```
-
 **Key files:**
-- `api/index.py` — The API endpoint to modify
-- `api/index_example.py` — Reference implementation (don't copy!)
-- `learn_personal_portfolio_ai/ai_sdk_adapter.py` — Data format adapter
-- `learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py` — Conversation manager
-- `learn_personal_portfolio_ai/boto_ses.py` — AWS client configuration
+- `learn_personal_portfolio_ai/runtime.py` — Runtime environment detection
+- `learn_personal_portfolio_ai/boto_ses.py` — Environment-aware AWS configuration
 
-**Core imports:**
+**Check if running on Vercel:**
 ```python
-from vercel_ai_sdk_mate.api import RequestBody
-from learn_personal_portfolio_ai.paths import path_enum
-from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client
-from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
-from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
+from learn_personal_portfolio_ai.runtime import runtime
+
+if runtime.is_vercel():
+    # cloud-specific code
 ```
 
-**Get AI response text:**
-```python
-response = chat_session.send_message([])
-output_text = response.output.message.content[0].text
-```
+**Vercel documentation:**
+- [Environment Variables](https://vercel.com/docs/environment-variables)
+- [System Environment Variables](https://vercel.com/docs/environment-variables/system-environment-variables)
+
+**Required environment variables on Vercel:**
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`

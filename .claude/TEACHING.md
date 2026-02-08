@@ -1,12 +1,12 @@
-# Teaching Guide: Integrating AI into Your Application
+# Teaching Guide: Environment Variables and Deployment
 
 ## Learning Outcomes
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand why encapsulation matters (cleaner code, reusability, maintainability) and how data format transformation works between frontend and backend
-2. **Skill outcome** - Integrate pre-built tools into a FastAPI endpoint to connect frontend chat UI with AWS Bedrock
-3. **Mindset outcome** - Develop the "decompose → build tools → assemble" engineering mindset for solving complex problems
+1. **Cognitive outcome** - Understand that environment variables are the standard way to pass configuration across different runtime environments, and that the same code can detect and adapt to where it's running
+2. **Skill outcome** - Configure environment variables on Vercel and deploy an AI-powered application that works in the cloud
+3. **Mindset outcome** - Start thinking "my code runs anywhere" instead of "my code on my machine"
 
 ## Concept Sequence
 
@@ -14,152 +14,129 @@ Teach concepts in this order:
 
 ### Phase 1: The Problem (5 minutes)
 
-1. **Scripts vs Production Code** - Scripts we wrote before are for understanding, not for products
-2. **The Translation Challenge** - Frontend (Vercel AI SDK) and backend (Bedrock) speak different "languages"
-3. **What's Missing** - Current `index.py` is hardcoded, doesn't call real AI
+1. **Local vs Cloud Runtime** - Your laptop has `~/.aws/credentials`, Vercel doesn't
+2. **The Core Challenge** - Same code must work in completely different environments
+3. **Why This Matters** - Without solving this, your app only works on your machine
 
-This phase establishes why we need more than just knowing how to call an API.
+This phase establishes the "aha moment" - the realization that deployment isn't just uploading code.
 
-### Phase 2: The Tools We Built (15 minutes)
+### Phase 2: The Solution (10 minutes)
 
-4. **Tool 1: Data Format Adapter** - `ai_sdk_adapter.py` translates AI SDK format to Bedrock format
-5. **Tool 2: Chat Session Manager** - `multi_round_bedrock_runtime_chat_manager.py` manages conversation history
-6. **Infrastructure: AWS Client** - `boto_ses.py` provides the pre-configured Bedrock client
-7. **Open Source Dependencies** - `vercel-ai-sdk-mate` and `boto3-dataclass` handle low-level details
+4. **Environment Variables Concept** - Key-value pairs outside your code
+5. **Three Key Insights** - Same key/different values, keys may not exist, values injected at runtime
+6. **The VERCEL Variable** - How to detect where code is running
+7. **Official Documentation** - Point students to Vercel docs for deeper understanding
 
-Focus on WHAT each tool does, not HOW it's implemented. Students should understand the purpose, not memorize the code.
+Focus on the mental model, not memorizing APIs.
 
-### Phase 3: The Integration (10 minutes)
+### Phase 3: Code Walkthrough (10 minutes)
 
-8. **Four Logical Blocks** - Import, parse request, call Bedrock, return response
-9. **Where to Look** - `index.py` (to modify) vs `index_example.py` (reference only)
-10. **The No-Copy Rule** - Understanding > copying. Reference is for structure, not for copy-paste
+8. **runtime.py Design** - Why wrap environment detection in a class
+9. **The "One Place Complex" Pattern** - Encapsulate complexity, expose simplicity
+10. **boto_ses.py Logic** - if/else based on runtime, different credential sources
+11. **Why This Design Matters** - Maintainability at scale
 
-### Phase 4: Hands-on Exercise (20-30 minutes)
+Students should understand the design philosophy, not just copy the code.
 
-11. **Exercise 1: Read the Tools** - Spend 10 minutes understanding what each file does
-12. **Exercise 2: Identify the Problem** - Find the hardcoded "Hello Alice" in `index.py`
-13. **Exercise 3: Complete the Integration** - Follow the 7-step guide to implement
-14. **Exercise 4: Verify** - Run `mise run dev` and test with the frontend
+### Phase 4: Hands-on (15-20 minutes)
 
-### Phase 5: Reflection (5 minutes)
+12. **Read the Code** - Understand runtime.py and boto_ses.py
+13. **Configure Vercel** - Add AWS credentials as environment variables
+14. **The Redeploy Requirement** - Why changing env vars requires redeployment
+15. **Deploy and Test** - Verify chat works on Preview URL
 
-15. **The Engineering Pattern** - Decompose → Build tools → Assemble
-16. **Connection to Previous Lessons** - Lesson 1 (API) + Lesson 2 (Caching) = Today's Product
-17. **Transferable Skills** - This decomposition approach works for any complex problem
+### Phase 5: Wrap-up (5 minutes)
+
+16. **The Universal Pattern** - Detect environment, adapt behavior
+17. **Real-World Applications** - Database connections, log levels, API endpoints
+18. **The Developer Milestone** - Thinking globally about where code runs
 
 ## Common Struggles
 
-**Struggle:** Student copies code directly from `index_example.py`
-- **Signs:** Code works but student can't explain what each part does
-- **Intervention:** Ask: "What does `request_body_to_bedrock_converse_messages` do? Why do we need it?" If they can't answer, have them re-read the tools and explain in their own words before continuing.
+**Struggle:** Student doesn't understand why local credentials don't work on Vercel
+- **Signs:** "But it works on my machine!"
+- **Intervention:** Ask: "Where is your `~/.aws/credentials` file? Does Vercel's server have access to your laptop's files?" Make the physical separation concrete.
 
-**Struggle:** Student doesn't understand the data format difference
-- **Signs:** Confusion about why we need the adapter
-- **Intervention:** Show the two JSON formats side by side. "See how AI SDK uses `parts` but Bedrock uses `content`? That's why we need a translator."
+**Struggle:** Student forgets to redeploy after adding environment variables
+- **Signs:** Deployment shows old behavior, credentials seem ignored
+- **Intervention:** "Environment variables are injected when deployment starts. You added them after the last deployment. What needs to happen?" Point to the toast message in screenshot 03.
 
-**Struggle:** Import errors or module not found
-- **Signs:** `ModuleNotFoundError` when running
-- **Intervention:** Check if `mise run inst` was run. Check if imports are from correct paths (`learn_personal_portfolio_ai.xxx`).
+**Struggle:** Student doesn't understand why we use a Runtime class
+- **Signs:** "Why not just use os.environ.get() directly?"
+- **Intervention:** Ask them to imagine writing `os.environ.get("VERCEL", "NOTHING") == "1"` in 10 different files. Then ask: "What if Vercel changes this to `VERCEL=true`? How many files do you change?" The class centralizes the logic.
 
-**Struggle:** Student doesn't know where to add code
-- **Signs:** Adds code in wrong place, or doesn't know where to start
-- **Intervention:** Walk through the existing `index.py` structure: "See this debug section? After that is where you add the Bedrock logic. Before the SSE generator."
+**Struggle:** Student copies code without understanding
+- **Signs:** Can deploy but can't explain what runtime.is_vercel() does
+- **Intervention:** Ask: "What happens inside is_vercel()? What environment variable does it check? What value does it look for?" If they can't answer, have them re-read the code.
 
-**Struggle:** Hardcoded "Hello Alice" still appears
-- **Signs:** Forgot to replace the delta value in the generator
-- **Intervention:** "Look at line with `text-delta`. What's the `delta` value? It should be `output_text`, not `"Hello Alice"`."
-
-**Struggle:** Multi-turn conversation doesn't work
-- **Signs:** AI doesn't remember previous messages
-- **Intervention:** Check if `chat_session._messages.extend(messages)` is called. The converted frontend messages must be appended to the session history.
+**Struggle:** Student sets environment variables for wrong environment
+- **Signs:** Works in Production but not Preview, or vice versa
+- **Intervention:** Check the environment scope in Vercel dashboard. Should be "All Environments" for this lesson.
 
 ## Teaching Tips
 
-- **Don't let them copy first** - Have students read and explain each tool before writing any code. Understanding must come before implementation.
+- **Start with the "why"** - Don't jump into Vercel configuration. First establish why environment variables exist at all.
 
-- **Use the "translator" analogy** - The adapter is like a human translator between two people speaking different languages. Makes the concept intuitive.
+- **Use the "two computers" analogy** - Your laptop is one computer, Vercel's server is another. They don't share files. Environment variables are how you tell each computer its own secrets.
 
-- **Connect to previous lessons explicitly** - "Remember when we called `client.converse()` directly? That's wrapped in `ChatSession` now." This reinforces learning continuity.
+- **The screenshot sequence matters** - Show screenshot 04 first (working result), then 01-03 (how to get there). End with success, not process.
 
-- **Let them struggle a bit** - If they get stuck, don't immediately give the answer. Ask guiding questions: "What data does the frontend send? What does Bedrock need?"
+- **Don't over-explain IAM** - This lesson is about environment variables, not AWS permissions. Mention least privilege briefly, move on.
 
-- **Verify understanding, not just working code** - A student who copied working code but can't explain it hasn't learned. Ask questions like "Why do we cache the knowledge base?"
+- **Let them discover the redeploy requirement** - If a student's deployment doesn't work after adding env vars, ask "What does the message in the bottom right say?" before telling them to redeploy.
 
-- **Reference implementation is a safety net, not a cheat sheet** - Tell students: "If you're completely stuck for 10+ minutes, peek at `index_example.py` for structure hints. But don't copy. Close it and write yourself."
+- **Connect to professional practice** - "Every production system you'll ever work on uses environment variables. This is industry standard."
 
 ## Assessment Ideas
 
-- **Quick concept check:** "What are the two tools we built, and what does each one do?"
-  - Good answer: "The adapter converts AI SDK format to Bedrock format. The ChatSession manages conversation history automatically."
+- **Quick concept check:** "What's the difference between hardcoding a secret and using an environment variable?"
+  - Good answer: "Hardcoding puts the secret in code (bad for security, same everywhere). Environment variables keep secrets outside code and can be different per environment."
 
-- **Data flow understanding:** "Trace the journey of a user message from frontend to AI response."
-  - Good answer: "Frontend sends AI SDK format → adapter converts to Bedrock format → ChatSession adds to history → Bedrock API called → response extracted → SSE streams back to frontend"
+- **Code understanding:** "What does `runtime.is_vercel()` return, and how does it know?"
+  - Good answer: "Returns True or False. Checks if the VERCEL environment variable equals '1'. Vercel sets this automatically on their servers."
 
-- **Engineering mindset:** "Why did we create these two tools instead of writing everything in `index.py`?"
-  - Good answer: "Encapsulation makes code cleaner and reusable. We can use these tools in other projects. Changes to format conversion don't affect the main API logic."
+- **Design understanding:** "Why do we use a Runtime class instead of checking os.environ everywhere?"
+  - Good answer: "Centralizes the logic in one place. If the detection method changes, we only update one file. Makes other code cleaner."
 
-- **Connection to previous lessons:** "How does this lesson use what we learned about Prompt Caching?"
-  - Good answer: "We use cachePoint in the system prompt and knowledge base to reduce costs on repeated calls."
+- **Deployment verification:** Student submits screenshot showing:
+  - Working chat with real AI response
+  - Browser URL bar showing Vercel Preview domain (not localhost)
 
 ## Pacing Guide
 
 - **Phase 1 (The Problem):** 5 minutes
-  - Explain why scripts aren't production code
-  - Show the hardcoded "Hello Alice" problem
+  - Establish that local != cloud
+  - Create the "aha" moment
 
-- **Phase 2 (The Tools):** 15 minutes
-  - Walk through each tool's purpose (not implementation)
-  - Emphasize open-source dependencies
+- **Phase 2 (The Solution):** 10 minutes
+  - Explain environment variables conceptually
+  - Introduce the VERCEL detection variable
+  - Point to official docs
 
-- **Phase 3 (The Integration):** 10 minutes
-  - Explain the 4 logical blocks
-  - Set expectations for the no-copy rule
+- **Phase 3 (Code Walkthrough):** 10 minutes
+  - Walk through runtime.py design
+  - Walk through boto_ses.py logic
+  - Emphasize the "one place complex" pattern
 
-- **Phase 4 (Exercises):** 20-30 minutes
-  - Exercise 1: Code reading (10 min)
-  - Exercise 2: Problem identification (2 min)
-  - Exercise 3: Implementation (15-20 min)
-  - Exercise 4: Verification (3 min)
+- **Phase 4 (Hands-on):** 15-20 minutes
+  - Exercise 1: Read code (5 min)
+  - Exercise 2: Configure Vercel (5-10 min)
+  - Exercise 3: Deploy and verify (5 min)
 
-- **Phase 5 (Reflection):** 5 minutes
-  - Connect to engineering principles
-  - Highlight transferable skills
+- **Phase 5 (Wrap-up):** 5 minutes
+  - Connect to broader patterns
+  - Reinforce the mindset shift
 
-**Total expected time:** 55-65 minutes
+**Total expected time:** 45-50 minutes
 
 ## Key Messages to Reinforce
 
-1. **Decompose → Build tools → Assemble** - This is how engineers solve complex problems. Not by writing everything at once.
+1. **Environment variables are the standard** - Not a Vercel thing, not an AWS thing. This is how all professional software handles configuration.
 
-2. **Encapsulation is not optional** - Production code requires clean, reusable, maintainable structure. Scripts are for learning, not for products.
+2. **Same code, different environments** - Your code should never assume where it's running. It should detect and adapt.
 
-3. **Understanding > Copying** - A working program you don't understand is worthless. Take time to understand each piece.
+3. **One place complex, everywhere else simple** - The Runtime class exemplifies good software design. Centralize complexity, expose clean interfaces.
 
-4. **Stand on giants' shoulders** - Use open-source libraries for low-level details. Focus your energy on business logic.
+4. **Secrets never in code** - Environment variables solve the security problem of keeping secrets out of source control.
 
-5. **Previous lessons were preparation** - Lesson 1 (API) + Lesson 2 (Caching) + Today (Integration) = Complete product. This is intentional learning design.
-
-6. **The pattern transfers** - This decomposition approach isn't just for AI. Use it for any complex engineering problem.
-
-## Checking for Copy-Paste
-
-When grading, compare `api/index.py` with `api/index_example.py`:
-
-**Signs of legitimate work:**
-- Different variable names (not identical to example)
-- Different comment styles or placement
-- Minor structural differences (order of operations, etc.)
-- Ability to explain every line when asked
-
-**Signs of copy-paste:**
-- Identical code blocks, including comments
-- Same variable names throughout
-- Identical whitespace/formatting
-- Cannot explain what a specific function does
-- Immediate confusion when asked to modify one part
-
-**What to do if copy-paste detected:**
-1. Don't accuse directly. Ask questions: "Walk me through this block. What does `request_body_to_bedrock_converse_messages` do?"
-2. If they can't explain, say: "I think you may have relied too heavily on the example. Let's work through this together so you understand it."
-3. Have them delete their code and re-implement while explaining each step out loud.
+5. **The developer milestone** - Understanding environment variables marks the transition from "my machine" thinking to "deployed software" thinking.

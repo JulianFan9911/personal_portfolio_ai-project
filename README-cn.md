@@ -1,397 +1,273 @@
-# 把 AI 接入你的应用：从脚本到产品
+# 环境变量：从本地到云端
 
-> 我们学会了调用 API，学会了 Prompt Caching，现在是时候把这些知识用到真正的产品里了。
+> 你的应用在本地跑得好好的——但云端怎么知道你的 AWS 密钥呢？
+
+![部署成功后的聊天界面](./img/13-Env-Vars-and-Deployment/04-env-var-and-deployment.png)
 
 ## 概述
 
-在前面的课程中，我们一直在用脚本做实验——调用 Bedrock API、观察 Prompt Cache 的效果。那些脚本帮助我们理解原理，但它们不是产品代码。
+上一课，我们把 AWS Bedrock 集成到了 FastAPI 后端。在你的电脑上跑得很顺利。但问题来了——你的电脑上有 `~/.aws/credentials` 这个文件，Vercel 的服务器上可没有。
 
-真正的产品是什么样的？用户在前端界面输入问题，后端接收请求、调用 AI、把回答返回给前端。这中间需要很多"翻译"工作：前端发来的数据格式和 Bedrock 要求的格式不一样，多轮对话的历史记录需要管理，AWS 的连接需要配置……
+当你把代码部署到云端时，代码运行的环境完全不一样了。你本地的文件？云端没有。你精心配置的环境？云端也没有。
 
-这节课，我们要把之前学的东西"组装"起来，让前端 App 真正用上 AWS Bedrock 的 AI 推理能力。
+这时候就需要 **Environment Variables（环境变量）** 了。它是把配置信息——尤其是密钥这类敏感信息——传递给不同运行环境的标准方式。
 
 ## 学习目标
 
+你已经在本地把东西跑通了。现在是时候让全世界都能用上它了。但部署不只是点个按钮那么简单——你需要理解代码是如何适应不同运行环境的。
+
 完成本课后，你将能够：
 
-1. **理解封装的价值** — 知道为什么要把零散的代码组织成可复用的工具
-2. **理解数据转换的必要性** — 明白前端和后端使用不同的数据格式，需要适配器来"翻译"
-3. **完成 API 集成** — 把前面学的 Bedrock API 调用、Prompt Caching 整合到 FastAPI 后端
-4. **体验"分解问题 → 造工具 → 组装"的工程思维** — 这是解决复杂问题的通用方法
+1. **理解 Environment Variables** — 知道它是什么，为什么它是跨环境配置应用的标准方式
+2. **部署到 Vercel** — 把 AWS 密钥配置成环境变量，让你的 AI 应用在云端跑起来
+3. **编写环境感知代码** — 用 runtime detection 让代码在本地和云端表现不同
 
 ## 前置条件
 
-开始之前，请确保你已经完成了前面的课程：
-- "Hello, AI!" 课程：能够调用 AWS Bedrock API
-- "Prompt Caching" 课程：理解 cachePoint 的用法
-
-你的 AWS 凭证应该已经配置好，项目依赖也应该安装完毕（通过 `mise run inst`）。
+- 完成了上一课（AI 聊天端点在本地能跑通）
+- 有一个 Vercel 账号（免费版就够了）
+- 项目已经连接到 GitHub 并关联到 Vercel
 
 ---
 
 ## 核心概念
 
-### 1. 从脚本到产品：封装的必要性
+### 1. 问题：本地 Runtime vs 云端 Runtime
 
-还记得我们之前写的那些脚本吗？它们大概是这样的：
+当你在本地运行代码时，你的电脑上有：
+- `~/.aws/credentials` 文件里存着你的 AWS 密钥
+- 你花时间配置好的各种环境
+- 日积月累装上的各种文件和配置
 
-```python
-# 之前的脚本风格
-client = boto3.Session().client("bedrock-runtime")
-response = client.converse(
-    modelId="...",
-    messages=[...],
-    system=[...]
-)
-# 手动解析 response 字典...
-```
+当你的代码在 Vercel 上运行时，那边有：
+- 一个全新的、空的容器
+- 完全访问不到你本地的文件
+- 根本不知道你是谁，也不知道该用哪个 AWS 账号
 
-这样的代码能跑，但有几个问题：
+这就是核心挑战：**同样的代码，需要在完全不同的环境里跑起来**。
 
-**问题一：重复代码**。每次调用 API 都要写一堆相同的配置代码。
+### 2. 解决方案：Environment Variables
 
-**问题二：难以维护**。API 返回的是嵌套的字典，取数据要写 `response["output"]["message"]["content"][0]["text"]` 这样的代码，既丑陋又容易出错。
+Environment Variables（环境变量）是存在于代码之外的键值对。你可以把它想象成一个配置层，夹在你的应用程序和运行环境之间。
 
-**问题三：缺乏复用**。如果想在多个地方调用 AI，就得复制粘贴这些代码。
+关键的理解是：
 
-解决方案是什么？**封装**。把常用的操作包装成函数或类，让业务代码更清晰。
+- **同样的 key，不同的 value** — `AWS_ACCESS_KEY_ID` 这个变量在本地和 Vercel 上都可以存在，但里面的值可以不一样
+- **key 可能不存在** — 你的本地电脑可能没有 `VERCEL` 这个变量，但 Vercel 的服务器上有
+- **值是在运行时注入的** — 你的代码不会把密钥写死在里面，而是从环境中读取
 
-这就是我们这节课要做的事情——我们已经为你准备好了两个"小工具"，你需要学会使用它们，并把它们集成到 API 端点里。
+这就是专业应用处理配置的方式。永远不要把密钥写死在代码里。永远从环境变量读取。
 
-### 2. 工具一：数据格式适配器
+想深入了解的话，可以读一读官方文档：
+- [Vercel Environment Variables](https://vercel.com/docs/environment-variables)
+- [System Environment Variables](https://vercel.com/docs/environment-variables/system-environment-variables) — Vercel 会自动设置一些变量，比如 `VERCEL`，你的代码可以用它来判断自己是不是在 Vercel 上运行
 
-我们的前端使用 Vercel AI SDK，它发送的数据格式是这样的：
+### 3. 检测运行环境
 
-```json
-{
-  "messages": [
-    {
-      "role": "user",
-      "parts": [{"type": "text", "text": "你好"}]
-    }
-  ]
-}
-```
-
-但 AWS Bedrock 期望的格式是这样的：
-
-```json
-{
-  "messages": [
-    {
-      "role": "user",
-      "content": [{"text": "你好"}]
-    }
-  ]
-}
-```
-
-注意到区别了吗？AI SDK 用 `parts`，Bedrock 用 `content`。字段名不一样，结构也有差异。
-
-我们需要一个"翻译官"来做转换。这就是 `ai_sdk_adapter.py` 的作用：
-
-```
-learn_personal_portfolio_ai/ai_sdk_adapter.py
-```
-
-这个模块提供了一个核心函数 `request_body_to_bedrock_converse_messages()`，它接收前端发来的请求，输出 Bedrock 能理解的格式。
-
-它基于一个开源库 `vercel-ai-sdk-mate`，这个库把前端发来的 JSON 数据封装成了 Python 类，让我们可以用 `message.role` 而不是 `message["role"]` 来访问数据——更清晰，也更不容易出错。
-
-### 3. 工具二：多轮对话管理器
-
-还记得我们之前学过的多轮对话吗？每次调用 API 都要带上完整的对话历史。
-
-如果手动管理，代码会是这样的：
+代码怎么知道自己是在本地运行还是在 Vercel 上运行呢？检查 `VERCEL` 这个环境变量就行了：
 
 ```python
-messages = []
+import os
 
-# 第一轮
-messages.append({"role": "user", "content": [{"text": "你好"}]})
-response = client.converse(messages=messages, ...)
-messages.append(response["output"]["message"])
-
-# 第二轮
-messages.append({"role": "user", "content": [{"text": "你是谁？"}]})
-response = client.converse(messages=messages, ...)
-messages.append(response["output"]["message"])
-
-# 每一轮都要手动维护这个 messages 列表...
+if os.environ.get("VERCEL") == "1":
+    print("正在 Vercel 上运行")
+else:
+    print("正在本地运行")
 ```
 
-这样的代码很繁琐，也容易出错。所以我们封装了一个 `ChatSession` 类：
+Vercel 会在它的服务器上自动设置 `VERCEL=1`。你的本地电脑没有这个变量（除非你自己设置）。这个简单的检查就能让代码根据环境调整行为。
 
-```
-learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py
-```
-
-使用它，代码变得简洁多了：
+来看看我们是怎么在 `learn_personal_portfolio_ai/runtime.py` 里实现的：
 
 ```python
-session = ChatSession(client=client, model_id="...", system=[...])
-response = session.send_message([...])  # 自动管理对话历史
+class Runtime:
+    @cached_property
+    def name(self) -> str:
+        if os.environ.get("VERCEL", "NOTHING") == "1":
+            return RuntimeEnum.VERCEL.value
+        else:
+            return RuntimeEnum.LOCAL.value
+
+    def is_local(self) -> bool:
+        return self.name == RuntimeEnum.LOCAL.value
+
+    def is_vercel(self) -> bool:
+        return self.name == RuntimeEnum.VERCEL.value
+
+runtime = Runtime()
 ```
 
-这个类基于一个开源库 `boto3-dataclass`，它把 boto3 返回的字典转换成类型化的 dataclass 对象。这意味着你可以用 `response.output.message.content[0].text` 来访问数据，而且 IDE 会提供自动补全和类型检查。
-
-### 4. 基础设施：AWS 连接配置
-
-在调用任何 AWS 服务之前，我们需要一个配置好的客户端。这个配置放在：
-
-```
-learn_personal_portfolio_ai/boto_ses.py
-```
-
-代码很简单：
+**为什么要这样设计？** 这个 `Runtime` class 乍一看好像有点多余——为什么不直接用 `os.environ.get()` 呢？答案是：用起来更舒服。有了这个设计，代码库里任何地方都可以这样写：
 
 ```python
-import boto3
+from learn_personal_portfolio_ai.runtime import runtime
 
-boto_ses = boto3.Session(region_name="us-east-1")
-bedrock_runtime_client = boto_ses.client("bedrock-runtime")
+if runtime.is_local():
+    # 本地专用的逻辑
 ```
 
-为什么要单独放一个文件？因为这样我们可以在多个地方导入同一个客户端实例，避免重复创建连接。
+一次 import，一个对象，IDE 会自动补全所有方法。复杂的逻辑被封装在一个文件里，其他地方都干干净净。这是一个常见的模式：**一个地方麻烦，换来所有地方简洁**。
 
-### 5. 依赖管理
+### 4. 环境感知的 AWS 配置
 
-我们用到的开源库都声明在 `pyproject.toml` 里：
+现在来看 `learn_personal_portfolio_ai/boto_ses.py`：
 
-```toml
-dependencies = [
-    "boto3>=1.42.0,<2.0.0",         # AWS SDK
-    "boto3-dataclass[bedrock-runtime]>=1.40.0,<2.0.0", # 类型化的响应
-    "vercel-ai-sdk-mate>=5.0.1,<6.0.0", # AI SDK 适配器
-    # ...
-]
-```
-
-如果你之前运行过 `mise run inst`，这些依赖应该已经安装好了。
-
-### 6. 最终集成：API 端点
-
-所有的工具准备好了，最后一步是把它们组装到 API 端点里。这就是 `api/index.py` 的工作。
-
-目前的代码是"硬编码"的——它不管用户问什么，都返回固定的回答。你的任务是把它改成真正调用 Bedrock 的版本。
-
-代码的结构分成几个逻辑块：
-
-**块 1：导入工具**
 ```python
-from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client
-from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
-from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
+from .runtime import runtime
+
+if runtime.is_vercel():
+    boto_ses = boto3.Session(
+        region_name="us-east-1",
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    )
+else:
+    boto_ses = boto3.Session(region_name="us-east-1")
 ```
 
-**块 2：读取请求数据**
-```python
-request_body_data = await request.json()
-request_body = RequestBody(**request_body_data)
-```
+**这里发生了什么？**
 
-**块 3：初始化 ChatSession 并发送消息**
-```python
-chat_session = ChatSession(
-    client=bedrock_runtime_client,
-    model_id="us.amazon.nova-micro-v1:0",
-    system=[...],
-)
-# 设置对话历史...
-response = chat_session.send_message([])
-```
+- **在 Vercel 上：** 没有 `~/.aws/credentials` 文件，我们必须显式地从环境变量传入密钥。
+- **在本地：** boto3 的默认凭证链会自动找到你的 `~/.aws/credentials`，不需要特别指定。
 
-**块 4：把 AI 的回答返回给前端**
-```python
-output_text = response.output.message.content[0].text
-# 通过 SSE 流式返回...
-```
+这就是环境感知代码。同一个文件，同样的逻辑，但它会根据运行环境自动调整。
+
+### 5. Vercel 的环境：Production vs Preview
+
+Vercel 有多个环境：
+
+- **Production** — 你的正式部署，通常来自 `main` 分支
+- **Preview** — 来自其他分支的部署（比如 `13-Env-Vars-and-Deployment`）
+
+当你推送一个分支时，Vercel 会创建一个 Preview 部署，带有独特的 URL。这非常适合在合并到 production 之前测试。
+
+环境变量可以限定到特定环境。在这节课里，我们把它们设置成 "All Environments"，这样 Production 和 Preview 都能用。
+
+### 6. 关于 IAM 权限
+
+你可能正在用之前课程里创建的 IAM User。学习阶段这样没问题。在真正的生产环境里，你应该遵循最小权限原则——只给应用真正需要的权限（在我们的场景里，只需要 `bedrock:InvokeModel`）。
+
+IAM 最佳实践我们这里不展开讲，但当你构建真实应用时要记住这一点。
 
 ---
 
 ## 练习
 
-### 练习 1：阅读现有代码
+### 练习 1：理解 Runtime Detection 代码
 
-**目标：** 理解每个工具的作用。
+**目标：** 理解我们的代码是如何检测运行环境的。
 
-在动手改代码之前，先花 10 分钟阅读这些文件：
-
-1. `learn_personal_portfolio_ai/boto_ses.py` — AWS 客户端在哪里创建的？
-2. `learn_personal_portfolio_ai/ai_sdk_adapter.py` — 主要的转换函数是什么？
-3. `learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py` — `ChatSession` 类提供了什么方法？
+阅读这两个文件：
+1. `learn_personal_portfolio_ai/runtime.py`
+2. `learn_personal_portfolio_ai/boto_ses.py`
 
 回答这些问题：
+- [ ] 在 Vercel 服务器上，`os.environ.get("VERCEL")` 返回什么值？
+- [ ] 为什么 `boto_ses.py` 在 Vercel 上需要显式传入密钥，而本地不需要？
+- [ ] 用 `Runtime` class 模式相比到处直接用 `os.environ.get()` 有什么好处？
 
-- [ ] `bedrock_runtime_client` 是什么类型的对象？
-- [ ] `request_body_to_bedrock_converse_messages()` 接收什么、返回什么？
-- [ ] `ChatSession.send_message()` 返回的 response 对象，怎么获取 AI 的回答文本？
+### 练习 2：在 Vercel 上配置环境变量
 
-### 练习 2：理解当前代码的问题
+**目标：** 在 Vercel dashboard 里设置 AWS 密钥。
 
-**目标：** 找出 `api/index.py` 中需要修改的地方。
+**步骤 1：** 进入 Vercel 项目的 Settings
 
-打开 `api/index.py`，找到 `handle_chat_data` 函数。你会发现：
+![Vercel Settings - Environment Variables](./img/13-Env-Vars-and-Deployment/01-env-var-and-deployment.png)
 
-1. 它没有导入我们的工具（没有 `ChatSession`，没有 `bedrock_runtime_client`）
-2. 它没有调用 Bedrock API
-3. 返回的是硬编码的 `"Hello Alice"`
+导航到 **Settings** → **Environment Variables**。如果是第一次来，你会看到一个空列表。
 
-```python
-# 当前代码（硬编码）
-yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": "Hello Alice"})}\n\n'
-```
+**步骤 2：** 添加你的 AWS 密钥
 
-你的任务是把这个硬编码替换成真正的 AI 回答。
+点击 "Add Environment Variable"，添加两个变量：
 
-### 练习 3：完成集成
+![Adding environment variables](./img/13-Env-Vars-and-Deployment/02-env-var-and-deployment.png)
 
-**目标：** 修改 `api/index.py`，让它真正调用 Bedrock。
+- `AWS_ACCESS_KEY_ID` — 你的 IAM user 的 access key
+- `AWS_SECRET_ACCESS_KEY` — 你的 IAM user 的 secret key
 
-我们已经准备了一个参考实现 `api/index_example.py`，你可以查看它的结构。但是——
+把范围设置成 "All Environments"，这样 Production 和 Preview 都能访问。
 
-> **注意：严禁照抄！**
->
-> 直接复制粘贴不会帮助你学习。请理解每一块代码的作用，然后自己写出来。
+**步骤 3：** 保存，注意 redeploy 提示
 
-按照这个顺序完成：
+![Environment variables added](./img/13-Env-Vars-and-Deployment/03-env-var-and-deployment.png)
 
-**步骤 1：添加导入**
+保存后，你会看到变量列表。注意右下角的提示：**"A new deployment is needed for changes to take effect."**
 
-在文件顶部添加必要的导入语句。你需要导入：
-- `bedrock_runtime_client`（从 `boto_ses` 模块）
-- `request_body_to_bedrock_converse_messages`（从 `ai_sdk_adapter` 模块）
-- `ChatSession`（从 `multi_round_bedrock_runtime_chat_manager` 模块）
-- `path_enum`（从 `paths` 模块，用于获取 system prompt）
+> **为什么要重新部署？** 环境变量是在部署启动时注入的。如果你只改了环境变量（代码没变），Vercel 不会自动重新部署。你需要点 "Redeploy" 或者推送一个新的 commit 来让新的值生效。
 
-**步骤 2：解析请求数据**
+### 练习 3：部署并验证
 
-在读取 JSON 之后，用 `RequestBody` 类解析请求：
-```python
-request_body = RequestBody(**request_body_data)
-```
+**目标：** 确认你的 AI 聊天在 Vercel 上能正常工作。
 
-记得先导入 `RequestBody`（从 `vercel_ai_sdk_mate.api`）。
+1. 把代码推送到 GitHub（如果还没推的话）
+2. Vercel 会自动为你的分支创建一个 Preview 部署
+3. 等待部署完成
+4. 打开 Preview URL（类似 `your-project-git-branch-name.vercel.app`）
+5. 测试聊天——发送一条消息，验证你收到了真正的 AI 回复
 
-**步骤 3：创建 ChatSession**
+**提交内容：**
 
-创建一个 `ChatSession` 实例，配置：
-- `client`: 使用导入的 `bedrock_runtime_client`
-- `model_id`: 使用 `"us.amazon.nova-micro-v1:0"`
-- `system`: 包含 system prompt 和 cachePoint
+截一张你的聊天在 Preview 部署上正常工作的图。截图应该包含：
+- 聊天界面，显示真正的 AI 回复（不是 "Hello Alice"）
+- 浏览器地址栏，显示你的 Vercel Preview 域名
 
-**步骤 4：设置对话上下文**
-
-设置初始对话历史，包括知识库内容和 cachePoint。这部分可以参考 `index_example.py` 的结构。
-
-**步骤 5：转换并追加前端消息**
-
-使用 `request_body_to_bedrock_converse_messages()` 把前端的消息转换成 Bedrock 格式，然后追加到对话历史。
-
-**步骤 6：发送消息并获取回答**
-
-调用 `chat_session.send_message([])` 获取 AI 的回答，提取文本内容。
-
-**步骤 7：返回真实回答**
-
-把硬编码的 `"Hello Alice"` 替换成 AI 的真实回答 `output_text`。
-
-### 练习 4：验证结果
-
-**目标：** 确认集成成功。
-
-1. 启动开发服务器：
-   ```bash
-   mise run dev
-   ```
-
-2. 打开浏览器访问前端界面
-
-3. 发送一条消息，观察：
-   - 终端是否显示了 Bedrock API 的调用日志？
-   - 前端是否收到了 AI 的真实回答（而不是 "Hello Alice"）？
-
-4. 发送第二条消息，验证多轮对话是否正常工作
+这能证明你的部署正在使用云端的密钥正常工作。
 
 ---
 
 ## 反思
 
-让我们回顾一下这节课学到的内容。
+今天学的东西看起来很简单：设置几个环境变量，部署，完事儿。
 
-我们做的事情其实很简单：把前端发来的数据转换成 Bedrock 能理解的格式，调用 API，再把结果返回给前端。
+但背后的概念对专业软件开发来说是基础中的基础：
 
-但为了让这个过程变得清晰、可维护，我们做了两件重要的事情：
+**你的代码永远不应该假设自己在哪里运行。** 本地电脑、测试服务器、生产云端——同样的代码应该在所有地方都能跑。环境变量就是让这成为可能的桥梁。
 
-**第一，我们造了工具。** `ai_sdk_adapter.py` 负责数据格式转换，`multi_round_bedrock_runtime_chat_manager.py` 负责管理对话状态。这两个"小工具"把复杂的逻辑封装起来，让 API 端点的代码变得简洁。
+我们用的模式——检测环境，然后调整行为——在真实应用中到处都是：
+- 开发/测试/生产环境用不同的数据库连接
+- 不同环境用不同的日志级别
+- 测试 vs 生产用不同的 API 端点
 
-**第二，我们用了开源库。** `vercel-ai-sdk-mate` 和 `boto3-dataclass` 帮我们处理了很多底层细节。站在巨人的肩膀上，我们可以专注于业务逻辑。
-
-这两点其实是软件工程的核心思维：**分解问题，然后为每个子问题找到或创造合适的工具**。
+掌握这个模式，你就能把代码部署到任何地方。
 
 ---
 
-## 导师笔记
+## 导师寄语
 
-**这个练习的意义：**
+**为什么这个练习很重要：**
 
-如果你仔细回想，会发现我们前面几节课一直在为今天做准备。
+今天的课可能感觉像是"只是配置一下"。但理解环境变量是开发者的一个成人礼。从这一刻起，你不再只是想"我的代码在我的电脑上"，而是开始想"我的代码在任何地方运行"。
 
-- 第一课，我们学会了调用 Bedrock API——这是"原子操作"
-- 第二课，我们学会了 Prompt Caching——这是"优化手段"
-- 这一课，我们把它们组装成了真正可用的产品
+每个专业代码库都用环境变量。每个 CI/CD 流水线都注入它们。每个云平台都管理它们。这不只是 Vercel 的事——这就是软件工作的方式。
 
-这就是工程师解决复杂问题的方式：**先分解成小问题，逐个攻破，然后组装**。
+**更深的道理：**
 
-很多初学者会犯一个错误：面对复杂任务时，试图一口气写出所有代码。结果是代码又长又乱，出了问题不知道从哪里找起。
+注意我们是怎么组织代码的。`runtime.py` 文件包含了所有环境检测的复杂逻辑。`boto_ses.py` 文件用一个简单的 `if runtime.is_vercel()` 就调用它了。这是刻意的设计。
 
-正确的做法是：
+当你构建软件时，永远要问："这个复杂的东西应该放在哪里？"答案通常是："放在一个地方，让其他所有地方都保持简单。"
 
-1. **分析问题** — 这个任务涉及哪些子问题？
-2. **逐个解决** — 每个子问题能不能用现有工具解决？需不需要自己造工具？
-3. **验证每一步** — 在组装之前，确保每个工具单独都能正常工作
-4. **组装集成** — 把工具组合起来，实现完整功能
-
-这节课的两个"小工具"——适配器和会话管理器——就是这种思维的产物。它们不是什么高深的技术，但它们体现了工程思维：**把复杂的事情变简单，把重复的事情变成一次性**。
-
-**给学生的建议：**
-
-当你面对一个复杂任务时，不要急着写代码。先问自己：
-
-- 这个任务可以分成哪几个步骤？
-- 每个步骤需要什么输入，产生什么输出？
-- 有没有现成的工具可以用？
-- 哪些逻辑会被重复使用，值得封装成工具？
-
-学会这种思维方式，比学会任何一个具体的 API 都重要。因为 API 会变，但分解问题的能力是永恒的。
+一个文件处理乱七八糟的环境检测逻辑。其他所有文件只需要问一句 `runtime.is_vercel()` 就能拿到一个干净的布尔值答案。这就是保持大型代码库可维护的方法。
 
 ---
 
 ## 快速参考
 
-**启动开发服务器：**
-```bash
-mise run dev
-```
-
 **关键文件：**
-- `api/index.py` — 需要修改的 API 端点
-- `api/index_example.py` — 参考实现（不要照抄！）
-- `learn_personal_portfolio_ai/ai_sdk_adapter.py` — 数据格式适配器
-- `learn_personal_portfolio_ai/multi_round_bedrock_runtime_chat_manager.py` — 对话管理器
-- `learn_personal_portfolio_ai/boto_ses.py` — AWS 客户端配置
+- `learn_personal_portfolio_ai/runtime.py` — Runtime 环境检测
+- `learn_personal_portfolio_ai/boto_ses.py` — 环境感知的 AWS 配置
 
-**核心导入：**
+**检查是否在 Vercel 上运行：**
 ```python
-from vercel_ai_sdk_mate.api import RequestBody
-from learn_personal_portfolio_ai.paths import path_enum
-from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client
-from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
-from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
+from learn_personal_portfolio_ai.runtime import runtime
+
+if runtime.is_vercel():
+    # 云端专用代码
 ```
 
-**获取 AI 回答文本：**
-```python
-response = chat_session.send_message([])
-output_text = response.output.message.content[0].text
-```
+**Vercel 文档：**
+- [Environment Variables](https://vercel.com/docs/environment-variables)
+- [System Environment Variables](https://vercel.com/docs/environment-variables/system-environment-variables)
+
+**Vercel 上需要的环境变量：**
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
