@@ -79,3 +79,9 @@ GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起�
 用了第三方库不丢人，但要读懂它在干嘛。工具会过时，造工具的能力不会。
 
 📄 [12-The-Toolmakers-Mindset-CN.md](12-The-Toolmakers-Mindset-CN.md)
+
+## 13 - The First Milestone: From Zero to Live
+
+13 个 branch，技术债为零，App 终于活在云端。第一个里程碑，不是终点，而是起跑线。
+
+📄 [13-The-First-Milestone-From-Zero-to-Live-CN.md](13-The-First-Milestone-From-Zero-to-Live-CN.md)
