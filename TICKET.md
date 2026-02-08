@@ -1,4 +1,4 @@
-# Task Card: Explore Codebase with Top-Down Learning
+# Learn Personal Portfolio AI 06 - Task Card: Explore Codebase with Top-Down Learning
 
 ## Objective
 
