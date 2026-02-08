@@ -10,21 +10,15 @@ Import what you need:
 One place handles credentials, everywhere else just uses the client.
 """
 
-import os
 import boto3
 
-from .runtime import runtime
+from .config import config
 
-# On Vercel: explicit credentials from environment variables (serverless has no ~/.aws)
-# Locally: use default credential chain (~/.aws/credentials or IAM role)
-if runtime.is_vercel():
-    boto_ses = boto3.Session(
-        region_name="us-east-1",
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-    )
-else:
-    boto_ses = boto3.Session(region_name="us-east-1")
+boto_ses = boto3.Session(
+    region_name=config.aws_region,
+    aws_access_key_id=config.aws_access_key_id,
+    aws_secret_access_key=config.aws_secret_access_key,
+)
 
 # Shared client instance - reuse across requests to avoid connection overhead
 bedrock_runtime_client = boto_ses.client("bedrock-runtime")
