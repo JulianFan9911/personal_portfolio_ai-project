@@ -1,43 +1,41 @@
-# Task Card: Prompt Caching - Save Money on AI API Calls
+# Task Card: Config Management and Code Refactoring
 
 ## Objective
 
-Learn how Prompt Caching works and understand how it can save up to 75% on input token costs when you have repeated static content across multiple API calls.
+Understand the Config Management pattern and code refactoring principles — why we centralize configuration values and extract reusable code into separate modules. This makes code easier to maintain and scale.
 
-Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/11-Cached-Prompt/)
+Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/14-Config-Management/)
 
 ## Actionable Items
 
-1. **Run the Prompt Caching Script**
-   - Open `scripts/test_ai_aws_bedrock_with_cached_prompt.py`
-   - Spend 2 minutes browsing the code structure
-   - Run: `python scripts/test_ai_aws_bedrock_with_cached_prompt.py`
-   - Observe the output for all 3 turns
+1. **Read the refactored code (10 minutes)**
+   - Open `api/index.py` — notice how the main function reads like English (Step 1, Step 2, Step 3...)
+   - Open `learn_personal_portfolio_ai/ai_sdk_adapter.py` — find `get_last_user_message_text()` and `ai_sdk_message_generator()`
+   - Think: Why are these functions in a separate module instead of `index.py`?
 
-2. **Observe Cache Behavior**
-   - Look at the `Cache:` line in each turn's output
-   - Turn 1: Should show `write > 0, read = 0` (writing to cache)
-   - Turn 2-3: Should show `write = 0, read > 0` (reading from cache)
+2. **Enable the message length limit feature (10 minutes)**
+   - Find the `max_message_length` field in `learn_personal_portfolio_ai/config.py`
+   - Search for "Uncomment" in `api/index.py` to find the disabled check code
+   - Uncomment the code to enable the message length check
+   - Test: run `mise run dev`, send a message > 1000 characters, verify you get "Message too long" error
+   - Notice: The error response reuses `ai_sdk_message_generator()` — same as normal responses!
 
-3. **Calculate Your Savings**
-   - Record the `write` value from Turn 1
-   - Record the `read` values from Turn 2 and Turn 3
-   - Calculate: Total cached reads × 75% = equivalent tokens saved
+3. **Run the test (2 minutes)**
+   - Run `mise run test-python`
+   - Verify the config test passes
 
-4. **Understand cachePoint Placement**
-   - Find the `send_message_with_cache` function in the script
-   - Locate where `cachePoint` is placed in the `messages` structure
-   - Understand why static content comes before `cachePoint` and dynamic questions come after
-
-**Estimated time:** 20-30 minutes
+**Estimated time:** 20-25 minutes
 
 ## Checklist
 
-- [ ] **Script runs successfully** - All 3 turns complete without errors
-- [ ] **Observe cache write** - Turn 1 shows `write > 0, read = 0`
-- [ ] **Observe cache read** - Turn 2-3 show `write = 0, read > 0`
-- [ ] **Understand savings** - Can calculate how much was saved across the 3 calls
-- [ ] **Understand cachePoint** - Can explain why static content goes before the marker
+- [ ] **Read index.py** — Understand how the main function reads like English
+- [ ] **Read ai_sdk_adapter.py** — Found `get_last_user_message_text()` and `ai_sdk_message_generator()`
+- [ ] **Understand code reuse** — Can explain why functions are extracted into separate modules
+- [ ] **Found max_message_length** — Located the config field in config.py
+- [ ] **Enabled message length check** — Uncommented the check code in api/index.py
+- [ ] **Tested the feature** — Verified "Message too long" error appears for long messages
+- [ ] **Understand Single Source of Truth** — Can explain why config values should be defined in one place
+- [ ] **Test passes** — `mise run test-python` runs successfully
 
 ---
 
@@ -45,14 +43,12 @@ Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfoli
 
 When you're done:
 
-1. Run `/teach-check` to verify your work against the checklist
+1. Run `/teach-check` to verify your understanding
 
 2. Be ready to answer:
-   - "What's the difference between cache write and cache read?"
-   - "How much did you save in equivalent tokens across the 3 calls?"
-   - "Why is the static content placed before cachePoint?"
-
-3. Say "ship it" when complete to generate RESULT.md
+   - "What is Single Source of Truth?"
+   - "Why are `get_last_user_message_text()` and `ai_sdk_message_generator()` in ai_sdk_adapter.py instead of index.py?"
+   - "If you want to change the message limit from 1000 to 2000, what file do you modify?"
 
 ---
 
@@ -60,55 +56,57 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-**Assessment method:** Observation-based verification - check understanding through output interpretation and code reading.
+**Assessment method:** Understanding verification through Q&A + hands-on demonstration.
 
-**Core verification (required):**
+**Core understanding (required):**
 
-1. **Run the script:**
-   - Execute: `.venv/bin/python scripts/test_ai_aws_bedrock_with_cached_prompt.py`
-   - Should complete all 3 turns without errors
-   - Should show cache metrics in output
+1. **Ask:** "What is Single Source of Truth?"
+   - Good answer: "A value should be defined in only one place. Other places reference it instead of duplicating it."
+   - Acceptable: "If you need to change something, you only change it in one place."
+   - Bad answer: "I don't know" / Can't explain
 
-2. **Verify cache behavior understanding:**
-   - Ask: "Looking at the output, which turn wrote to the cache?"
-   - Good answer: "Turn 1 - it shows write > 0 and read = 0"
-   - Ask: "Which turns read from the cache?"
-   - Good answer: "Turn 2 and Turn 3 - they show write = 0 and read > 0"
+2. **Ask:** "Why is the main function in index.py so short and simple?"
+   - Good answer: "It only has flow control. Each step is a function call. The detailed logic is in separate modules for reuse."
+   - Acceptable: "It's like reading English, step by step"
+   - Bad answer: "Because that's how it was written"
 
-3. **Verify cost understanding:**
-   - Ask: "How much money does cache reading save compared to normal pricing?"
-   - Good answer: "About 75% - you only pay 25% of the normal price"
-   - Ask: "If the profile is 900 tokens and 2 calls use cache, how many equivalent tokens did you save?"
-   - Good answer: "900 × 2 × 75% = 1350 tokens" (approximate calculation is fine)
+3. **Ask:** "Why are `get_last_user_message_text()` and `ai_sdk_message_generator()` in ai_sdk_adapter.py?"
+   - Good answer: "They're reusable. ai_sdk_message_generator is used for both normal responses and error responses. If it were inline, we'd have to write it twice."
+   - Acceptable: "For reuse, so we don't repeat code"
+   - Bad answer: Can't explain
 
-4. **Verify cachePoint understanding:**
-   - Ask: "Open the script and show me where cachePoint is placed"
-   - Student should navigate to `send_message_with_cache` function
-   - Ask: "Why is the user profile placed before cachePoint?"
-   - Good answer: "Because it's static content that doesn't change between calls, so it should be cached"
+4. **Ask:** "What does 'main function reads like English' mean?"
+   - Good answer: "You can read the function and understand the flow: parse request, check length, call AI, return response. Each step is a function call with a clear name."
+   - Bad answer: Can't explain
 
-**Understanding verification (optional):**
+**Hands-on verification (required):**
 
-5. **Ask:** "What happens if your static content is only 500 tokens?"
-   - Good answer: "Caching silently fails - it needs at least 1024 tokens"
+5. **Ask:** "Show me where you uncommented the code in api/index.py"
+   - Student should be able to navigate to the message length check code
+   - Code should be uncommented and functional
 
-6. **Ask:** "Does Prompt Caching make API calls faster?"
-   - Good answer: "Not really - it mainly saves money, not time. The AI still needs to generate the response."
+6. **Ask:** "Notice how the error response uses ai_sdk_message_generator(). Why is this good design?"
+   - Good answer: "It's the same function used for normal responses. If the AI SDK protocol changes, we only update one function."
+   - Bad answer: "I don't know" / Can't explain the reuse benefit
 
-7. **Ask:** "In what scenario would Prompt Caching be most valuable?"
-   - Good answer: Anything involving repeated static context with multiple questions - document analysis, personalized chat, code review, etc.
+7. **Ask:** "What happens if you want to change the limit from 1000 to 2000 characters?"
+   - Good answer: "Change `max_message_length` in config.py, that's it"
+   - Bad answer: "Change it in api/index.py" / "Change it in multiple places"
 
 **What counts as "pass":**
 
-- Script runs and shows correct cache behavior (write on Turn 1, read on Turn 2-3)
-- Student can identify cache write vs cache read in the output
-- Student understands the basic cost savings (75% on cached reads)
-- Student can locate cachePoint in code and explain its purpose
+- Student can explain Single Source of Truth in their own words
+- Student understands why code is extracted into separate modules (for reuse)
+- Student can explain "main function reads like English"
+- Student successfully enabled the message length check feature
+- Student can demonstrate that long messages return "Message too long" error
+- Student understands the reuse of ai_sdk_message_generator()
+- Test passes
 
-**What does NOT matter:**
+**What does NOT count as pass:**
 
-- Exact token numbers (approximate understanding is sufficient)
-- Memorizing the exact minimum token requirement
-- Deep understanding of SSE or internal implementation
-
-**Key principle:** This lesson is about understanding the concept and observing it in action. The focus is on interpreting output and understanding "why," not on writing code.
+- Student cannot explain why we use a Config class
+- Student cannot explain why functions are in separate modules
+- Student couldn't find or enable the message length check code
+- Student doesn't notice the reuse of ai_sdk_message_generator()
+- Student just memorized answers without understanding the design philosophy

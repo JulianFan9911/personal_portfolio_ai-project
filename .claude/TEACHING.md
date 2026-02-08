@@ -1,164 +1,144 @@
-# Teaching Guide: Prompt Caching
+# Teaching Guide: Config Management and Code Refactoring
 
 ## Learning Outcomes
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand why Prompt Caching exists (repeated static content = wasted money) and how it works (cache write vs cache read)
-2. **Skill outcome** - Read and interpret cache metrics from API responses, and understand where to place `cachePoint` in code
-3. **Mindset outcome** - Develop cost-consciousness when building AI applications, appreciating that understanding pricing models is an engineering skill
+1. **Cognitive outcome** - Understand Single Source of Truth: why configuration values should be defined in one place, and why main functions should read like English with logic extracted into reusable modules
+2. **Skill outcome** - Enable a feature by uncommenting config-driven code, demonstrating understanding of how config values flow through the codebase
+3. **Mindset outcome** - Start thinking "ready to scale" instead of "it works" — the habit of refactoring after features are complete
 
 ## Concept Sequence
 
 Teach concepts in this order:
 
-### Phase 1: The Problem (5 minutes)
+### Phase 1: The "Why Refactor?" Motivation (5 minutes)
 
-1. **The repeated content pattern** - Show the "user profile + question" scenario
-2. **Why this is expensive** - Same 1000 tokens sent 10 times = paying for 10,000 tokens
-3. **The customer service analogy** - Repeating your ID number every call
+1. **Feature is Done, But...** - The app works on Vercel. Why do more work?
+2. **Amateur vs Professional** - Amateur: "it works." Professional: "ready to scale"
+3. **The Pain of Scattered Config** - Imagine changing `us-east-1` to `ap-northeast-1` across 5 files
 
-This phase establishes the "why" before introducing the solution. Learners should feel the pain before seeing the cure.
+This phase establishes the "aha moment" - refactoring isn't extra work, it's professional practice.
 
-### Phase 2: The Solution (10 minutes)
+### Phase 2: Single Source of Truth (10 minutes)
 
-4. **Cache Write vs Cache Read** - First call writes to cache (normal price), subsequent calls read from cache (75% cheaper)
-5. **Browser caching analogy** - First visit downloads images, subsequent visits use cache
-6. **What's actually being saved** - The "parsing" cost, not time. Clarify this is primarily about money, not speed
+4. **The Core Principle** - A value should be defined in only one place
+5. **The Judgment Rule** - If changing a value requires editing multiple files, abstract it to config
+6. **Config Pattern** - dataclass + factory method + singleton
+7. **Using Config** - One import, one object: `config.aws_region`
 
-This phase introduces the core mechanism. Use the browser caching analogy—most learners understand that immediately.
+Focus on the design philosophy, not memorizing the pattern.
 
-### Phase 3: AWS Implementation (10 minutes)
+### Phase 3: Main Function Reads Like English (10 minutes)
 
-7. **The cachePoint marker** - Show the code structure with static content, cachePoint, dynamic question
-8. **Placement rule** - Content BEFORE cachePoint gets cached; content AFTER doesn't
-9. **The 1024 token minimum** - Silent failure if too short (this is a common trap)
+8. **The Goal** - Reading `index.py` should tell you the flow: Step 1, Step 2, Step 3...
+9. **Flow Control Only** - Main function only "directs," doesn't "do the work"
+10. **Extract to Modules** - Detailed logic lives in separate modules
+11. **The Power of Reuse** - `ai_sdk_message_generator()` used for both normal and error responses
 
-Focus on the "before/after" rule. This is the most practical knowledge they need.
+Students should understand why clean main functions matter for maintainability.
 
-### Phase 4: Cost Calculation (5 minutes)
+### Phase 4: Hands-on (15-20 minutes)
 
-10. **75% savings on cache reads** - AWS Bedrock specific, other providers may differ
-11. **Break-even analysis** - First call is investment, ROI grows with call count
-12. **The 67.5% to 74.3% curve** - More calls = closer to maximum 75% savings
+12. **Read the Code** - Understand index.py flow and ai_sdk_adapter.py functions
+13. **Enable Message Length Check** - Find config field, uncomment code, test
+14. **Notice the Reuse** - Error response uses same generator as normal response
+15. **Run Tests** - Verify config works
 
-Keep the math simple. The key insight is "invest upfront, profit later."
+### Phase 5: Wrap-up (5 minutes)
 
-### Phase 5: Hands-on Exercises (15-20 minutes)
-
-13. **Exercise 1: Run and observe** - See cache write vs read in actual output
-14. **Exercise 2: Calculate savings** - Fill in the blanks with real numbers
-15. **Exercise 3: Understand cachePoint** - Find it in code, understand why it's placed there
-
-The exercises reinforce through observation, not creation. This is intentional—understanding before building.
-
-### Phase 6: Reflection (5 minutes)
-
-16. **When to use caching** - "Large static content + multiple questions" pattern
-17. **Cost-conscious engineering** - Reading pricing docs is a real skill
-18. **Transferable knowledge** - Same concept applies to other providers
+16. **Two Design Philosophies** - Single Source of Truth + Main Function Reads Like English
+17. **The Quality Question** - "If requirements change, how many files do I modify?"
+18. **Ready to Scale** - When 3 files become 30, you'll thank yourself
 
 ## Common Struggles
 
-**Struggle:** Student doesn't understand why this matters
-- **Signs:** "Tokens are cheap, why bother?"
-- **Intervention:** "Let's calculate. If you have 1000 users, each asking 100 questions per day, with 2000 tokens of static content... that's 200 million tokens daily. At $0.01 per 1K tokens, that's $2000/day. With caching, it's $500/day. $1500 saved daily, $45,000 monthly. Still think it doesn't matter?"
+**Struggle:** Student doesn't understand why we refactor working code
+- **Signs:** "But it already works!"
+- **Intervention:** Ask: "If your boss says change the region, how many files do you touch?" or "If a new teammate joins, how do they understand the flow?"
 
-**Struggle:** Student confuses the cachePoint placement
-- **Signs:** Puts dynamic content before cachePoint
-- **Intervention:** "What gets cached is what comes BEFORE the marker. Ask yourself: what content is the same every time? That goes first. What changes? That goes after the marker."
+**Struggle:** Student doesn't see the benefit of extracting functions to modules
+- **Signs:** "Why not just write it inline?"
+- **Intervention:** Point to `ai_sdk_message_generator()`: "This is used twice — for normal responses and error responses. If it were inline, you'd write it twice. If the protocol changes, you'd update it twice. Which is better?"
 
-**Struggle:** Student thinks caching makes things faster
-- **Signs:** "I expected faster responses"
-- **Intervention:** "Good observation! Caching saves money, not time. The AI still needs to generate the response, which is the slow part. Parsing text is fast; generating text is slow. We save on parsing cost, not generation time."
+**Struggle:** Student finds the config pattern over-engineered
+- **Signs:** "This is just a few values, why a whole class?"
+- **Intervention:** "Right now it's 3 values. In 6 months it might be 15. The pattern scales. And factory methods let different environments have different values without if/else everywhere."
 
-**Struggle:** Student's cache isn't working
-- **Signs:** `write > 0` on every call, `read = 0` always
-- **Intervention:** Check two things: 1) Is static content at least 1024 tokens? 2) Is the static content EXACTLY the same each call (no timestamps, no random IDs)?
+**Struggle:** Student can't find the commented code
+- **Signs:** Takes too long searching
+- **Intervention:** "Search for 'Uncomment' in index.py"
 
-**Struggle:** Student can't find cachePoint in code
-- **Signs:** Looking in wrong function or file
-- **Intervention:** "Look for `send_message_with_cache`. Find the `messages` list. See the three items: text, cachePoint, text. That structure is the key."
+**Struggle:** Student doesn't notice the reuse of ai_sdk_message_generator
+- **Signs:** Completes the task but misses the teaching point
+- **Intervention:** "Look at the error response code you just uncommented. What function does it use? Now look at the normal response at the bottom. Same function, right?"
 
 ## Teaching Tips
 
-- **Start with money, not technology** - Engineers respond to cost savings. Lead with "save 75% on AI costs" rather than "let me explain caching semantics."
+- **Start with the pain** - Don't jump into config patterns. First make them feel the pain of scattered configuration.
 
-- **The customer service analogy resonates** - Everyone has experienced repeating their information to customer service. This frustration translates directly to understanding why caching matters.
+- **Use the "6 months from now" frame** - "Imagine in 6 months, 10 files have region hardcoded. Someone needs to change it. How do they know which files?"
 
-- **Don't oversell performance gains** - Be honest that caching primarily saves money, not time. Students appreciate honesty, and it prevents disappointment.
+- **Walk through index.py like reading** - Literally read it aloud: "First, we log the request. Then, we parse it. Then, we check the length..." This demonstrates the "reads like English" principle.
 
-- **Show the silent failure trap** - Demonstrate what happens when content is too short. This "gotcha" knowledge prevents future debugging headaches.
+- **Highlight the reuse moment** - When they uncomment the message length check, pause: "See that `ai_sdk_message_generator`? Same function as the normal response. That's reuse."
 
-- **Connect to production thinking** - "In learning, cost doesn't matter. In production, it's everything. Today we're learning production thinking."
+- **Connect to professional practice** - "Every production codebase I've worked on has a config module. This is industry standard."
 
-- **Use the terminal output as proof** - The `Cache: write=XXX, read=0` vs `Cache: write=0, read=XXX` output is the "aha" moment. Let students see it themselves.
-
-- **Mention other providers briefly** - "AWS does 75% discount. Anthropic has similar caching. OpenAI too. The concept transfers; only implementation differs."
+- **The quality question** - Ask repeatedly: "If requirements change, how many files?" This becomes a mental habit.
 
 ## Assessment Ideas
 
-- **Quick concept check:** "What's the difference between cache write and cache read?"
-  - Good answer: "Cache write is the first call where content is stored; cache read is subsequent calls where we use stored content and pay less"
+- **Quick concept check:** "What is Single Source of Truth?"
+  - Good answer: "A value is defined in one place. Everywhere else references it."
 
-- **Placement understanding:** "If I have a document and a question, where do I put cachePoint?"
-  - Good answer: "After the document, before the question. Document gets cached; question doesn't."
+- **Code organization understanding:** "Why is the main function in index.py so short?"
+  - Good answer: "It only has flow control. Each step is a function call. Details are in separate modules."
 
-- **Cost calculation:** "1000 tokens static, 5 questions. How much do you save vs no caching?"
-  - Good answer: "Without caching: 5000 tokens full price. With caching: 1000 + 4×250 = 2000 equivalent. Save 60%."
+- **Reuse understanding:** "Why is ai_sdk_message_generator in a separate module?"
+  - Good answer: "It's used twice — for normal and error responses. If it were inline, we'd duplicate code."
 
-- **Failure mode:** "Why might caching silently fail?"
-  - Good answer: "Static content less than 1024 tokens, or content changes between calls"
-
-- **Real-world application:** "Give an example where Prompt Caching would be valuable"
-  - Good answer: Anything with repeated static context—document analysis, personalized assistants, code review with same codebase, etc.
+- **Hands-on verification:** Student can:
+  - Navigate to the uncommented message length check
+  - Demonstrate that long messages return errors
+  - Point out where ai_sdk_message_generator is called twice
 
 ## Pacing Guide
 
-- **Phase 1 (The Problem):** 5 minutes
-  - Show the pattern
-  - Calculate the waste
-  - Use the analogy
+- **Phase 1 (Motivation):** 5 minutes
+  - Establish why refactoring matters
+  - Create the "pain of scattered config" realization
 
-- **Phase 2 (The Solution):** 10 minutes
-  - Cache Write vs Read
-  - Browser caching parallel
-  - What's actually saved
+- **Phase 2 (Single Source of Truth):** 10 minutes
+  - Explain the principle
+  - Walk through config.py
+  - Show how boto_ses.py uses it
 
-- **Phase 3 (AWS Implementation):** 10 minutes
-  - Show the code
-  - Explain placement rule
-  - Warn about 1024 minimum
+- **Phase 3 (Main Function Reads Like English):** 10 minutes
+  - Walk through index.py
+  - Point out the function calls
+  - Highlight ai_sdk_message_generator reuse
 
-- **Phase 4 (Cost Calculation):** 5 minutes
-  - 75% savings number
-  - Break-even concept
-  - More calls = more savings
+- **Phase 4 (Hands-on):** 15-20 minutes
+  - Exercise 1: Read code (5 min)
+  - Exercise 2: Enable message length check (10 min)
+  - Exercise 3: Run tests (2 min)
 
-- **Phase 5 (Exercises):** 15-20 minutes
-  - Exercise 1: Run script (5 min)
-  - Exercise 2: Calculate (5 min)
-  - Exercise 3: Code understanding (5-10 min)
+- **Phase 5 (Wrap-up):** 5 minutes
+  - Reinforce the two design philosophies
+  - The quality question
+  - Connect to "ready to scale" mindset
 
-- **Phase 6 (Reflection):** 5 minutes
-  - When to use
-  - Cost consciousness
-  - Next steps
-
-**Total expected time:** 40-55 minutes
+**Total expected time:** 45-50 minutes
 
 ## Key Messages to Reinforce
 
-1. **Prompt Caching is about money, not speed** - Don't oversell. Be clear about what it actually saves.
+1. **Single Source of Truth** - A value is defined in one place. Everywhere else references it. If you need to change it, you change one file.
 
-2. **The pattern: static content + multiple questions** - This is when caching pays off. Recognize this pattern in production apps.
+2. **Main function reads like English** - Good code, you can read the main function and understand the flow. Details are in separate modules.
 
-3. **cachePoint placement matters** - Before = cached, After = not cached. Simple rule, critical to get right.
+3. **Extract for reuse** - If you write the same code twice, extract it to a function. Change once, effective everywhere.
 
-4. **Silent failure is a trap** - Less than 1024 tokens, content changes—caching fails without error. Know the gotchas.
+4. **The quality question** - "If requirements change, how many files do I modify?" If the answer is "one," your design is good.
 
-5. **Cost consciousness is an engineering skill** - Reading pricing docs, calculating ROI, optimizing spend—these are professional skills, not distractions from "real" engineering.
-
-6. **First call is investment, subsequent calls are returns** - The mental model of "invest upfront, profit later" helps understand the economics.
-
-7. **The concept transfers across providers** - AWS, Anthropic, OpenAI—all have similar caching. Learn the concept once, apply everywhere.
+5. **Ready to scale mindset** - "It works" is the beginning. "Ready to scale" is the end. This is what separates amateurs from professionals.
