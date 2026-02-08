@@ -1,4 +1,4 @@
-# Task Card: Setting Up Next.js + FastAPI Full-Stack Development Environment
+# Learn Personal Portfolio AI 04 - Task Card: Setting Up Next.js + FastAPI Full-Stack Development Environment
 
 ## Prerequisites
 
