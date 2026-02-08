@@ -1,4 +1,4 @@
-# Task Card: Python Environment Setup & First Program
+# Learn Personal Portfolio AI 01 - Task Card: Python Environment Setup & First Program
 
 ## Overview
 Learn to set up a professional Python development environment and write your first functions with type hints.
