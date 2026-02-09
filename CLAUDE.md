@@ -1,6 +1,6 @@
 ## Context Files
 
-- Role & Behavior: @../.claude/MENTOR.md
+- Role & Behavior: @.claude/MENTOR.md
 - Tutorial: @README.md
 - Task Card: @TICKET.md
 
