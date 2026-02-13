@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { BookOpen } from "lucide-react"
+import { BookOpen, ArrowRight, MessageCircle } from "lucide-react"
 import { FaGithub, FaLinkedin } from "react-icons/fa"
 
 export default function Hero() {
@@ -14,90 +14,113 @@ export default function Hero() {
   }, [])
 
   return (
-    <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 relative">
-      <div className="max-w-7xl mx-auto">
+    <section className="pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
         <div
-          className={`transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} flex flex-col lg:flex-row gap-8 lg:gap-12 items-start`}
+          className={`transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
         >
-          {/* Left Column - Profile */}
-          <div className="w-full lg:w-1/3 flex-shrink-0">
-            {/* Profile Image */}
-            <div className="mb-6 flex justify-center">
-              <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-full border-2 border-primary shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 overflow-hidden">
-                <Image
-                  src="/images/profile.png"
-                  alt="John Doe Profile Photo"
-                  width={192}
-                  height={192}
-                  className="w-full h-full object-cover"
-                />
+          {/* Bento Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+
+            {/* Profile Card - Spans 1 column */}
+            <div className="bento-card flex flex-col items-center text-center lg:row-span-2">
+              {/* Profile Image */}
+              <div className="mb-6">
+                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl border-2 border-zinc-200 dark:border-zinc-700 shadow-lg overflow-hidden">
+                  <Image
+                    src="/images/profile.png"
+                    alt="John Doe Profile Photo"
+                    width={160}
+                    height={160}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Name and Title */}
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold mb-2 text-zinc-900 dark:text-zinc-100">
+                John Doe
+              </h1>
+              <p className="text-accent font-medium mb-4">
+                AI Engineer
+              </p>
+
+              {/* Social Icons */}
+              <div className="flex justify-center space-x-4 mb-6">
+                <a
+                  href="https://example.com"
+                  className="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  aria-label="GitHub"
+                >
+                  <FaGithub size={20} />
+                </a>
+                <a
+                  href="https://example.com"
+                  className="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  aria-label="LinkedIn"
+                >
+                  <FaLinkedin size={20} />
+                </a>
+                <a
+                  href="https://example.com"
+                  className="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  aria-label="Blog"
+                >
+                  <BookOpen size={20} />
+                </a>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="w-full pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="font-heading text-xl font-bold text-zinc-900 dark:text-zinc-100">10+</div>
+                    <div className="text-xs text-zinc-500">Python Libraries</div>
+                  </div>
+                  <div>
+                    <div className="font-heading text-xl font-bold text-zinc-900 dark:text-zinc-100">5</div>
+                    <div className="text-xs text-zinc-500">AI Apps</div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Name and Title */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-text-primary via-primary to-highlight bg-clip-text text-transparent drop-shadow-2xl text-center">
-              John Doe
-            </h1>
-            <p className="text-lg sm:text-xl text-text-secondary mb-6 font-medium text-center">
-              <span className="text-highlight">AI Engineer</span>
-            </p>
-
-            {/* Social Icons */}
-            <div className="flex justify-center space-x-6 mb-8">
-              <a
-                href="https://example.com"
-                className="w-8 h-8 text-text-secondary hover:text-primary transition-all duration-300 hover:scale-110 hover:drop-shadow-lg hover:shadow-primary/50"
-                aria-label="GitHub"
-              >
-                <FaGithub size={32} className="hover:fill-current filter hover:drop-shadow-lg" />
-              </a>
-              <a
-                href="https://example.com"
-                className="w-8 h-8 text-text-secondary hover:text-primary transition-all duration-300 hover:scale-110 hover:drop-shadow-lg hover:shadow-primary/50"
-                aria-label="LinkedIn"
-              >
-                <FaLinkedin size={32} className="hover:fill-current filter hover:drop-shadow-lg" />
-              </a>
-              <a
-                href="https://example.com"
-                className="w-8 h-8 text-text-secondary hover:text-primary transition-all duration-300 hover:scale-110 hover:drop-shadow-lg hover:shadow-primary/50"
-                aria-label="Blog"
-              >
-                <BookOpen size={32} className="hover:fill-current filter hover:drop-shadow-lg" />
-              </a>
+            {/* About Me Card - Spans 2 columns */}
+            <div className="bento-card lg:col-span-2">
+              <h2 className="font-heading text-xl sm:text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-100">
+                About Me
+              </h2>
+              <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
+                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+              </p>
+              <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.
+              </p>
             </div>
-          </div>
 
-          {/* Right Column - About Me */}
-          <div className="w-full lg:w-2/3 lg:pl-8">
-            {/* About Me Heading */}
-            <h2 className="text-3xl sm:text-4xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-highlight bg-clip-text text-transparent">
-              About Me
-            </h2>
+            {/* CTA Card - Chat with AI */}
+            <div className="lg:col-span-2">
+              <Link
+                href="/chat"
+                className="bento-card group flex items-center justify-between p-6 bg-gradient-to-r from-accent/5 to-accent/10 dark:from-accent/10 dark:to-accent/20 border-accent/20 hover:border-accent/40 hover:shadow-lg transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <MessageCircle className="w-6 h-6 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-bold text-zinc-900 dark:text-zinc-100 mb-1">
+                      Chat with Virtual John Doe
+                    </h3>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      Explore my experience, projects, and discover what makes me different
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-accent group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
 
-            {/* Intro */}
-            <p className="text-lg text-text-secondary mb-8 leading-relaxed">
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-            </p>
-
-            {/* CTA */}
-            <Link
-              href="/chat"
-              className="mt-8 p-5 bg-gradient-to-r from-highlight/20 via-primary/20 to-secondary/20 border-2 border-highlight rounded-lg block hover:from-highlight/30 hover:via-primary/30 hover:to-secondary/30 hover:border-highlight hover:scale-[1.03] transition-all duration-300 shadow-lg shadow-highlight/30 hover:shadow-xl hover:shadow-highlight/50 cursor-pointer group relative overflow-hidden"
-            >
-              {/* Animated background shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-
-              <div className="relative z-10 text-center">
-                <p className="text-2xl text-highlight font-bold group-hover:text-primary transition-colors duration-300 drop-shadow-lg mb-2">
-                  ✨ Chat with Virtual John Doe
-                  <span className="inline-block group-hover:translate-x-1 transition-transform duration-300 ml-2">→</span>
-                </p>
-                <p className="text-base text-text-primary/90 font-medium group-hover:text-text-primary transition-colors duration-300">
-                  Explore my experience, projects, and discover what makes me different
-                </p>
-              </div>
-            </Link>
           </div>
         </div>
       </div>

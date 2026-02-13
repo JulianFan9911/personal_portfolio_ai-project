@@ -1,41 +1,40 @@
 "use client"
 
-import { Mail, MessageCircle } from "lucide-react"
+import { Mail } from "lucide-react"
 import { FaLinkedin } from "react-icons/fa"
 
 export default function ContactSection() {
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 relative">
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-regular-button/10 to-background"></div>
-      <div className="max-w-4xl mx-auto text-center relative">
-        {/* Section Title and Subtitle */}
-        <div className="mb-8">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-text-primary via-primary to-highlight bg-clip-text text-transparent">
+    <section className="py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="bento-card text-center py-10">
+          {/* Section Title */}
+          <h2 className="font-heading text-xl sm:text-2xl font-bold mb-3 text-zinc-900 dark:text-zinc-100">
             Let's Connect
           </h2>
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+          <p className="text-zinc-500 dark:text-zinc-400 mb-8 max-w-md mx-auto">
             Ready to collaborate or discuss opportunities?
           </p>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <a
-            href="mailto:sanhe@johndoe.me"
-            className="bg-gradient-to-r from-cta-button to-primary hover:from-primary hover:to-highlight text-text-primary font-semibold py-3 px-8 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cta-button/40 flex items-center gap-2 border border-primary/20"
-          >
-            <Mail size={20} />
-            Send me Email
-          </a>
-          <a
-            href="https://example.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-background font-semibold py-3 px-8 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-secondary/30 flex items-center gap-2"
-          >
-            <FaLinkedin size={20} />
-            Connect on LinkedIn
-          </a>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <a
+              href="mailto:sanhe@johndoe.me"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-medium hover:bg-accent-dark transition-colors cursor-pointer"
+            >
+              <Mail size={18} />
+              Send me Email
+            </a>
+            <a
+              href="https://example.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+            >
+              <FaLinkedin size={18} />
+              Connect on LinkedIn
+            </a>
+          </div>
         </div>
       </div>
     </section>

@@ -6,9 +6,9 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <Navigation />
-      {children}
+      <div className="pt-20">{children}</div>
     </div>
   );
 }

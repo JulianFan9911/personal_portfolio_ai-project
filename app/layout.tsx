@@ -1,10 +1,12 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { Inter, Outfit, Work_Sans } from "next/font/google"
 import { generateSEOMetadata } from "@/lib/seo/generateMetadata"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" })
+const workSans = Work_Sans({ subsets: ["latin"], variable: "--font-work-sans" })
 
 // 根布局的默认元数据（会被页面级元数据覆盖）
 export const metadata: Metadata = {
@@ -34,8 +36,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className={`${inter.className} antialiased`}>{children}</body>
+    <html lang="en" className={`${inter.variable} ${outfit.variable} ${workSans.variable}`}>
+      <body className={`${workSans.className} antialiased`}>{children}</body>
     </html>
   )
 }

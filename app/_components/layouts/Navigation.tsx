@@ -3,11 +3,12 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X } from "lucide-react"
+import { Menu, X, MessageCircle } from "lucide-react"
 import { NavItem, NavigationProps } from "@/types"
 
 const DEFAULT_NAV_ITEMS: NavItem[] = [
   { label: "Home", href: "/" },
+  { label: "Chat", href: "/chat" },
 ]
 
 export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProps) {
@@ -22,23 +23,45 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-primary/20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center items-center h-16">
+    <nav className="fixed top-4 left-4 right-4 z-50 glass-nav rounded-2xl">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="flex justify-between items-center h-14">
+          {/* Logo / Brand */}
+          <Link
+            href="/"
+            className="font-heading font-bold text-lg text-zinc-900 dark:text-zinc-100 hover:text-accent transition-colors"
+          >
+            JD
+          </Link>
+
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center space-x-1">
             {items.map((item) => {
               const active = isActive(item.href)
+              const isChat = item.href === "/chat"
+
+              if (isChat) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white font-medium text-sm hover:bg-accent-dark transition-colors cursor-pointer"
+                  >
+                    <MessageCircle size={16} />
+                    {item.label}
+                  </Link>
+                )
+              }
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`
-                    font-medium transition-colors duration-200
+                    px-4 py-2 rounded-xl font-medium text-sm transition-colors cursor-pointer
                     ${active
-                      ? "text-primary hover:text-highlight hover:glow-primary"
-                      : "text-text-secondary hover:text-primary"
+                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     }
                   `}
                 >
@@ -52,30 +75,45 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-text-primary hover:text-primary transition-colors duration-200"
+              className="p-2 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               aria-label="Toggle menu"
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation Menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-background/95 backdrop-blur-md border-t border-primary/20">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="md:hidden pb-4 border-t border-zinc-200/50 dark:border-zinc-700/50 mt-2 pt-4">
+            <div className="flex flex-col space-y-1">
               {items.map((item) => {
                 const active = isActive(item.href)
+                const isChat = item.href === "/chat"
+
+                if (isChat) {
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-accent text-white font-medium text-sm cursor-pointer"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <MessageCircle size={16} />
+                      {item.label}
+                    </Link>
+                  )
+                }
 
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={`
-                      block px-3 py-2 transition-colors duration-200
+                      px-4 py-3 rounded-xl font-medium text-sm transition-colors cursor-pointer
                       ${active
-                        ? "text-primary font-medium"
-                        : "text-text-secondary hover:text-primary"
+                        ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                       }
                     `}
                     onClick={() => setIsMenuOpen(false)}

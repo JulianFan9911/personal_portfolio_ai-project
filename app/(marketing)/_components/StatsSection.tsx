@@ -5,35 +5,41 @@ import { achievementStats } from "@/data/achievement-stats"
 
 export default function StatsSection() {
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 relative">
+    <section className="py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Section Header */}
+        <div className="mb-6">
+          <h2 className="font-heading text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            Highlights
+          </h2>
+        </div>
+
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {achievementStats.map((stat, index) => {
             const IconComponent = stat.icon
             const isClickable = stat.href && stat.href.trim() !== ""
 
             const cardContent = (
-              <>
+              <div className="flex items-start gap-4">
                 {/* Icon */}
-                <div className="flex justify-center mb-3">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
                   <IconComponent
-                    size={24}
-                    className={`${stat.color} group-hover:scale-110 transition-all duration-300`}
+                    size={20}
+                    className="text-accent"
                   />
                 </div>
 
-                {/* Number */}
-                <div
-                  className={`text-3xl sm:text-4xl font-bold mb-2 ${stat.color} drop-shadow-lg group-hover:drop-shadow-xl transition-all duration-300`}
-                >
-                  {stat.number}
+                {/* Content */}
+                <div>
+                  <div className="font-heading text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">
+                    {stat.number}
+                  </div>
+                  <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                    {stat.description}
+                  </div>
                 </div>
-
-                {/* Description */}
-                <div className="text-text-secondary text-sm sm:text-base group-hover:text-text-primary transition-colors duration-300">
-                  {stat.description}
-                </div>
-              </>
+              </div>
             )
 
             if (isClickable) {
@@ -43,21 +49,21 @@ export default function StatsSection() {
                   href={stat.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`block bg-regular-button/80 backdrop-blur-sm ${stat.borderColor} border-2 rounded-xl p-6 text-center hover:scale-105 transition-all duration-300 hover:shadow-lg ${stat.glowColor} hover:bg-regular-button/90 group cursor-pointer`}
+                  className="bento-card group hover:border-accent/30"
                 >
                   {cardContent}
                 </Link>
               )
-            } else {
-              return (
-                <div
-                  key={index}
-                  className={`bg-regular-button/80 backdrop-blur-sm ${stat.borderColor} border-2 rounded-xl p-6 text-center transition-all duration-300 ${stat.glowColor} group`}
-                >
-                  {cardContent}
-                </div>
-              )
             }
+
+            return (
+              <div
+                key={index}
+                className="bento-card cursor-default"
+              >
+                {cardContent}
+              </div>
+            )
           })}
         </div>
       </div>
