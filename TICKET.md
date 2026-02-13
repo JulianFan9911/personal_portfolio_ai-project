@@ -1,41 +1,50 @@
-# Task Card: Config Management and Code Refactoring
+# Task Card: Personal Branding with AI-Assisted UI Design
 
 ## Objective
 
-Understand the Config Management pattern and code refactoring principles — why we centralize configuration values and extract reusable code into separate modules. This makes code easier to maintain and scale.
+Learn the "Think → Do → Debug → Learn" methodology for solving open-ended design problems. Use AI Agent Skills to personalize your portfolio website and make it stand out.
 
-Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/14-Config-Management/)
+Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/15-Personal-Branding/)
 
 ## Actionable Items
 
-1. **Read the refactored code (10 minutes)**
-   - Open `api/index.py` — notice how the main function reads like English (Step 1, Step 2, Step 3...)
-   - Open `learn_personal_portfolio_ai/ai_sdk_adapter.py` — find `get_last_user_message_text()` and `ai_sdk_message_generator()`
-   - Think: Why are these functions in a separate module instead of `index.py`?
+1. **Use Agent Skill to brainstorm design options (10 minutes)**
+   - Run `/ui-ux-pro-max` with your requirements
+   - Ask AI to brainstorm, not code directly
+   - Review the design options AI provides
 
-2. **Enable the message length limit feature (10 minutes)**
-   - Find the `max_message_length` field in `learn_personal_portfolio_ai/config.py`
-   - Search for "Uncomment" in `api/index.py` to find the disabled check code
-   - Uncomment the code to enable the message length check
-   - Test: run `mise run dev`, send a message > 1000 characters, verify you get "Message too long" error
-   - Notice: The error response reuses `ai_sdk_message_generator()` — same as normal responses!
+2. **Execute your chosen design (15 minutes)**
+   - Pick a design direction you like
+   - Tell AI to execute it
+   - Run `mise run dev` and view the results
 
-3. **Run the test (2 minutes)**
-   - Run `mise run test-python`
-   - Verify the config test passes
+3. **Find and fix issues with natural language (10 minutes)**
+   - Browse your updated site, find any UI issues
+   - Describe problems in plain language to AI
+   - Have AI fix them, verify the fixes
 
-**Estimated time:** 20-25 minutes
+4. **Learn what AI changed (10 minutes)**
+   - Ask AI to explain each file it modified
+   - Understand what changed and why
+   - Review the "Files Changed Summary" in the tutorial
+
+5. **Take screenshots of your result (5 minutes)**
+   - Screenshot your landing page
+   - Screenshot your chat page
+   - These are your submission
+
+**Estimated time:** 45-50 minutes
 
 ## Checklist
 
-- [ ] **Read index.py** — Understand how the main function reads like English
-- [ ] **Read ai_sdk_adapter.py** — Found `get_last_user_message_text()` and `ai_sdk_message_generator()`
-- [ ] **Understand code reuse** — Can explain why functions are extracted into separate modules
-- [ ] **Found max_message_length** — Located the config field in config.py
-- [ ] **Enabled message length check** — Uncommented the check code in api/index.py
-- [ ] **Tested the feature** — Verified "Message too long" error appears for long messages
-- [ ] **Understand Single Source of Truth** — Can explain why config values should be defined in one place
-- [ ] **Test passes** — `mise run test-python` runs successfully
+- [ ] **Used /ui-ux-pro-max** — Invoked the UI/UX Agent Skill
+- [ ] **Got design options** — AI provided multiple design directions to choose from
+- [ ] **Executed design** — AI modified the code, you saw the new UI
+- [ ] **Fixed an issue** — Described a problem in natural language, AI fixed it
+- [ ] **Understood the changes** — Asked AI to explain what it changed
+- [ ] **Know the methodology** — Can explain "Think → Do → Debug → Learn" in your own words
+- [ ] **Understand trade-offs** — Can explain why we do personalization "now" instead of at the start
+- [ ] **Screenshots ready** — Have screenshots of both landing page and chat page
 
 ---
 
@@ -45,10 +54,15 @@ When you're done:
 
 1. Run `/teach-check` to verify your understanding
 
-2. Be ready to answer:
-   - "What is Single Source of Truth?"
-   - "Why are `get_last_user_message_text()` and `ai_sdk_message_generator()` in ai_sdk_adapter.py instead of index.py?"
-   - "If you want to change the message limit from 1000 to 2000, what file do you modify?"
+2. Submit screenshots of your personalized website:
+   - Landing page screenshot
+   - Chat page screenshot
+
+3. Be ready to answer:
+   - "What is the Think → Do → Debug → Learn cycle?"
+   - "Why do we ask AI to brainstorm before coding?"
+   - "How do you fix UI issues with AI?"
+   - "Why did we do personalization now, not at the beginning?"
 
 ---
 
@@ -56,57 +70,56 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-**Assessment method:** Understanding verification through Q&A + hands-on demonstration.
+**Assessment method:** Screenshot review + methodology understanding through Q&A.
+
+**Screenshot verification (required):**
+
+1. **Landing page screenshot**
+   - Should show personalized design (not the default template)
+   - Should have visible changes (colors, layout, fonts, or styling)
+
+2. **Chat page screenshot**
+   - Should show personalized design
+   - Chat interface should look polished and unique
 
 **Core understanding (required):**
 
-1. **Ask:** "What is Single Source of Truth?"
-   - Good answer: "A value should be defined in only one place. Other places reference it instead of duplicating it."
-   - Acceptable: "If you need to change something, you only change it in one place."
-   - Bad answer: "I don't know" / Can't explain
+3. **Ask:** "What is the Think → Do → Debug → Learn cycle?"
+   - Good answer: "First ask AI to brainstorm options, then pick one and execute, then find issues and fix them with natural language, finally ask AI to explain what it did so you learn."
+   - Acceptable: "Think before coding, execute, fix problems, learn from AI"
+   - Bad answer: "Just ask AI to make it look better"
 
-2. **Ask:** "Why is the main function in index.py so short and simple?"
-   - Good answer: "It only has flow control. Each step is a function call. The detailed logic is in separate modules for reuse."
-   - Acceptable: "It's like reading English, step by step"
-   - Bad answer: "Because that's how it was written"
+4. **Ask:** "Why do we ask AI to brainstorm before coding?"
+   - Good answer: "Open-ended requirements like 'make it better' can go many directions. If AI just codes, it might not match what you want. By brainstorming first, you stay in control of direction."
+   - Acceptable: "So we get options to choose from"
+   - Bad answer: "I don't know"
 
-3. **Ask:** "Why are `get_last_user_message_text()` and `ai_sdk_message_generator()` in ai_sdk_adapter.py?"
-   - Good answer: "They're reusable. ai_sdk_message_generator is used for both normal responses and error responses. If it were inline, we'd have to write it twice."
-   - Acceptable: "For reuse, so we don't repeat code"
+5. **Ask:** "How do you fix UI issues with AI?"
+   - Good answer: "Just describe the problem in natural language, like 'the button turns blue on hover but the subtitle is hard to see.' AI finds the code and fixes it."
+   - Bad answer: "I edit the CSS myself"
+
+6. **Ask:** "Why did we do personalization now, not at the beginning?"
+   - Good answer: "Trade-off. Too early, we don't know what the site looks like yet, might need rework. Too late, style is hard to unify. Now is the right moment — core features done but still adding more."
+   - Acceptable: "Need to see the site before personalizing it"
+   - Bad answer: "I don't know"
+
+7. **Ask:** "What is an Agent Skill?"
+   - Good answer: "A specialized plugin that makes AI more expert in a specific domain. /ui-ux-pro-max makes AI think like a professional designer."
+   - Acceptable: "Makes AI better at UI design"
    - Bad answer: Can't explain
-
-4. **Ask:** "What does 'main function reads like English' mean?"
-   - Good answer: "You can read the function and understand the flow: parse request, check length, call AI, return response. Each step is a function call with a clear name."
-   - Bad answer: Can't explain
-
-**Hands-on verification (required):**
-
-5. **Ask:** "Show me where you uncommented the code in api/index.py"
-   - Student should be able to navigate to the message length check code
-   - Code should be uncommented and functional
-
-6. **Ask:** "Notice how the error response uses ai_sdk_message_generator(). Why is this good design?"
-   - Good answer: "It's the same function used for normal responses. If the AI SDK protocol changes, we only update one function."
-   - Bad answer: "I don't know" / Can't explain the reuse benefit
-
-7. **Ask:** "What happens if you want to change the limit from 1000 to 2000 characters?"
-   - Good answer: "Change `max_message_length` in config.py, that's it"
-   - Bad answer: "Change it in api/index.py" / "Change it in multiple places"
 
 **What counts as "pass":**
 
-- Student can explain Single Source of Truth in their own words
-- Student understands why code is extracted into separate modules (for reuse)
-- Student can explain "main function reads like English"
-- Student successfully enabled the message length check feature
-- Student can demonstrate that long messages return "Message too long" error
-- Student understands the reuse of ai_sdk_message_generator()
-- Test passes
+- Both screenshots show clear personalization (not default template)
+- Student can explain the "Think → Do → Debug → Learn" cycle
+- Student understands why we brainstorm before coding
+- Student can describe how to fix issues with natural language
+- Student understands the trade-off of timing
 
 **What does NOT count as pass:**
 
-- Student cannot explain why we use a Config class
-- Student cannot explain why functions are in separate modules
-- Student couldn't find or enable the message length check code
-- Student doesn't notice the reuse of ai_sdk_message_generator()
-- Student just memorized answers without understanding the design philosophy
+- Screenshots show default template (no personalization)
+- Student cannot explain the methodology
+- Student thinks you should just ask AI to "make it better" without brainstorming
+- Student doesn't understand why timing matters
+- Student just memorized answers without understanding the problem-solving approach
