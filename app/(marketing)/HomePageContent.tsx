@@ -1,31 +1,31 @@
 "use client"
 
-import { Spotlight } from "@/components/ui/spotlight"
-import Hero from "./_components/Hero"
-import StatsSection from "./_components/StatsSection"
-import ContactSection from "./_components/ContactSection"
+import ScreenName from "./_components/ScreenName"
+import ScreenTitle from "./_components/ScreenTitle"
+import ScreenStats from "./_components/ScreenStats"
+import ScreenCTA from "./_components/ScreenCTA"
 
 export default function HomePageContent() {
   return (
-    <div className="min-h-screen bg-background text-text-primary font-inter relative overflow-hidden pt-16">
-      {/* Spotlight Background Effect */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />
-        <Spotlight className="top-10 left-full h-[80vh] w-[50vw]" fill="#00bfff" />
-        <Spotlight className="top-28 left-80 h-[80vh] w-[50vw]" fill="#87ceeb" />
-      </div>
+    <div className="bg-white dark:bg-black text-black dark:text-white font-body">
+      {/* Screen 1: Name Reveal */}
+      <ScreenName />
 
-      {/* Hero Section */}
-      <Hero />
+      {/* Screen 2: Title & Description */}
+      <ScreenTitle />
 
-      {/* Achievement Stats Grid */}
-      <StatsSection />
+      {/* Screen 3: Stats Horizontal Scroll */}
+      <ScreenStats />
 
-      {/* Contact Section */}
-      <ContactSection />
+      {/* Screen 4: Full-Screen Chat CTA */}
+      <ScreenCTA />
 
-      {/* Footer Spacing */}
-      <div className="h-16"></div>
+      {/* Minimal Footer */}
+      <footer className="py-6 px-4 border-t-4 border-black dark:border-white">
+        <p className="text-center font-display text-sm text-gray-600 dark:text-gray-400 uppercase tracking-widest">
+          &copy; {new Date().getFullYear()} JOHN DOE
+        </p>
+      </footer>
     </div>
   )
 }

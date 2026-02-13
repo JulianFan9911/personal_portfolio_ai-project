@@ -1,40 +1,38 @@
 "use client"
 
-import { Mail, MessageCircle } from "lucide-react"
+import { Mail } from "lucide-react"
 import { FaLinkedin } from "react-icons/fa"
 
 export default function ContactSection() {
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 relative">
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-regular-button/10 to-background"></div>
-      <div className="max-w-4xl mx-auto text-center relative">
-        {/* Section Title and Subtitle */}
-        <div className="mb-8">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-text-primary via-primary to-highlight bg-clip-text text-transparent">
-            Let's Connect
-          </h2>
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-            Ready to collaborate or discuss opportunities?
-          </p>
-        </div>
+    <section className="py-16 px-4 sm:px-6 lg:px-8 border-t-4 border-black dark:border-white">
+      <div className="max-w-7xl mx-auto">
+        {/* Section Header */}
+        <h2 className="font-display text-display-md text-black dark:text-white mb-8">
+          LET'S CONNECT
+        </h2>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-xl">
+          Ready to collaborate or discuss opportunities? Reach out and let's build something great together.
+        </p>
+
+        {/* Action Buttons - Bold Style */}
+        <div className="flex flex-col sm:flex-row gap-4">
           <a
             href="mailto:sanhe@johndoe.me"
-            className="bg-gradient-to-r from-cta-button to-primary hover:from-primary hover:to-highlight text-text-primary font-semibold py-3 px-8 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cta-button/40 flex items-center gap-2 border border-primary/20"
+            className="bold-button-accent flex items-center justify-center gap-3"
           >
             <Mail size={20} />
-            Send me Email
+            SEND EMAIL
           </a>
           <a
             href="https://example.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-background font-semibold py-3 px-8 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-secondary/30 flex items-center gap-2"
+            className="bold-button flex items-center justify-center gap-3"
           >
             <FaLinkedin size={20} />
-            Connect on LinkedIn
+            LINKEDIN
           </a>
         </div>
       </div>

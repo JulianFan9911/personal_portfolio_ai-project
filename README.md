@@ -1,291 +1,384 @@
-# Config Management: Making Your Code Ready to Scale
+# Ship Your Story: Make Others See Your Value
 
-> The feature works. But before adding more, let's "step back and refactor."
+> Code becomes outdated, but the thinking you document doesn't.
 
 ## Overview
 
-In the previous lesson, we deployed our AI chat to Vercel. It works great. Is the task done?
+Congratulations on making it here.
 
-For amateur developers, yes. But for professional developers, this is just the beginning.
+Let's look back at this project's journey: starting from an empty repo, we built a complete AI portfolio website. Next.js + FastAPI + AWS Bedrock, frontend-backend separation, streaming responses, Vercel deployment, testing framework, documentation system — this isn't a "toy project," it's an **enterprise-grade, production-quality** AI application.
 
-In this lesson, we do two things that "seem unnecessary but are important":
+More importantly, this architecture is an **extensible foundation**. Any AI application you want to build in the future — RAG systems, AI Agents, multimodal assistants — can be built on top of this skeleton.
 
-1. **Config Management** — Centralize configuration values to prepare for future scaling
-2. **Code Refactoring** — Make the main function read like English, extract reusable code into separate modules
+**But here's the problem: how does anyone else know you did all this?**
+
+Your code sits on GitHub — thousands of lines, dozens of files. HR won't read it. Interviewers don't have time to go through it line by line. They'll spend 30 seconds scanning your resume, then decide whether to give you a chance.
+
+If you want this project to truly become your **career asset**, you need to learn one thing: **tell your story in words**.
+
+That's what this final lesson is about.
+
+---
 
 ## Learning Objectives
 
-This lesson is not about "how to write code" but about **why we organize code this way**. This is a design philosophy lesson.
+In this lesson, you'll learn:
 
-After completing this lesson, you will be able to:
+1. **Internal docs vs external docs** — Last lesson's dev-guide/decisions are for yourself and team; blogs are for the outside world
+2. **Understand Ship Your Story** — Publicly documenting your learning isn't showing off, it's a career strategy
+3. **Connect blogs to Leadership Principles** — Each blog reflects a professional competency
+4. **Write your own blog** — Practice turning learning into output
 
-1. **Understand Single Source of Truth** — Know why "define a value in only one place" is good design
-2. **Understand Code Reuse** — Extract common logic into separate modules for reuse
-3. **Read Clean Main Functions** — Reading `index.py` should be like reading English, with each step crystal clear
+---
 
 ## Prerequisites
 
-- Completed the previous lesson (deployment successful, AI chat working on Vercel)
-- Understand the runtime detection concept
+- Completed all previous lessons
+- Read last lesson's documentation (dev-guide and decisions)
 
 ---
 
 ## Key Concepts
 
-### 1. Why Config Management?
+### Internal Docs vs External Docs
 
-Imagine this situation in your codebase:
+Last lesson we wrote two types of documentation:
 
-```python
-# boto_ses.py
-boto_ses = boto3.Session(region_name="us-east-1", ...)
+| Type | Location | Audience | Purpose |
+|------|----------|----------|---------|
+| Dev Guide | `docs/dev-guide/` | Self, team | How to run it, how to modify code |
+| Decisions | `docs/decisions/` | Self, team | Why we made certain choices |
 
-# some_other_file.py
-client = boto3.client("s3", region_name="us-east-1")
+These are **internal docs** — for yourself and your team, helping understand and maintain the code.
 
-# yet_another_file.py
-REGION = "us-east-1"
+But there's another type: **external docs** — for the outside world.
+
+| Type | Location | Audience | Purpose |
+|------|----------|----------|---------|
+| Blogs | `blogs/` | HR, interviewers, peers, yourself | Showcase thinking process and professionalism |
+
+Blogs aren't technical documentation — they're **your learning diary**. They record: what problem you encountered, how you thought about it, how you solved it.
+
+### Why Ship Your Story?
+
+"Ship Your Story" is a career development strategy:
+
+1. **Interview material** — When interviewers ask "what projects have you done," you have not just code, but complete records of your thinking
+2. **Reflection tool** — Writing blogs forces you to organize your thoughts, deepening understanding
+3. **Career credibility** — Public learning records are more convincing than a few lines on a resume
+4. **Future assets** — Years later, these records can become talks, tutorials, even books
+
+The key is: **don't wait until you've "learned it" to write — write as you learn**.
+
+### The Leadership Principle Behind Each Blog
+
+Look at this project's 16 blogs. Each one isn't just a "tech note" — it demonstrates a professional competency:
+
+| Blog | Title | Competency Demonstrated |
+|------|-------|------------------------|
+| 00 | The Beginning of Everything | **Bias for Action** — Act first, don't wait for everything to be perfect |
+| 01 | If You're Going to Learn, Learn the Best | **Learn and Be Curious** — Learn the best, research top solutions |
+| 02 | Before You Run, Learn How to Not Fall | **Insist on High Standards** — Set up testing framework from day one |
+| 03 | Same Idea, Different Skin | **Learn and Be Curious** — Understand underlying principles, apply across domains |
+| 04 | Cut It Down, Make It Run | **Deliver Results** — Cut to minimum viable, get results first |
+| 05 | From Localhost to the World | **Deliver Results** — Running locally isn't done, deployment is |
+| 06 | Learn From The Giants | **Learn and Be Curious** — Learn from the masters |
+| 07 | Steal Like an Artist | **Invent and Simplify** — Imitate first, then innovate |
+| 08 | The Fake Teaches You The Real | **Invent and Simplify** — Validate architecture with fake data |
+| 09 | The Power of Protocol | **Think Big** — Understand protocols, design scalable systems |
+| 10 | Always Have a Plan B | **Think Big** — Redundancy design, professional thinking |
+| 11 | The First Rule of Business | **Frugality** — Understand costs, save where it matters |
+| 12 | The Toolmaker's Mindset | **Dive Deep** — Understand what tools do, not just how to use them |
+| 13 | The First Milestone | **Deliver Results** — Zero tech debt milestone |
+| 14 | The Art of Going Back | **Ownership** — Go back and organize, own your code to the end |
+| 15 | The 30% Rule | **Have Backbone** — Know when to make global decisions |
+
+These weren't forced connections after the fact — **the process of writing blogs itself cultivates these competencies**.
+
+### Blog Structure
+
+Each blog doesn't need to be long, but needs structure:
+
+```markdown
+# Title (compelling, not "Study Notes #1")
+
+## What Happened
+Describe the scenario and problem
+
+## How I Thought About It
+Your thinking process
+
+## What I Did
+The specific solution
+
+## What I Learned
+Distilled principles or insights
 ```
 
-Now your boss says: "We're migrating to Tokyo. Change it to `ap-northeast-1`."
-
-You need to:
-1. Find every occurrence of `us-east-1`
-2. Change them one by one
-3. Pray you didn't miss any
-
-This is the pain of **scattered configuration**.
-
-**Core Principle: Single Source of Truth**
-
-> **If a value might change, it should be defined in only one place. Everywhere else should reference it.**
-
-The rule is simple: **If changing a string/value requires editing multiple files, that value should be abstracted into config.**
-
-### 2. Config Pattern: dataclass + factory method
-
-Check out our solution in [config.py](./learn_personal_portfolio_ai/config.py):
-
-```python
-@dataclasses.dataclass
-class Config:
-    aws_region: str | None = dataclasses.field(default=None)
-    aws_access_key_id: str | None = dataclasses.field(default=None)
-    aws_secret_access_key: str | None = dataclasses.field(default=None)
-    max_message_length: int = dataclasses.field(default=1000)
-
-    @classmethod
-    def new(cls):
-        if runtime.is_local():
-            return cls.new_in_local_runtime()
-        elif runtime.is_vercel():
-            return cls.new_in_vercel_runtime()
-
-config = Config.new()
-```
-
-**Using it is just one line:**
-
-```python
-from learn_personal_portfolio_ai.config import config
-
-region = config.aws_region
-max_len = config.max_message_length
-```
-
-### 3. Code Refactoring: Make the Main Function Read Like English
-
-Check out the refactored [api/index.py](./api/index.py):
-
-```python
-@app.post("/api/chat")
-async def handle_chat_data(request: Request):
-    # Step 1: Log incoming request
-    request_body_data = await debug_ai_sdk_request(request=request)
-
-    # Step 2: Parse request
-    request_body = RequestBody(**request_body_data)
-
-    # Step 3: Check message length (commented out, you'll enable it!)
-    # last_user_message = get_last_user_message_text(request_body)
-    # if last_user_message and len(last_user_message) > config.max_message_length:
-    #     ...
-
-    # Step 4: Initialize chat session
-    chat_session = ChatSession(...)
-
-    # Step 5: Call Bedrock
-    response = chat_session.send_message([])
-
-    # Step 6: Return streaming response
-    return StreamingResponse(ai_sdk_message_generator(output_text=output_text), ...)
-```
-
-**This is what good code looks like:** Reading the main function is like reading English. Step 1, Step 2, Step 3... each step is crystal clear.
-
-**Core Ideas:**
-
-- **Main function only has flow control** — Each step is a function call
-- **Detailed logic lives in separate modules** — For reuse and testing
-
-### 4. The Power of Reuse
-
-Check out the functions in [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py):
-
-```python
-# This function is reused twice!
-def ai_sdk_message_generator(output_text: str):
-    """Generate AI SDK v5 format SSE stream"""
-    message_id = str(uuid.uuid4())
-    yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
-    yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
-    yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
-    yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
-    yield "data: [DONE]\n\n"
-```
-
-This function is used twice in `index.py`:
-1. When returning normal AI responses
-2. When returning "Message too long" errors
-
-If this logic were written twice in `index.py`, when the AI SDK protocol changes, you'd have to update two places. Extracted as a function, you only update one place.
-
-**This is the power of reuse: change once, effective everywhere.**
-
-### 5. Module Responsibility Breakdown
-
-- [api/index.py](./api/index.py) — Main function, only flow control
-- [config.py](./learn_personal_portfolio_ai/config.py) — Configuration management
-- [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) — AI SDK format conversion, debugging, SSE generation
-- [boto_ses.py](./learn_personal_portfolio_ai/boto_ses.py) — AWS client initialization
-- [utils.py](./learn_personal_portfolio_ai/utils.py) — General utility functions
-
-Each module does one thing, and does it well.
+The key is: **don't just record "what you did," record "why you did it"**.
 
 ---
 
 ## Exercises
 
-### Exercise 1: Read the Refactored Code
+### Exercise 1: Read the Blog Catalog
 
-**Goal:** Understand the code organization.
+**Goal:** Understand the entire project's learning journey.
 
-1. Open [api/index.py](./api/index.py), read through the `handle_chat_data` function
-   - Notice how it reads like English? What does each step do?
-   - Find the commented-out "Check message length" section
+**What to do:**
 
-2. Open [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py), find these two functions:
-   - `get_last_user_message_text()` — Extracts the last user message
-   - `ai_sdk_message_generator()` — Generates SSE stream
+1. Open the blog catalog: [00-Blog-Catalog-CN.md](./blogs/00-Blog-Catalog-CN.md)
+2. Quickly browse the titles and summaries of 16 blogs
+3. Ask yourself:
+   - Which titles attract you most?
+   - Can you guess what each is about from the title?
+   - Are these blogs technical tutorials, or thinking records?
 
-3. Think: Why are these functions in `ai_sdk_adapter.py` instead of `index.py`?
+**Why this matters:**
 
-### Exercise 2: Enable Message Length Limit
-
-**Goal:** Enable a config feature hands-on, experience the power of reuse.
-
-We added `max_message_length = 1000` in config to limit user message length. The check logic is already written but commented out.
-
-**Your task:**
-
-1. Open [config.py](./learn_personal_portfolio_ai/config.py), find the `max_message_length` field
-
-2. Open [api/index.py](./api/index.py), find this commented code:
-   ```python
-   # --- Check message length ---
-   # Uncomment below to enable max message length check
-   # last_user_message = get_last_user_message_text(request_body)
-   # if last_user_message and len(last_user_message) > config.max_message_length:
-   #     error_msg = f"Message too long..."
-   #     response = StreamingResponse(
-   #         ai_sdk_message_generator(output_text=error_msg),  # Reuse!
-   #         ...
-   #     )
-   #     return response
-   ```
-
-3. Uncomment that code
-
-4. Start the dev server and test:
-   ```bash
-   mise run dev
-   ```
-   - Send a normal message → Should work normally
-   - Send a message over 1000 characters → Should return "Message too long" error
-
-**Notice:** The error response uses `ai_sdk_message_generator()` — the same function as normal responses! That's reuse.
-
-### Exercise 3: Run Tests
-
-```bash
-mise run test-python
-```
-
-The test code is in [tests_python/test_config.py](./tests_python/test_config.py). It verifies that `Config.new()` can successfully create an instance.
+Good blog titles aren't "React Study Notes 01" — they're curiosity-provoking questions or viewpoints. Notice how these blogs are named.
 
 ---
 
-## Reflection
+### Exercise 2: Deep Read 2-3 Blogs
 
-In this lesson, we did two things:
+**Goal:** Learn blog writing style.
 
-1. **Config Management** — Centralized configuration values in one place
-2. **Code Refactoring** — Extracted reusable logic into separate modules
+**What to do:**
 
-These changes seem small, but they make the code **ready to scale**:
+1. Pick 2-3 blogs you're interested in, read them completely
+2. Recommended starting points:
+   - [00-The-Beginning-of-Everything-CN.md](./blogs/00-The-Beginning-of-Everything-CN.md) — The beginning
+   - [04-Cut-It-Down-Make-It-Run-CN.md](./blogs/04-Cut-It-Down-Make-It-Run-CN.md) — Deliver Results
+   - [13-The-First-Milestone-From-Zero-to-Live-CN.md](./blogs/13-The-First-Milestone-From-Zero-to-Live-CN.md) — Milestone
+3. While reading, ask yourself:
+   - What problem does this blog address?
+   - How did the author think?
+   - What would I do if I faced a similar problem?
 
-- Need a new config? Edit `config.py`, one file
-- AI SDK protocol changes? Edit `ai_sdk_adapter.py`, one file
-- New teammate needs to understand the code? Read the `index.py` main function, that's enough
+**Why this matters:**
 
-When your project grows from 3 files to 30, from 1 developer to 10, you'll thank yourself for doing these "seemingly unnecessary" things today.
+Reading others' blogs is the fastest way to learn blog writing. Notice: these blogs aren't teaching technology — they're sharing thinking processes.
+
+---
+
+### Exercise 3: Write Your Own Blog
+
+**Goal:** Turn what you learned in this project into a blog post.
+
+**What to do:**
+
+1. Recall the most memorable thing from this project:
+   - A bug that stuck you for a long time?
+   - A concept that gave you an "aha" moment?
+   - A moment that changed how you think?
+
+2. Write a blog using this structure:
+
+```markdown
+# [A compelling title]
+
+## What Happened
+Describe the scenario
+
+## How I Thought About It
+Your thinking process
+
+## What I Did
+Specific approach
+
+## What I Learned
+Distilled wisdom
+```
+
+3. Save the blog to `blogs/` directory, name it `my-first-blog.md`
+
+4. You can use AI to help polish:
+```
+Help me make this blog read more smoothly, but keep my thinking process
+```
+
+**Why this matters:**
+
+Writing blogs isn't for others first — it's for yourself. The writing process forces you to organize thoughts, turning vague "feels like I learned" into clear "actually understand."
+
+---
+
+### Exercise 4: Identify the Leadership Principle in Your Blog
+
+**Goal:** Connect blogs to professional competencies.
+
+**What to do:**
+
+1. Re-read the blog you wrote
+2. Ask yourself: what Leadership Principle does this blog demonstrate?
+   - Bias for Action?
+   - Learn and Be Curious?
+   - Deliver Results?
+   - Ownership?
+   - Others?
+
+3. Add a line at the end of your blog:
+```markdown
+---
+*This blog demonstrates [XXX] — [one sentence explaining why]*
+```
+
+**Why this matters:**
+
+In interviews, interviewers won't ask "tell me about your blog." They'll ask "tell me about a challenge you faced." If you've already connected your blogs to Leadership Principles, answering these questions becomes natural.
+
+---
+
+## Summary
+
+This project concludes here.
+
+Let's review what you accomplished:
+
+**Technical level:**
+- Built a full-stack Next.js + FastAPI application from scratch
+- Implemented AI Chat functionality, integrated with AWS Bedrock
+- Used Vercel AI SDK for streaming responses
+- Deployed to Vercel, globally accessible
+- Set up testing framework and documentation system
+
+**Mindset level:**
+- Learned "get it running first, optimize later" Bias for Action
+- Understood the 30% Rule — when to make global decisions
+- Mastered the Think → Do → Debug → Learn cycle
+- Developed habits of writing documentation and blogs
+
+**Career level:**
+- Have a portfolio project to showcase
+- Have a complete set of learning records (blogs)
+- Can confidently talk about your thinking process in interviews
+
+This isn't the end — it's the beginning.
+
+This architecture can continue to expand — add RAG, add Agents, add multimodal — any AI feature can be built on this skeleton.
+
+And the thinking you've documented will become long-term assets in your career.
+
+**Ship Your Story isn't showing off — it's investing in your future self.**
 
 ---
 
 ## Mentor's Note
 
-**Why this exercise matters:**
+**Why end with "Ship Your Story":**
 
-Today's changes seem small, but I want you to understand two design philosophies:
+Many students think "writing blogs" is extra burden — better to learn another technology.
 
-**1. Single Source of Truth**
+But here's what I want to say: technology becomes outdated, tools get updated, but **your thinking ability and expression ability** don't become outdated.
 
-A value is defined in only one place. Everywhere else is a reference.
+I've seen too many candidates with good technical skills who can't clearly explain what they did or why during interviews. Meanwhile, other candidates with perhaps weaker technical skills can clearly articulate their thinking process — the latter are often preferred.
 
-**2. Main Function Reads Like English**
+**Blogs are your "thinking records."**
 
-Good code, the main function should let people understand the flow at a glance:
-- Step 1: Parse request
-- Step 2: Check length
-- Step 3: Call AI
-- Step 4: Return response
+- Before interviews, you can re-read your blogs, recall your journey
+- Years later, these records can become talks, tutorials, even books
+- Most importantly, the writing process itself deepens your understanding
 
-How exactly to "parse request"? How to "call AI"? Those details go in separate modules. The main function only "directs," it doesn't "do the work."
+**About Leadership Principles:**
 
-**Judging Code Quality:**
+I deliberately embedded these connections throughout the course. Not to teach you "how to interview," but to make you realize:
 
-> "If requirements change, how many files do I need to modify?"
+**True professional competencies aren't memorized before interviews — they're naturally formed through practice.**
 
-If the answer is "one," your design is good.
+Every step of this project — act first, cut to minimum, deploy promptly, go back to organize — cultivates these competencies. Blogs just make them explicit.
+
+**Final advice for students:**
+
+1. **Keep writing blogs** — Don't need to write daily, but write one after each milestone
+2. **Publish publicly** — Post to Medium, Dev.to, or your own blog site
+3. **Put blog links on your resume** — This is more convincing than "familiar with XXX tech stack"
+4. **Re-read periodically** — You'll be amazed how "ignorant" you were three months ago — that's evidence of growth
+
+**The true value of this project:**
+
+It's not these thousands of lines of code — it's that you learned **how to build a complete AI application from scratch**, and **documented the process**.
+
+Code becomes outdated, but thinking doesn't.
 
 ---
 
 ## Quick Reference
 
-**Key files:**
-- [config.py](./learn_personal_portfolio_ai/config.py) — Configuration management
-- [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) — AI SDK adapter
-- [api/index.py](./api/index.py) — Main function entry point
-
-**Using Config:**
-```python
-from learn_personal_portfolio_ai.config import config
-
-region = config.aws_region
-max_len = config.max_message_length
+**Blog location:**
+```
+blogs/
+├── 00-Blog-Catalog-CN.md          # Catalog
+├── 00-The-Beginning-of-Everything-CN.md
+├── 01-If-You-re-Going-to-Learn-Learn-the-Best-CN.md
+├── ...
+└── 15-The-30-Percent-Rule-CN.md
 ```
 
-**Run tests:**
+**Blog structure:**
+```markdown
+# Compelling title
+
+## What Happened
+## How I Thought About It
+## What I Did
+## What I Learned
+```
+
+**Leadership Principles quick reference:**
+- Bias for Action — Act first
+- Learn and Be Curious — Curiosity
+- Deliver Results — Deliver outcomes
+- Ownership — Own it
+- Insist on High Standards — High standards
+- Think Big — Big picture
+- Dive Deep — Go deep
+- Frugality — Be frugal
+
+**Writing blogs:**
 ```bash
-mise run test-python
+# Let AI help polish
+# Describe what you want to write in Claude Code
 ```
+
+---
+
+## Assignment
+
+**Write your own blog:**
+
+1. Pick something from this project that impressed you most
+2. Write it using: What Happened → How I Thought → What I Did → What I Learned
+3. Save to `blogs/my-first-blog.md`
+4. Identify which Leadership Principle it demonstrates
+
+This is your first Ship Your Story record.
+
+Your future self will thank the you who started writing today.
+
+---
+
+## Important Reminder: These Blogs Aren't Yours
+
+**Note: The 16 blogs in the `blogs/` directory are examples written by the mentor, not your own work.**
+
+The purpose of these blogs is to:
+- Help you understand **how to connect scattered learning experiences into a complete story**
+- Show you that **every small story can become interview talking points**
+- Give you a **reference for blog structure and writing style**
+
+**If you want to use blogs for job hunting or personal branding, you must:**
+
+1. **Rewrite them yourself in English** — Don't ask AI to "translate this for me" — that's not your voice
+2. **Use your own experiences** — Your pitfalls, your thinking, your aha moments
+3. **Use your own language** — Interviewers will ask about your blog content, you need to speak naturally about it
+
+AI can help polish your grammar, but **the content must be yours**.
+
+Because in interviews, interviewers might ask: "You mentioned XXX in your blog, can you elaborate?" If that's not something you actually experienced, you'll freeze.
+
+**The value of these example blogs is showing you "what to write" and "how to write." The real asset — you have to create it yourself.**
+
+---
+
+*Code is what you did. Blogs are how you thought. Together, they're the complete you.*

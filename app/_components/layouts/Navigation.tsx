@@ -8,6 +8,7 @@ import { NavItem, NavigationProps } from "@/types"
 
 const DEFAULT_NAV_ITEMS: NavItem[] = [
   { label: "Home", href: "/" },
+  { label: "Chat", href: "/chat" },
 ]
 
 export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProps) {
@@ -22,23 +23,44 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-primary/20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center items-center h-16">
+    <nav className="fixed top-0 left-0 right-0 z-50 minimal-nav">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo / Brand */}
+          <Link
+            href="/"
+            className="font-display text-2xl text-black dark:text-white hover:text-accent transition-colors"
+          >
+            JD
+          </Link>
+
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center gap-8">
             {items.map((item) => {
               const active = isActive(item.href)
+              const isChat = item.href === "/chat"
+
+              if (isChat) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="font-display text-lg px-6 py-2 bg-accent text-white border-2 border-accent hover:bg-black hover:border-black hover:text-white dark:hover:bg-white dark:hover:border-white dark:hover:text-black transition-colors cursor-pointer"
+                  >
+                    CHAT
+                  </Link>
+                )
+              }
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`
-                    font-medium transition-colors duration-200
+                    font-display text-lg uppercase tracking-wider transition-colors cursor-pointer
                     ${active
-                      ? "text-primary hover:text-highlight hover:glow-primary"
-                      : "text-text-secondary hover:text-primary"
+                      ? "text-accent"
+                      : "text-black dark:text-white hover:text-accent"
                     }
                   `}
                 >
@@ -52,7 +74,7 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-text-primary hover:text-primary transition-colors duration-200"
+              className="p-2 text-black dark:text-white hover:text-accent transition-colors cursor-pointer"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -62,20 +84,34 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
 
         {/* Mobile Navigation Menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-background/95 backdrop-blur-md border-t border-primary/20">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="md:hidden border-t-2 border-black dark:border-white">
+            <div className="py-4 space-y-2">
               {items.map((item) => {
                 const active = isActive(item.href)
+                const isChat = item.href === "/chat"
+
+                if (isChat) {
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="block font-display text-xl py-3 px-4 bg-accent text-white text-center cursor-pointer"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      CHAT
+                    </Link>
+                  )
+                }
 
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={`
-                      block px-3 py-2 transition-colors duration-200
+                      block font-display text-xl py-3 px-4 uppercase tracking-wider transition-colors cursor-pointer
                       ${active
-                        ? "text-primary font-medium"
-                        : "text-text-secondary hover:text-primary"
+                        ? "text-accent"
+                        : "text-black dark:text-white hover:text-accent"
                       }
                     `}
                     onClick={() => setIsMenuOpen(false)}

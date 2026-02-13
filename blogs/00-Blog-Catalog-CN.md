@@ -91,3 +91,9 @@ GitHub 上有无数牛人的开源项目，但以前总是不知道从哪看起�
 AI 能写出能跑的代码，但回头整理才能让你真正 handle 它。起跑之前，先把鞋带系好。
 
 📄 [14-The-Art-of-Going-Back-CN.md](14-The-Art-of-Going-Back-CN.md)
+
+## 15 - The 30% Rule
+
+什么时候做"风格统一"这种全局决策？不是一开始，是 30%——你看得清全貌，但还改得动。
+
+📄 [15-The-30-Percent-Rule-CN.md](15-The-30-Percent-Rule-CN.md)

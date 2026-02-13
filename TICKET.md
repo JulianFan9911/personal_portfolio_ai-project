@@ -1,41 +1,48 @@
-# Task Card: Config Management and Code Refactoring
+# Learn Personal Portfolio AI 17 - Task Card: Ship Your Story
 
 ## Objective
 
-Understand the Config Management pattern and code refactoring principles — why we centralize configuration values and extract reusable code into separate modules. This makes code easier to maintain and scale.
+Learn to turn your learning experiences into career assets by writing blogs. Read example blogs to understand structure and style, then write your own blog documenting something you learned in this project.
 
-Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/14-Config-Management/)
+Read the [Tutorial](https://github.com/easyscale-academy/learn_personal_portfolio_ai-project/tree/17-Ship-Your-Story/)
 
 ## Actionable Items
 
-1. **Read the refactored code (10 minutes)**
-   - Open `api/index.py` — notice how the main function reads like English (Step 1, Step 2, Step 3...)
-   - Open `learn_personal_portfolio_ai/ai_sdk_adapter.py` — find `get_last_user_message_text()` and `ai_sdk_message_generator()`
-   - Think: Why are these functions in a separate module instead of `index.py`?
+1. **Read the blog catalog (5 minutes)**
+   - Open [00-Blog-Catalog-CN.md](./blogs/00-Blog-Catalog-CN.md)
+   - Scan all 16 blog titles and summaries
+   - Notice how titles are written (not "Study Notes #1")
 
-2. **Enable the message length limit feature (10 minutes)**
-   - Find the `max_message_length` field in `learn_personal_portfolio_ai/config.py`
-   - Search for "Uncomment" in `api/index.py` to find the disabled check code
-   - Uncomment the code to enable the message length check
-   - Test: run `mise run dev`, send a message > 1000 characters, verify you get "Message too long" error
-   - Notice: The error response reuses `ai_sdk_message_generator()` — same as normal responses!
+2. **Deep read 2-3 blogs (15 minutes)**
+   - Pick blogs that interest you
+   - Recommended: Blog 00, 04, or 13
+   - Pay attention to structure: What Happened → How I Thought → What I Did → What I Learned
 
-3. **Run the test (2 minutes)**
-   - Run `mise run test-python`
-   - Verify the config test passes
+3. **Write your own blog (20 minutes)**
+   - Pick something memorable from this project (a bug, an aha moment, a concept)
+   - Use the structure from the tutorial
+   - Save to `blogs/my-first-blog.md`
 
-**Estimated time:** 20-25 minutes
+4. **Identify the Leadership Principle (5 minutes)**
+   - Re-read your blog
+   - Add at the end: which LP it demonstrates and why
+
+5. **Submit to mentor (5 minutes)**
+   - Share your blog file with your mentor
+   - Explain what you wrote and why you chose this topic
+
+**Estimated time:** 50-55 minutes
 
 ## Checklist
 
-- [ ] **Read index.py** — Understand how the main function reads like English
-- [ ] **Read ai_sdk_adapter.py** — Found `get_last_user_message_text()` and `ai_sdk_message_generator()`
-- [ ] **Understand code reuse** — Can explain why functions are extracted into separate modules
-- [ ] **Found max_message_length** — Located the config field in config.py
-- [ ] **Enabled message length check** — Uncommented the check code in api/index.py
-- [ ] **Tested the feature** — Verified "Message too long" error appears for long messages
-- [ ] **Understand Single Source of Truth** — Can explain why config values should be defined in one place
-- [ ] **Test passes** — `mise run test-python` runs successfully
+- [ ] **Read blog catalog** — Scanned all 16 blog titles and summaries
+- [ ] **Deep read blogs** — Read 2-3 complete blogs, understood the structure
+- [ ] **Wrote own blog** — Created `blogs/my-first-blog.md` with personal experience
+- [ ] **Used proper structure** — Blog has What Happened, How I Thought, What I Did, What I Learned
+- [ ] **Identified Leadership Principle** — Added LP tag at the end of blog
+- [ ] **Understand internal vs external docs** — Can explain the difference
+- [ ] **Understand why blogs matter** — Can explain why code alone isn't enough
+- [ ] **Submitted to mentor** — Shared the blog and discussed your choice
 
 ---
 
@@ -45,10 +52,15 @@ When you're done:
 
 1. Run `/teach-check` to verify your understanding
 
-2. Be ready to answer:
-   - "What is Single Source of Truth?"
-   - "Why are `get_last_user_message_text()` and `ai_sdk_message_generator()` in ai_sdk_adapter.py instead of index.py?"
-   - "If you want to change the message limit from 1000 to 2000, what file do you modify?"
+2. Submit your blog:
+   - File location: `blogs/my-first-blog.md`
+   - Brief explanation of what you documented and why
+
+3. Be ready to answer:
+   - "What's the difference between internal docs and blogs?"
+   - "Why can't you just let your code speak for itself?"
+   - "What Leadership Principle does your blog demonstrate?"
+   - "Tell me about [specific detail from your blog]" — you should be able to elaborate naturally
 
 ---
 
@@ -56,57 +68,64 @@ When you're done:
 
 > **For instructors and /teach-check assistant** — Students may skip this section.
 
-**Assessment method:** Understanding verification through Q&A + hands-on demonstration.
+**Assessment method:** Blog submission + understanding verification through Q&A.
+
+**Reading verification (required):**
+
+1. **Ask:** "What's one thing you noticed about how the example blogs are written?"
+   - Good answer: Mentions structure, thinking process, or how it's not a pure tutorial
+   - Bad answer: "I don't remember" or "They're about tech stuff"
+
+2. **Ask:** "Which blog did you read? What Leadership Principle did it demonstrate?"
+   - Good answer: Can name blog and explain the LP connection
+   - Bad answer: Can't recall or gives wrong LP
 
 **Core understanding (required):**
 
-1. **Ask:** "What is Single Source of Truth?"
-   - Good answer: "A value should be defined in only one place. Other places reference it instead of duplicating it."
-   - Acceptable: "If you need to change something, you only change it in one place."
-   - Bad answer: "I don't know" / Can't explain
+3. **Ask:** "What's the difference between internal docs and blogs?"
+   - Good answer: "Internal docs (dev-guide/decisions) are for team — how to run code, why we made choices. Blogs are for the outside world — telling my story."
+   - Acceptable: "Internal = team, blogs = public"
+   - Bad answer: Can't distinguish
 
-2. **Ask:** "Why is the main function in index.py so short and simple?"
-   - Good answer: "It only has flow control. Each step is a function call. The detailed logic is in separate modules for reuse."
-   - Acceptable: "It's like reading English, step by step"
-   - Bad answer: "Because that's how it was written"
+4. **Ask:** "Why write blogs? Your code is on GitHub."
+   - Good answer: "HR and interviewers won't read my code. Blogs make my work and thinking visible."
+   - Bad answer: "I don't know" or "To show off"
 
-3. **Ask:** "Why are `get_last_user_message_text()` and `ai_sdk_message_generator()` in ai_sdk_adapter.py?"
-   - Good answer: "They're reusable. ai_sdk_message_generator is used for both normal responses and error responses. If it were inline, we'd have to write it twice."
-   - Acceptable: "For reuse, so we don't repeat code"
-   - Bad answer: Can't explain
+**Blog submission (required):**
 
-4. **Ask:** "What does 'main function reads like English' mean?"
-   - Good answer: "You can read the function and understand the flow: parse request, check length, call AI, return response. Each step is a function call with a clear name."
-   - Bad answer: Can't explain
+5. **Check submitted blog:**
+   - Located in `blogs/` directory
+   - Has clear title (not "My First Blog")
+   - Has recognizable structure (What Happened/How I Thought/What I Did/What I Learned)
+   - Tells a personal experience, not generic content
+   - Has Leadership Principle tag at the end
 
-**Hands-on verification (required):**
+6. **Originality check — Ask:** "Tell me more about [specific detail from their blog]"
+   - Good answer: Can naturally elaborate, add context, explain thinking
+   - Red flag: Hesitates, gives generic answer, can't expand
 
-5. **Ask:** "Show me where you uncommented the code in api/index.py"
-   - Student should be able to navigate to the message length check code
-   - Code should be uncommented and functional
-
-6. **Ask:** "Notice how the error response uses ai_sdk_message_generator(). Why is this good design?"
-   - Good answer: "It's the same function used for normal responses. If the AI SDK protocol changes, we only update one function."
-   - Bad answer: "I don't know" / Can't explain the reuse benefit
-
-7. **Ask:** "What happens if you want to change the limit from 1000 to 2000 characters?"
-   - Good answer: "Change `max_message_length` in config.py, that's it"
-   - Bad answer: "Change it in api/index.py" / "Change it in multiple places"
+7. **Ask:** "Why did you choose this topic?"
+   - Good answer: Personal relevance (bug they hit, concept that clicked, etc.)
+   - Bad answer: "I just picked something random"
 
 **What counts as "pass":**
 
-- Student can explain Single Source of Truth in their own words
-- Student understands why code is extracted into separate modules (for reuse)
-- Student can explain "main function reads like English"
-- Student successfully enabled the message length check feature
-- Student can demonstrate that long messages return "Message too long" error
-- Student understands the reuse of ai_sdk_message_generator()
-- Test passes
+- Read example blogs (can discuss structure and content)
+- Understands internal docs vs blogs distinction
+- Understands why blogs matter for career
+- Submitted original blog with proper structure
+- Can elaborate on their own blog naturally
+- Has LP tag on their blog
 
 **What does NOT count as pass:**
 
-- Student cannot explain why we use a Config class
-- Student cannot explain why functions are in separate modules
-- Student couldn't find or enable the message length check code
-- Student doesn't notice the reuse of ai_sdk_message_generator()
-- Student just memorized answers without understanding the design philosophy
+- Didn't read example blogs
+- Cannot explain why blogs matter
+- No blog submitted
+- Blog is copied/translated from examples
+- Cannot elaborate on their own blog (suggests it's not their experience)
+- Blog has no structure or is pure tutorial without thinking
+
+**Critical red flag:**
+
+- If student's blog closely mirrors an example blog, ask them to elaborate on specific details. If they can't, they've copied rather than written from experience. This must be addressed — the whole point is writing their OWN story.

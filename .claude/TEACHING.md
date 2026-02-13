@@ -1,144 +1,150 @@
-# Teaching Guide: Config Management and Code Refactoring
+# Teaching Guide: Ship Your Story
 
 ## Learning Outcomes
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand Single Source of Truth: why configuration values should be defined in one place, and why main functions should read like English with logic extracted into reusable modules
-2. **Skill outcome** - Enable a feature by uncommenting config-driven code, demonstrating understanding of how config values flow through the codebase
-3. **Mindset outcome** - Start thinking "ready to scale" instead of "it works" — the habit of refactoring after features are complete
+1. **Cognitive outcome** - Understand the difference between internal docs (dev-guide/decisions) and external docs (blogs), and why blogs matter for career development
+2. **Skill outcome** - Read example blogs to understand structure and style; write their own blog documenting a learning experience
+3. **Mindset outcome** - See blog writing not as "extra work" but as investing in their future self; understand that every learning experience can become interview material
 
 ## Concept Sequence
 
 Teach concepts in this order:
 
-### Phase 1: The "Why Refactor?" Motivation (5 minutes)
+### Phase 1: Why Ship Your Story? (5 minutes)
 
-1. **Feature is Done, But...** - The app works on Vercel. Why do more work?
-2. **Amateur vs Professional** - Amateur: "it works." Professional: "ready to scale"
-3. **The Pain of Scattered Config** - Imagine changing `us-east-1` to `ap-northeast-1` across 5 files
+1. **The visibility problem** - Code on GitHub doesn't speak for itself; HR/interviewers don't have time to read it
+2. **Internal vs external docs** - Dev-guide/decisions are for team; blogs are for the world
+3. **Blogs as career assets** - Interview material, reflection tool, professional credibility
 
-This phase establishes the "aha moment" - refactoring isn't extra work, it's professional practice.
+This phase establishes motivation. Students often think "I'll write blogs later when I'm better." Show them why writing now matters.
 
-### Phase 2: Single Source of Truth (10 minutes)
+### Phase 2: Blog Structure & Leadership Principles (10 minutes)
 
-4. **The Core Principle** - A value should be defined in only one place
-5. **The Judgment Rule** - If changing a value requires editing multiple files, abstract it to config
-6. **Config Pattern** - dataclass + factory method + singleton
-7. **Using Config** - One import, one object: `config.aws_region`
+4. **The 16 example blogs** - Each demonstrates a professional competency (Leadership Principle)
+5. **Blog structure** - What Happened → How I Thought → What I Did → What I Learned
+6. **Connecting to interviews** - Every small story can answer "Tell me about a challenge you faced"
 
-Focus on the design philosophy, not memorizing the pattern.
+Students should understand that blogs aren't tech tutorials — they're thinking records.
 
-### Phase 3: Main Function Reads Like English (10 minutes)
+### Phase 3: Reading Example Blogs (15 minutes)
 
-8. **The Goal** - Reading `index.py` should tell you the flow: Step 1, Step 2, Step 3...
-9. **Flow Control Only** - Main function only "directs," doesn't "do the work"
-10. **Extract to Modules** - Detailed logic lives in separate modules
-11. **The Power of Reuse** - `ai_sdk_message_generator()` used for both normal and error responses
+7. **Exercise 1: Read catalog** - Scan 16 blog titles and summaries
+8. **Exercise 2: Deep read 2-3 blogs** - Study structure, notice how thinking is recorded
+9. **Active reading** - Ask: "What problem? How did they think? What would I do?"
 
-Students should understand why clean main functions matter for maintainability.
+Reading others' blogs teaches structure and completeness.
 
-### Phase 4: Hands-on (15-20 minutes)
+### Phase 4: Writing Your Own Blog (20 minutes)
 
-12. **Read the Code** - Understand index.py flow and ai_sdk_adapter.py functions
-13. **Enable Message Length Check** - Find config field, uncomment code, test
-14. **Notice the Reuse** - Error response uses same generator as normal response
-15. **Run Tests** - Verify config works
+10. **Exercise 3: Write your blog** - Pick a memorable moment from the project
+11. **Use the structure** - What Happened → How I Thought → What I Did → What I Learned
+12. **Exercise 4: Identify Leadership Principle** - Connect your blog to a professional competency
 
-### Phase 5: Wrap-up (5 minutes)
+The assignment is intentionally open-ended to encourage ownership.
 
-16. **Two Design Philosophies** - Single Source of Truth + Main Function Reads Like English
-17. **The Quality Question** - "If requirements change, how many files do I modify?"
-18. **Ready to Scale** - When 3 files become 30, you'll thank yourself
+### Phase 5: Important Reminder & Wrap-up (5 minutes)
+
+13. **These blogs aren't yours** - The examples are for learning structure, not copying
+14. **Must rewrite in your own voice** - If using for job hunting, write your own experiences in English
+15. **Submission** - Share written blog with mentor
 
 ## Common Struggles
 
-**Struggle:** Student doesn't understand why we refactor working code
-- **Signs:** "But it already works!"
-- **Intervention:** Ask: "If your boss says change the region, how many files do you touch?" or "If a new teammate joins, how do they understand the flow?"
+**Struggle:** Student thinks "I have nothing interesting to write"
+- **Signs:** Stares at blank screen, says "I didn't do anything special"
+- **Intervention:** "What confused you at first? What bug took you longest? What 'aha' moment did you have?"
 
-**Struggle:** Student doesn't see the benefit of extracting functions to modules
-- **Signs:** "Why not just write it inline?"
-- **Intervention:** Point to `ai_sdk_message_generator()`: "This is used twice — for normal responses and error responses. If it were inline, you'd write it twice. If the protocol changes, you'd update it twice. Which is better?"
+**Struggle:** Student copies example blog structure too literally
+- **Signs:** Blog feels generic, no personal voice
+- **Intervention:** "Forget the structure for now. Just tell me what happened like you're talking to a friend."
 
-**Struggle:** Student finds the config pattern over-engineered
-- **Signs:** "This is just a few values, why a whole class?"
-- **Intervention:** "Right now it's 3 values. In 6 months it might be 15. The pattern scales. And factory methods let different environments have different values without if/else everywhere."
+**Struggle:** Student writes pure technical tutorial instead of thinking record
+- **Signs:** Blog is all "how to" with no "why" or "what I learned"
+- **Intervention:** "I can see the steps. But what did YOU think when you hit this problem? What surprised you?"
 
-**Struggle:** Student can't find the commented code
-- **Signs:** Takes too long searching
-- **Intervention:** "Search for 'Uncomment' in index.py"
+**Struggle:** Student wants to translate example blogs directly
+- **Signs:** Asks "Can I just translate blog 04 for my portfolio?"
+- **Intervention:** Firmly explain: "Interviewers will ask about your blog. If you didn't experience it, you'll freeze. The examples show structure — the content must be yours."
 
-**Struggle:** Student doesn't notice the reuse of ai_sdk_message_generator
-- **Signs:** Completes the task but misses the teaching point
-- **Intervention:** "Look at the error response code you just uncommented. What function does it use? Now look at the normal response at the bottom. Same function, right?"
+**Struggle:** Student rushes through reading exercises
+- **Signs:** Finishes reading in 2 minutes, can't answer questions about content
+- **Intervention:** "Tell me one specific thing from the blog you just read. What surprised you about how they thought?"
 
 ## Teaching Tips
 
-- **Start with the pain** - Don't jump into config patterns. First make them feel the pain of scattered configuration.
+- **Start with the visibility problem** - "Your code is on GitHub. But who's going to read thousands of lines? The blog is how you make your work visible."
 
-- **Use the "6 months from now" frame** - "Imagine in 6 months, 10 files have region hardcoded. Someone needs to change it. How do they know which files?"
+- **Use interview framing** - "When they ask 'Tell me about a challenge,' your blog IS the answer. You just need to remember it."
 
-- **Walk through index.py like reading** - Literally read it aloud: "First, we log the request. Then, we parse it. Then, we check the length..." This demonstrates the "reads like English" principle.
+- **Show the Leadership Principles connection** - Point out how each blog naturally demonstrates a competency. "You're not learning these for interviews — you're developing them through practice."
 
-- **Highlight the reuse moment** - When they uncomment the message length check, pause: "See that `ai_sdk_message_generator`? Same function as the normal response. That's reuse."
+- **Be firm about originality** - Students may want to shortcut by translating examples. Be clear: "These blogs are templates for structure, not content to copy."
 
-- **Connect to professional practice** - "Every production codebase I've worked on has a config module. This is industry standard."
+- **Celebrate the first attempt** - Even a rough first blog is valuable. "You started. That's the hardest part. You can refine it later."
 
-- **The quality question** - Ask repeatedly: "If requirements change, how many files?" This becomes a mental habit.
+- **Connect to course journey** - "Look how far you've come. From empty repo to production AI app. That's YOUR story to tell."
 
 ## Assessment Ideas
 
-- **Quick concept check:** "What is Single Source of Truth?"
-  - Good answer: "A value is defined in one place. Everywhere else references it."
+- **Understanding check:** "What's the difference between internal docs and blogs?"
+  - Good answer: "Internal docs explain how to work with code. Blogs tell my story to the outside world."
 
-- **Code organization understanding:** "Why is the main function in index.py so short?"
-  - Good answer: "It only has flow control. Each step is a function call. Details are in separate modules."
+- **Reading verification:** "What Leadership Principle did blog 04 demonstrate? Why?"
+  - Good answer: Can name specific principle and explain the connection
 
-- **Reuse understanding:** "Why is ai_sdk_message_generator in a separate module?"
-  - Good answer: "It's used twice — for normal and error responses. If it were inline, we'd duplicate code."
+- **Writing submission:** Student produces a markdown blog in `blogs/`
+  - Pass criteria: Has clear structure, tells a personal experience, would be useful in an interview
 
-- **Hands-on verification:** Student can:
-  - Navigate to the uncommented message length check
-  - Demonstrate that long messages return errors
-  - Point out where ai_sdk_message_generator is called twice
+- **Originality check:** "Is this your own experience? Can you elaborate on [specific detail]?"
+  - Good answer: Can naturally expand on any part of their blog
+  - Red flag: Hesitates, gives generic answers
+
+- **Career mindset check:** "Why write blogs instead of just building more projects?"
+  - Good answer: "Code doesn't speak for itself. Blogs make my thinking visible."
 
 ## Pacing Guide
 
-- **Phase 1 (Motivation):** 5 minutes
-  - Establish why refactoring matters
-  - Create the "pain of scattered config" realization
+- **Phase 1 (Why Ship Your Story):** 5 minutes
+  - The visibility problem
+  - Internal vs external docs
+  - Quick motivation
 
-- **Phase 2 (Single Source of Truth):** 10 minutes
-  - Explain the principle
-  - Walk through config.py
-  - Show how boto_ses.py uses it
+- **Phase 2 (Structure & Principles):** 10 minutes
+  - Show the 16 blogs and their LP connections
+  - Explain blog structure
+  - Interview connection
 
-- **Phase 3 (Main Function Reads Like English):** 10 minutes
-  - Walk through index.py
-  - Point out the function calls
-  - Highlight ai_sdk_message_generator reuse
+- **Phase 3 (Reading):** 15 minutes
+  - Exercise 1: Scan blog catalog
+  - Exercise 2: Deep read 2-3 blogs
+  - Discuss observations
 
-- **Phase 4 (Hands-on):** 15-20 minutes
-  - Exercise 1: Read code (5 min)
-  - Exercise 2: Enable message length check (10 min)
-  - Exercise 3: Run tests (2 min)
+- **Phase 4 (Writing):** 20 minutes
+  - Exercise 3: Write own blog
+  - Exercise 4: Identify Leadership Principle
+  - Mentor available for questions
 
 - **Phase 5 (Wrap-up):** 5 minutes
-  - Reinforce the two design philosophies
-  - The quality question
-  - Connect to "ready to scale" mindset
+  - Important reminder about originality
+  - Collect submissions
+  - Course completion celebration
 
-**Total expected time:** 45-50 minutes
+**Total expected time:** 55-60 minutes
 
 ## Key Messages to Reinforce
 
-1. **Single Source of Truth** - A value is defined in one place. Everywhere else references it. If you need to change it, you change one file.
+1. **Code doesn't speak for itself** - HR and interviewers won't read your GitHub. Blogs make your work visible.
 
-2. **Main function reads like English** - Good code, you can read the main function and understand the flow. Details are in separate modules.
+2. **Internal docs vs external docs** - Dev-guide/decisions for team; blogs for the world.
 
-3. **Extract for reuse** - If you write the same code twice, extract it to a function. Change once, effective everywhere.
+3. **Every experience is interview material** - Structure it right, and any learning moment becomes a "Tell me about..." answer.
 
-4. **The quality question** - "If requirements change, how many files do I modify?" If the answer is "one," your design is good.
+4. **Write as you learn, not after** - Memory fades. Capture thinking while it's fresh.
 
-5. **Ready to scale mindset** - "It works" is the beginning. "Ready to scale" is the end. This is what separates amateurs from professionals.
+5. **These examples are templates, not content** - Learn the structure, but write your own experiences.
+
+6. **Your voice matters** - Don't let AI write it for you. Polish grammar, yes. Generate content, no.
+
+7. **This is investing in your future** - Ship Your Story isn't showing off — it's building career assets.

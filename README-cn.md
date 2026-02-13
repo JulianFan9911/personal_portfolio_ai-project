@@ -1,293 +1,384 @@
-# Config Management: 让代码为扩展做好准备
+# Ship Your Story：让别人看懂你的价值
 
-> 功能已经跑通了，但在加新功能之前，我们先"回头整理"一下。
+> 代码会过时，但你记录下的思考不会。
 
 ## 概述
 
-上节课我们完成了部署，AI chat 在 Vercel 上跑得很好。功能完成了，任务结束了吗？
+恭喜你走到这里。
 
-对于业余开发者来说，是的。但对于专业开发者来说，这只是开始。
+回顾一下这个项目的旅程：从一个空的 repo 开始，我们构建了一个完整的 AI 作品集网站。Next.js + FastAPI + AWS Bedrock，前后端分离，流式响应，Vercel 部署，测试框架，文档体系——这不是一个"玩具项目"，而是一个**企业级、生产质量**的 AI 应用。
 
-这节课我们做两件"看起来多余但很重要"的事：
+更重要的是，这个架构是**可扩展的基础**。未来你想做任何 AI 应用——RAG 系统、AI Agent、多模态助手——都可以基于这个骨架继续构建。
 
-1. **Config Management** — 把配置值集中管理，为未来 scale 做准备
-2. **代码重构** — 让主函数逻辑清晰，把可复用的代码抽离到独立模块
+**但问题来了：别人怎么知道你做了这些？**
+
+你的代码躺在 GitHub 上，几千行，十几个文件。HR 不会去读，面试官也没时间逐行看。他们只会花 30 秒扫一眼你的简历，然后决定要不要给你机会。
+
+如果你想让这个项目真正成为你的**职业资产**，你需要学会一件事：**用文字把你的故事讲出来**。
+
+这就是这最后一课要做的事情。
+
+---
 
 ## 学习目标
 
-这节课的重点不是"怎么写代码"，而是**为什么要这样组织代码**。这是设计哲学的传授。
+这节课你会学到：
 
-完成本课后，你将能够：
+1. **理解内部文档 vs 外部文档** — 上节课写的 dev-guide/decisions 是给自己和团队看的；博客是给外部世界看的
+2. **认识 Build in Public** — 公开记录学习过程，不是炫耀，而是职业发展的策略
+3. **把博客和 Leadership Principles 联系起来** — 每篇博客背后都有一个专业素养的体现
+4. **动手写一篇自己的博客** — 实践"把学习转化为输出"的能力
 
-1. **理解 Single Source of Truth 原则** — 明白为什么"一个值只在一个地方定义"是好的设计
-2. **理解代码复用思想** — 把通用逻辑抽离到独立模块，供多处调用
-3. **阅读清晰的主函数** — 读 `index.py` 应该像读英语，一步步做什么一目了然
+---
 
-## 前提条件
+## 前置条件
 
-- 完成了上节课（部署成功，AI chat 在 Vercel 上工作）
-- 理解 runtime detection 的概念
+- 完成前面所有课程
+- 读过上节课的文档（dev-guide 和 decisions）
 
 ---
 
 ## 核心概念
 
-### 1. 为什么要做 Config Management？
+### 内部文档 vs 外部文档
 
-假设你的代码里有这样的情况：
+上节课我们写了两类文档：
 
-```python
-# boto_ses.py
-boto_ses = boto3.Session(region_name="us-east-1", ...)
+| 类型 | 位置 | 读者 | 目的 |
+|------|------|------|------|
+| Dev Guide | `docs/dev-guide/` | 自己、团队 | 怎么跑起来、怎么改代码 |
+| Decisions | `docs/decisions/` | 自己、团队 | 当时为什么这么做 |
 
-# some_other_file.py
-client = boto3.client("s3", region_name="us-east-1")
+这些是**内部文档**——给自己和团队看的，帮助理解和维护代码。
 
-# yet_another_file.py
-REGION = "us-east-1"
+但还有另一种文档：**外部文档**——给外部世界看的。
+
+| 类型 | 位置 | 读者 | 目的 |
+|------|------|------|------|
+| 博客 | `blogs/` | HR、面试官、同行、自己 | 展示思考过程和专业素养 |
+
+博客不是技术文档，而是**你的学习日记**。它记录的是：你遇到了什么问题，怎么思考的，最后怎么解决的。
+
+### 为什么要 Build in Public？
+
+"Build in Public"（公开构建）是一种职业发展策略：
+
+1. **面试素材** — 当面试官问"你做过什么项目"，你不只有代码，还有完整的思考记录
+2. **复盘工具** — 写博客的过程会逼你整理思路，加深理解
+3. **职业背书** — 公开的学习记录，比简历上的几行字更有说服力
+4. **未来资产** — 几年后回头看，这些记录可以整理成分享、教程、甚至书
+
+关键是：**不是等你"学会了"才写，而是边学边写**。
+
+### 每篇博客背后的 Leadership Principle
+
+看一下这个项目的 16 篇博客，每篇都不只是"技术笔记"，而是体现了一个专业素养：
+
+| 博客 | 标题 | 体现的素养 |
+|------|------|-----------|
+| 00 | The Beginning of Everything | **Bias for Action** — 先动手再说，不等万事俱备 |
+| 01 | If You're Going to Learn, Learn the Best | **Learn and Be Curious** — 学就学最好的，调研顶尖方案 |
+| 02 | Before You Run, Learn How to Not Fall | **Insist on High Standards** — 从第一天就搭测试框架 |
+| 03 | Same Idea, Different Skin | **Learn and Be Curious** — 理解底层原理，举一反三 |
+| 04 | Cut It Down, Make It Run | **Deliver Results** — 砍到最小可运行，先出结果 |
+| 05 | From Localhost to the World | **Deliver Results** — 本地跑通不算完，部署上线才是 |
+| 06 | Learn From The Giants | **Learn and Be Curious** — 从牛人那里偷师 |
+| 07 | Steal Like an Artist | **Invent and Simplify** — 先模仿再创新 |
+| 08 | The Fake Teaches You The Real | **Invent and Simplify** — 用假数据验证架构 |
+| 09 | The Power of Protocol | **Think Big** — 理解协议的力量，设计可扩展系统 |
+| 10 | Always Have a Plan B | **Think Big** — 冗余设计，专业思维 |
+| 11 | The First Rule of Business | **Frugality** — 理解成本，该省的省 |
+| 12 | The Toolmaker's Mindset | **Dive Deep** — 读懂工具在干嘛，不只是会用 |
+| 13 | The First Milestone | **Deliver Results** — 技术债为零的里程碑 |
+| 14 | The Art of Going Back | **Ownership** — 回头整理，为代码负责到底 |
+| 15 | The 30% Rule | **Have Backbone** — 懂得什么时候做全局决策 |
+
+这些不是我后来硬凑的——**写博客的过程本身就是在培养这些素养**。
+
+### 博客的结构
+
+每篇博客不需要很长，但要有结构：
+
+```markdown
+# 标题（吸引人的，不是"第X篇笔记"）
+
+## 遇到了什么
+描述场景和问题
+
+## 怎么想的
+你的思考过程
+
+## 怎么做的
+具体的解决方案
+
+## 学到了什么
+提炼出来的原则或心得
 ```
 
-现在老板说："我们要把服务迁移到东京，改成 `ap-northeast-1`。"
-
-你需要：
-1. 找到所有出现 `us-east-1` 的地方
-2. 一个一个改
-3. 祈祷你没有漏改任何一个
-
-这就是 **配置散落** 带来的痛苦。
-
-**核心原则：Single Source of Truth**
-
-> **如果一个值可能被改动，它应该只在一个地方被定义。其他所有地方都是对它的引用。**
-
-判断标准很简单：**如果你改一个字符串/数值，需要去多个文件改——那这个值就应该被抽象到 config。**
-
-### 2. Config Pattern：dataclass + factory method
-
-看看我们的解决方案 [config.py](./learn_personal_portfolio_ai/config.py)：
-
-```python
-@dataclasses.dataclass
-class Config:
-    aws_region: str | None = dataclasses.field(default=None)
-    aws_access_key_id: str | None = dataclasses.field(default=None)
-    aws_secret_access_key: str | None = dataclasses.field(default=None)
-    max_message_length: int = dataclasses.field(default=1000)
-
-    @classmethod
-    def new(cls):
-        if runtime.is_local():
-            return cls.new_in_local_runtime()
-        elif runtime.is_vercel():
-            return cls.new_in_vercel_runtime()
-
-config = Config.new()
-```
-
-**使用时只需要一行：**
-
-```python
-from learn_personal_portfolio_ai.config import config
-
-region = config.aws_region
-max_len = config.max_message_length
-```
-
-### 3. 代码重构：让主函数像读英语
-
-看看重构后的 [api/index.py](./api/index.py)：
-
-```python
-@app.post("/api/chat")
-async def handle_chat_data(request: Request):
-    # Step 1: Log incoming request
-    request_body_data = await debug_ai_sdk_request(request=request)
-
-    # Step 2: Parse request
-    request_body = RequestBody(**request_body_data)
-
-    # Step 3: Check message length (commented out, you'll enable it!)
-    # last_user_message = get_last_user_message_text(request_body)
-    # if last_user_message and len(last_user_message) > config.max_message_length:
-    #     ...
-
-    # Step 4: Initialize chat session
-    chat_session = ChatSession(...)
-
-    # Step 5: Call Bedrock
-    response = chat_session.send_message([])
-
-    # Step 6: Return streaming response
-    return StreamingResponse(ai_sdk_message_generator(output_text=output_text), ...)
-```
-
-**这就是好代码的样子：** 读主函数就像读英语，Step 1、Step 2、Step 3... 每一步做什么一目了然。
-
-**核心思想：**
-
-- **主函数只有流程控制** — 每一步都是一个 function call
-- **具体逻辑放到独立模块** — 供复用，供测试
-
-### 4. 复用的威力
-
-看看 [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) 里的函数：
-
-```python
-# 这个函数被复用了两次！
-def ai_sdk_message_generator(output_text: str):
-    """生成 AI SDK v5 格式的 SSE 流"""
-    message_id = str(uuid.uuid4())
-    yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
-    yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
-    yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
-    yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
-    yield "data: [DONE]\n\n"
-```
-
-这个函数在 `index.py` 里被用了两次：
-1. 正常返回 AI 回复时
-2. 返回 "Message too long" 错误时
-
-如果这段逻辑写在 `index.py` 里两次，将来 AI SDK 协议变了，你要改两个地方。抽成函数后，只改一个地方。
-
-**这就是复用的威力：改一处，处处生效。**
-
-### 5. 模块职责划分
-
-| 模块 | 职责 |
-|------|------|
-| [api/index.py](./api/index.py) | 主函数，只有流程控制 |
-| [config.py](./learn_personal_portfolio_ai/config.py) | 配置管理 |
-| [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) | AI SDK 格式转换、调试、SSE 生成 |
-| [boto_ses.py](./learn_personal_portfolio_ai/boto_ses.py) | AWS 客户端初始化 |
-| [utils.py](./learn_personal_portfolio_ai/utils.py) | 通用工具函数 |
-
-每个模块做一件事，做好一件事。
+关键是：**不只是记录"做了什么"，而是记录"为什么这么做"**。
 
 ---
 
 ## 练习
 
-### 练习 1：阅读重构后的代码
+### 练习 1：阅读博客目录
 
-**目标：** 理解代码组织方式。
+**目标：** 理解整个项目的学习旅程。
 
-1. 打开 [api/index.py](./api/index.py)，通读 `handle_chat_data` 函数
-   - 注意它读起来是不是像英语？每一步在做什么？
-   - 找到被注释掉的 "Check message length" 部分
+**你要做的：**
 
-2. 打开 [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py)，找到这两个函数：
-   - `get_last_user_message_text()` — 提取最后一条用户消息
-   - `ai_sdk_message_generator()` — 生成 SSE 流
+1. 打开博客目录：[00-Blog-Catalog-CN.md](./blogs/00-Blog-Catalog-CN.md)
+2. 快速浏览 16 篇博客的标题和摘要
+3. 问自己：
+   - 哪几篇的标题最吸引你？
+   - 你能从标题猜出它讲的是什么吗？
+   - 这些博客是技术教程，还是思考记录？
 
-3. 思考：为什么这两个函数放在 `ai_sdk_adapter.py` 而不是 `index.py`？
+**为什么这么做：**
 
-### 练习 2：启用消息长度限制
+好的博客标题不是"React 学习笔记 01"，而是能引起好奇的问题或观点。注意这些博客的命名方式。
 
-**目标：** 动手启用一个 config 功能，体验复用的威力。
+---
 
-我们在 config 里添加了 `max_message_length = 1000`，用于限制用户消息长度。检查逻辑已经写好，但被注释掉了。
+### 练习 2：精读 2-3 篇博客
 
-**你的任务：**
+**目标：** 学习博客的写作方式。
 
-1. 打开 [config.py](./learn_personal_portfolio_ai/config.py)，找到 `max_message_length` 字段
+**你要做的：**
 
-2. 打开 [api/index.py](./api/index.py)，找到这段被注释的代码：
-   ```python
-   # --- Check message length ---
-   # Uncomment below to enable max message length check
-   # last_user_message = get_last_user_message_text(request_body)
-   # if last_user_message and len(last_user_message) > config.max_message_length:
-   #     error_msg = f"Message too long..."
-   #     response = StreamingResponse(
-   #         ai_sdk_message_generator(output_text=error_msg),  # 复用！
-   #         ...
-   #     )
-   #     return response
-   ```
+1. 从目录中选 2-3 篇你感兴趣的博客，完整读一遍
+2. 推荐先读这几篇：
+   - [00-The-Beginning-of-Everything-CN.md](./blogs/00-The-Beginning-of-Everything-CN.md) — 开篇
+   - [04-Cut-It-Down-Make-It-Run-CN.md](./blogs/04-Cut-It-Down-Make-It-Run-CN.md) — Deliver Results
+   - [13-The-First-Milestone-From-Zero-to-Live-CN.md](./blogs/13-The-First-Milestone-From-Zero-to-Live-CN.md) — 里程碑
+3. 边读边问自己：
+   - 这篇博客解决了什么问题？
+   - 作者是怎么思考的？
+   - 如果我遇到类似问题，我会怎么做？
 
-3. 取消注释（uncomment）那段代码
+**为什么这么做：**
 
-4. 启动开发服务器测试：
-   ```bash
-   mise run dev
-   ```
-   - 发送正常消息 → 应该正常工作
-   - 发送超过 1000 字符的消息 → 应该返回 "Message too long" 错误
+读别人的博客，是学习写博客最快的方式。注意：这些博客不是在教技术，而是在分享思考过程。
 
-**注意观察：** 错误响应用的是 `ai_sdk_message_generator()`——和正常响应用的是同一个函数！这就是复用。
+---
 
-### 练习 3：运行测试
+### 练习 3：写你自己的博客
 
-```bash
-mise run test-python
+**目标：** 把你在这个项目中学到的东西，写成一篇博客。
+
+**你要做的：**
+
+1. 回想这个项目中，你印象最深的一件事：
+   - 某个让你卡了很久的 bug？
+   - 某个让你恍然大悟的概念？
+   - 某个改变你思维方式的时刻？
+
+2. 用这个结构写一篇博客：
+
+```markdown
+# [一个吸引人的标题]
+
+## 发生了什么
+描述场景
+
+## 我是怎么想的
+你的思考过程
+
+## 最后怎么解决的
+具体做法
+
+## 我学到了什么
+提炼出来的道理
 ```
 
-测试代码在 [tests_python/test_config.py](./tests_python/test_config.py)，它验证 `Config.new()` 能成功创建实例。
+3. 把博客保存到 `blogs/` 目录，命名为 `my-first-blog.md`
+
+4. 可以用 AI 帮你润色：
+```
+帮我把这篇博客改得更通顺，但保留我的思考过程
+```
+
+**为什么这么做：**
+
+写博客不是为了给别人看，首先是为了自己。写的过程会逼你整理思路，把模糊的"感觉学到了"变成清晰的"确实懂了"。
 
 ---
 
-## 反思
+### 练习 4：识别博客中的 Leadership Principle
 
-这节课我们做了两件事：
+**目标：** 把博客和专业素养联系起来。
 
-1. **Config Management** — 把配置值集中到一个地方
-2. **代码重构** — 把可复用的逻辑抽离到独立模块
+**你要做的：**
 
-这些改动看起来很小，但它们让代码 **ready to scale**：
+1. 重新看你写的博客
+2. 问自己：这篇博客体现了什么 Leadership Principle？
+   - Bias for Action（先行动）？
+   - Learn and Be Curious（好奇心）？
+   - Deliver Results（交付结果）？
+   - Ownership（主人翁意识）？
+   - 其他？
 
-- 新加一个配置？改 `config.py` 一个文件
-- AI SDK 协议变了？改 `ai_sdk_adapter.py` 一个文件
-- 新同事要理解代码？读 `index.py` 主函数就够了
+3. 在博客末尾加一行：
+```markdown
+---
+*这篇博客体现的是 [XXX] — [一句话解释为什么]*
+```
 
-当你的项目从 3 个文件变成 30 个文件，从 1 个开发者变成 10 个开发者，你会感谢今天做的这些"看起来多余"的事。
+**为什么这么做：**
+
+面试的时候，面试官不会问你"讲讲你的博客"，而是会问"讲讲你遇到过的挑战"。如果你已经把博客和 Leadership Principle 关联起来，回答这类问题就会非常顺畅。
 
 ---
 
-## 导师寄语
+## 总结
 
-**为什么这个练习重要：**
+这个项目到此告一段落。
 
-今天的改动看起来很小，但我想让你理解两个设计哲学：
+回顾一下你完成了什么：
 
-**1. Single Source of Truth**
+**技术层面：**
+- 从零构建了一个 Next.js + FastAPI 的全栈应用
+- 实现了 AI Chat 功能，对接 AWS Bedrock
+- 使用 Vercel AI SDK 实现流式响应
+- 部署到 Vercel，全球可访问
+- 搭建了测试框架和文档体系
 
-一个值只在一个地方定义。其他地方都是引用。
+**思维层面：**
+- 学会了"先跑起来，再优化"的 Bias for Action
+- 理解了 30% Rule——什么时候做全局决策
+- 掌握了 Think → Do → Debug → Learn 的循环
+- 养成了写文档、写博客的习惯
 
-**2. 主函数像读英语**
+**职业层面：**
+- 有了一个可以展示的 portfolio 项目
+- 有了一套完整的学习记录（博客）
+- 可以在面试中自信地讲述你的思考过程
 
-好的代码，主函数应该能让人一眼看懂流程：
-- Step 1: 解析请求
-- Step 2: 检查长度
-- Step 3: 调用 AI
-- Step 4: 返回响应
+这不是终点，是起点。
 
-具体怎么"解析请求"？怎么"调用 AI"？这些细节放到独立模块里。主函数只负责"指挥"，不负责"干活"。
+这个架构可以继续扩展——加 RAG、加 Agent、加多模态——任何 AI 功能都可以基于这个骨架构建。
 
-**判断代码质量的标准：**
+而你记录下的这些思考，会成为你职业生涯的长期资产。
 
-> "如果需求变了，我需要改多少个文件？"
+**Build in Public，不是炫耀，是投资未来的自己。**
 
-如果答案是"一个"，你的设计是好的。
+---
+
+## 导师笔记
+
+**为什么用"Build in Public"收尾：**
+
+很多学生觉得"写博客"是额外负担，不如多学一个技术。
+
+但我想说的是：技术会过时，工具会更新，但**你的思考能力和表达能力**不会过时。
+
+我见过太多候选人，技术不错，但面试的时候说不清楚自己做过什么、为什么这么做。而另一些候选人，可能技术没那么强，但能清晰地讲述自己的思考过程——后者往往更受青睐。
+
+**博客就是你的"思考记录"。**
+
+- 面试前，你可以重读自己的博客，回忆当时的心路历程
+- 几年后，这些记录可以整理成分享、教程、甚至书
+- 最重要的是，写的过程本身就在加深你的理解
+
+**关于 Leadership Principles：**
+
+我故意在课程中埋了这些联系。不是为了教你"怎么面试"，而是想让你意识到：
+
+**真正的专业素养，不是面试前背出来的，而是在实践中自然形成的。**
+
+这个项目的每一步——先动手、砍到最小、及时部署、回头整理——都在培养这些素养。博客只是把它们显性化了。
+
+**给学生的最后建议：**
+
+1. **坚持写博客** — 不需要每天写，但每完成一个阶段就写一篇
+2. **公开发布** — 可以发到 Medium、掘金、知乎，或者自己的博客站点
+3. **把博客链接放到简历上** — 这比"熟悉 XXX 技术栈"更有说服力
+4. **定期重读** — 你会惊讶于三个月前的自己有多"无知"——这就是成长的证据
+
+**这个项目的真正价值：**
+
+不是这几千行代码，而是你学会了**怎么从零构建一个完整的 AI 应用**，并且**把这个过程记录下来**。
+
+代码会过时，但思考不会。
 
 ---
 
 ## 快速参考
 
-**核心文件：**
-- [config.py](./learn_personal_portfolio_ai/config.py) — 配置管理
-- [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) — AI SDK 适配器
-- [api/index.py](./api/index.py) — 主函数入口
-
-**使用 Config：**
-```python
-from learn_personal_portfolio_ai.config import config
-
-region = config.aws_region
-max_len = config.max_message_length
+**博客位置：**
+```
+blogs/
+├── 00-Blog-Catalog-CN.md          # 目录
+├── 00-The-Beginning-of-Everything-CN.md
+├── 01-If-You-re-Going-to-Learn-Learn-the-Best-CN.md
+├── ...
+└── 15-The-30-Percent-Rule-CN.md
 ```
 
-**运行测试：**
+**博客结构：**
+```markdown
+# 吸引人的标题
+
+## 发生了什么
+## 我是怎么想的
+## 怎么解决的
+## 我学到了什么
+```
+
+**Leadership Principles 速查：**
+- Bias for Action — 先动手
+- Learn and Be Curious — 好奇心
+- Deliver Results — 交付结果
+- Ownership — 主人翁意识
+- Insist on High Standards — 高标准
+- Think Big — 格局
+- Dive Deep — 深挖
+- Frugality — 节俭
+
+**写博客的命令：**
 ```bash
-mise run test-python
+# 让 AI 帮你润色
+# 在 Claude Code 里描述你想写的内容
 ```
+
+---
+
+## 作业
+
+**写一篇属于你自己的博客：**
+
+1. 选一个这个项目中让你印象最深的点
+2. 用 发生了什么 → 怎么想的 → 怎么做的 → 学到了什么 的结构写下来
+3. 保存到 `blogs/my-first-blog.md`
+4. 识别它体现了哪个 Leadership Principle
+
+这是你的第一篇 Ship Your Story 记录。
+
+未来的你，会感谢现在开始写的自己。
+
+---
+
+## 重要提醒：这些博客不是你的
+
+**请注意：`blogs/` 目录下的 16 篇博客是导师写的示范，不是你自己的作品。**
+
+这些博客的目的是：
+- 让你理解**怎么把零散的学习经历串成一个完整的故事**
+- 让你看到**每一个小故事都可以成为面试的谈资**
+- 给你一个**博客结构和写作风格的参考**
+
+**如果你想把博客用于求职或个人品牌，你必须：**
+
+1. **用英文自己重写** — 不要让 AI "帮我翻译一下"，那不是你的声音
+2. **用你自己的经历** — 你踩过的坑、你的思考、你的顿悟时刻
+3. **用你自己的语言** — 面试官会问你博客里的内容，你得能自然地讲出来
+
+AI 可以帮你润色语法，但**内容必须是你自己的**。
+
+因为面试的时候，面试官可能会问："你博客里提到了 XXX，能展开讲讲吗？" 如果那不是你真正经历过的，你会卡住。
+
+**这些示范博客的价值，是让你知道"应该写什么"和"怎么写"。真正的资产，要你自己去创造。**
+
+---
+
+*代码是你做了什么，博客是你怎么想的。两者结合，才是完整的你。*

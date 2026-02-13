@@ -5,36 +5,36 @@ import { achievementStats } from "@/data/achievement-stats"
 
 export default function StatsSection() {
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 relative">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section className="py-16 px-4 sm:px-6 lg:px-8 border-t-4 border-black dark:border-white">
+      <div className="max-w-7xl mx-auto">
+        {/* Section Header */}
+        <h2 className="font-display text-display-md text-black dark:text-white mb-12">
+          ACHIEVEMENTS
+        </h2>
+
+        {/* Stats Grid - Bold Style */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0">
           {achievementStats.map((stat, index) => {
             const IconComponent = stat.icon
             const isClickable = stat.href && stat.href.trim() !== ""
+            const isLast = index === achievementStats.length - 1
 
             const cardContent = (
-              <>
-                {/* Icon */}
-                <div className="flex justify-center mb-3">
-                  <IconComponent
-                    size={24}
-                    className={`${stat.color} group-hover:scale-110 transition-all duration-300`}
-                  />
-                </div>
-
-                {/* Number */}
-                <div
-                  className={`text-3xl sm:text-4xl font-bold mb-2 ${stat.color} drop-shadow-lg group-hover:drop-shadow-xl transition-all duration-300`}
-                >
+              <div className="text-center py-12">
+                {/* Big Number */}
+                <div className="font-display text-6xl sm:text-7xl lg:text-8xl text-black dark:text-white mb-2">
                   {stat.number}
                 </div>
-
                 {/* Description */}
-                <div className="text-text-secondary text-sm sm:text-base group-hover:text-text-primary transition-colors duration-300">
+                <div className="font-display text-xl sm:text-2xl text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                   {stat.description}
                 </div>
-              </>
+              </div>
             )
+
+            const borderClass = isLast
+              ? "border-4 border-black dark:border-white"
+              : "border-4 border-r-0 sm:border-r-0 border-black dark:border-white"
 
             if (isClickable) {
               return (
@@ -43,21 +43,28 @@ export default function StatsSection() {
                   href={stat.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`block bg-regular-button/80 backdrop-blur-sm ${stat.borderColor} border-2 rounded-xl p-6 text-center hover:scale-105 transition-all duration-300 hover:shadow-lg ${stat.glowColor} hover:bg-regular-button/90 group cursor-pointer`}
+                  className={`${borderClass} hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer group`}
                 >
-                  {cardContent}
+                  <div className="text-center py-12">
+                    <div className="font-display text-6xl sm:text-7xl lg:text-8xl group-hover:text-accent transition-colors mb-2">
+                      {stat.number}
+                    </div>
+                    <div className="font-display text-xl sm:text-2xl text-gray-600 dark:text-gray-400 group-hover:text-current uppercase tracking-wider transition-colors">
+                      {stat.description}
+                    </div>
+                  </div>
                 </Link>
               )
-            } else {
-              return (
-                <div
-                  key={index}
-                  className={`bg-regular-button/80 backdrop-blur-sm ${stat.borderColor} border-2 rounded-xl p-6 text-center transition-all duration-300 ${stat.glowColor} group`}
-                >
-                  {cardContent}
-                </div>
-              )
             }
+
+            return (
+              <div
+                key={index}
+                className={borderClass}
+              >
+                {cardContent}
+              </div>
+            )
           })}
         </div>
       </div>
