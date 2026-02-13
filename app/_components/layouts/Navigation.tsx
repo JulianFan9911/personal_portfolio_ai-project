@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, MessageCircle } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { NavItem, NavigationProps } from "@/types"
 
 const DEFAULT_NAV_ITEMS: NavItem[] = [
@@ -23,19 +23,19 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
   }
 
   return (
-    <nav className="fixed top-4 left-4 right-4 z-50 glass-nav rounded-2xl">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="flex justify-between items-center h-14">
+    <nav className="fixed top-0 left-0 right-0 z-50 minimal-nav">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
           {/* Logo / Brand */}
           <Link
             href="/"
-            className="font-heading font-bold text-lg text-zinc-900 dark:text-zinc-100 hover:text-accent transition-colors"
+            className="font-display text-2xl text-black dark:text-white hover:text-accent transition-colors"
           >
             JD
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center gap-8">
             {items.map((item) => {
               const active = isActive(item.href)
               const isChat = item.href === "/chat"
@@ -45,10 +45,9 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white font-medium text-sm hover:bg-accent-dark transition-colors cursor-pointer"
+                    className="font-display text-lg px-6 py-2 bg-accent text-white border-2 border-accent hover:bg-black hover:border-black hover:text-white dark:hover:bg-white dark:hover:border-white dark:hover:text-black transition-colors cursor-pointer"
                   >
-                    <MessageCircle size={16} />
-                    {item.label}
+                    CHAT
                   </Link>
                 )
               }
@@ -58,10 +57,10 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
                   key={item.href}
                   href={item.href}
                   className={`
-                    px-4 py-2 rounded-xl font-medium text-sm transition-colors cursor-pointer
+                    font-display text-lg uppercase tracking-wider transition-colors cursor-pointer
                     ${active
-                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                      : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? "text-accent"
+                      : "text-black dark:text-white hover:text-accent"
                     }
                   `}
                 >
@@ -75,18 +74,18 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="p-2 text-black dark:text-white hover:text-accent transition-colors cursor-pointer"
               aria-label="Toggle menu"
             >
-              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation Menu */}
         {isMenuOpen && (
-          <div className="md:hidden pb-4 border-t border-zinc-200/50 dark:border-zinc-700/50 mt-2 pt-4">
-            <div className="flex flex-col space-y-1">
+          <div className="md:hidden border-t-2 border-black dark:border-white">
+            <div className="py-4 space-y-2">
               {items.map((item) => {
                 const active = isActive(item.href)
                 const isChat = item.href === "/chat"
@@ -96,11 +95,10 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-accent text-white font-medium text-sm cursor-pointer"
+                      className="block font-display text-xl py-3 px-4 bg-accent text-white text-center cursor-pointer"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <MessageCircle size={16} />
-                      {item.label}
+                      CHAT
                     </Link>
                   )
                 }
@@ -110,10 +108,10 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
                     key={item.href}
                     href={item.href}
                     className={`
-                      px-4 py-3 rounded-xl font-medium text-sm transition-colors cursor-pointer
+                      block font-display text-xl py-3 px-4 uppercase tracking-wider transition-colors cursor-pointer
                       ${active
-                        ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        ? "text-accent"
+                        : "text-black dark:text-white hover:text-accent"
                       }
                     `}
                     onClick={() => setIsMenuOpen(false)}

@@ -5,42 +5,36 @@ import { achievementStats } from "@/data/achievement-stats"
 
 export default function StatsSection() {
   return (
-    <section className="py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <section className="py-16 px-4 sm:px-6 lg:px-8 border-t-4 border-black dark:border-white">
+      <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="mb-6">
-          <h2 className="font-heading text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-            Highlights
-          </h2>
-        </div>
+        <h2 className="font-display text-display-md text-black dark:text-white mb-12">
+          ACHIEVEMENTS
+        </h2>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Stats Grid - Bold Style */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0">
           {achievementStats.map((stat, index) => {
             const IconComponent = stat.icon
             const isClickable = stat.href && stat.href.trim() !== ""
+            const isLast = index === achievementStats.length - 1
 
             const cardContent = (
-              <div className="flex items-start gap-4">
-                {/* Icon */}
-                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                  <IconComponent
-                    size={20}
-                    className="text-accent"
-                  />
+              <div className="text-center py-12">
+                {/* Big Number */}
+                <div className="font-display text-6xl sm:text-7xl lg:text-8xl text-black dark:text-white mb-2">
+                  {stat.number}
                 </div>
-
-                {/* Content */}
-                <div>
-                  <div className="font-heading text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">
-                    {stat.number}
-                  </div>
-                  <div className="text-sm text-zinc-500 dark:text-zinc-400">
-                    {stat.description}
-                  </div>
+                {/* Description */}
+                <div className="font-display text-xl sm:text-2xl text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  {stat.description}
                 </div>
               </div>
             )
+
+            const borderClass = isLast
+              ? "border-4 border-black dark:border-white"
+              : "border-4 border-r-0 sm:border-r-0 border-black dark:border-white"
 
             if (isClickable) {
               return (
@@ -49,9 +43,16 @@ export default function StatsSection() {
                   href={stat.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bento-card group hover:border-accent/30"
+                  className={`${borderClass} hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer group`}
                 >
-                  {cardContent}
+                  <div className="text-center py-12">
+                    <div className="font-display text-6xl sm:text-7xl lg:text-8xl group-hover:text-accent transition-colors mb-2">
+                      {stat.number}
+                    </div>
+                    <div className="font-display text-xl sm:text-2xl text-gray-600 dark:text-gray-400 group-hover:text-current uppercase tracking-wider transition-colors">
+                      {stat.description}
+                    </div>
+                  </div>
                 </Link>
               )
             }
@@ -59,7 +60,7 @@ export default function StatsSection() {
             return (
               <div
                 key={index}
-                className="bento-card cursor-default"
+                className={borderClass}
               >
                 {cardContent}
               </div>

@@ -6,23 +6,26 @@ import ContactSection from "./_components/ContactSection"
 
 export default function HomePageContent() {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-body">
-      {/* Subtle gradient background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 pointer-events-none" />
-
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white font-body">
       {/* Main Content */}
       <div className="relative">
-        {/* Hero Section */}
+        {/* Hero Section - Split Screen */}
         <Hero />
 
-        {/* Achievement Stats - Bento Grid */}
+        {/* Achievement Stats */}
         <StatsSection />
 
         {/* Contact Section */}
         <ContactSection />
 
-        {/* Footer Spacing */}
-        <div className="h-16" />
+        {/* Footer */}
+        <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t-4 border-black dark:border-white">
+          <div className="max-w-7xl mx-auto text-center">
+            <p className="font-display text-sm text-gray-600 dark:text-gray-400 uppercase tracking-widest">
+              &copy; {new Date().getFullYear()} JOHN DOE. ALL RIGHTS RESERVED.
+            </p>
+          </div>
+        </footer>
       </div>
     </div>
   )

@@ -32,17 +32,17 @@ export const PreviewMessage = ({
       >
         {/* AI Assistant Avatar - Left side */}
         {message.role === "assistant" && (
-          <div className="w-8 h-8 flex items-center rounded-xl justify-center bg-accent shadow-lg shrink-0">
-            <span className="text-white text-xs font-bold">AI</span>
+          <div className="w-8 h-8 flex items-center justify-center bg-accent shrink-0">
+            <span className="font-display text-xs text-white">AI</span>
           </div>
         )}
 
         <div
           className={cn(
-            "flex flex-col gap-2 max-w-[85%] sm:max-w-[75%]",
+            "flex flex-col gap-2 max-w-[85%] sm:max-w-[75%] p-4",
             message.role === "user"
-              ? "glass-card px-4 py-3 bg-accent text-white border-accent/50"
-              : "glass-card px-4 py-3"
+              ? "bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white"
+              : "bg-white dark:bg-black border-2 border-black dark:border-white"
           )}
         >
           {/* AI SDK v5: Use parts instead of content */}
@@ -55,8 +55,8 @@ export const PreviewMessage = ({
                       key={index}
                       className={cn(
                         message.role === "assistant"
-                          ? "text-zinc-700 dark:text-zinc-300"
-                          : "text-white"
+                          ? "text-black dark:text-white"
+                          : "text-white dark:text-black"
                       )}
                     >
                       <Markdown
@@ -81,7 +81,7 @@ export const PreviewMessage = ({
 
         {/* User Avatar - Right side */}
         {message.role === "user" && (
-          <div className="w-8 h-8 rounded-xl overflow-hidden shadow-lg border border-zinc-200 dark:border-zinc-700 shrink-0">
+          <div className="w-8 h-8 overflow-hidden border-2 border-black dark:border-white shrink-0">
             <Image
               src={CDN_ASSETS.PROFILE_PHOTO}
               alt="User Profile"
@@ -107,14 +107,14 @@ export const ThinkingMessage = () => {
       data-role={role}
     >
       <div className="flex gap-3 w-full justify-start">
-        <div className="w-8 h-8 flex items-center rounded-xl justify-center bg-accent shadow-lg shrink-0">
-          <span className="text-white text-xs font-bold">AI</span>
+        <div className="w-8 h-8 flex items-center justify-center bg-accent shrink-0">
+          <span className="font-display text-xs text-white">AI</span>
         </div>
 
-        <div className="glass-card px-4 py-3">
-          <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
-            <span className="inline-block w-2 h-2 bg-accent rounded-full animate-pulse" />
-            <span className="text-sm">Thinking...</span>
+        <div className="p-4 bg-white dark:bg-black border-2 border-black dark:border-white">
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+            <span className="inline-block w-2 h-2 bg-accent animate-pulse" />
+            <span className="font-display text-sm uppercase">THINKING...</span>
           </div>
         </div>
       </div>

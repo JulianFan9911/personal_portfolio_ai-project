@@ -104,7 +104,7 @@ export function Chat() {
   }, [messages.length]);
 
   return (
-    <div className="flex flex-col min-w-0 h-[calc(100dvh-80px)] bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex flex-col min-w-0 h-[calc(100dvh-64px)] bg-white dark:bg-black">
       <div
         ref={messagesContainerRef}
         className="flex flex-col min-w-0 gap-4 flex-1 overflow-y-scroll pt-4 px-4"
@@ -115,25 +115,22 @@ export function Chat() {
         {/* Context Banner */}
         {messages.length > 0 && isContextBannerVisible && (
           <div className="max-w-3xl mx-auto w-full">
-            <div className="glass-card p-4">
+            <div className="border-2 border-black dark:border-white p-4 bg-white dark:bg-black">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1">
-                  <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center shadow-lg shrink-0 mt-0.5">
-                    <span className="text-sm font-bold text-white">AI</span>
+                  <div className="w-10 h-10 bg-accent flex items-center justify-center shrink-0">
+                    <span className="font-display text-sm text-white">AI</span>
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">AI Assistant</h3>
-                      <span className="text-xs text-zinc-400">johndoe.me</span>
-                    </div>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                      I'm here to help you understand <span className="font-semibold text-accent">John Doe</span>'s unique value as a senior AI architect.
+                    <h3 className="font-display text-sm text-black dark:text-white">AI ASSISTANT</h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                      I'm here to help you understand <span className="font-semibold text-accent">John Doe</span>'s unique value.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsContextBannerVisible(false)}
-                  className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors shrink-0 cursor-pointer"
+                  className="text-gray-400 hover:text-black dark:hover:text-white transition-colors shrink-0 cursor-pointer"
                   aria-label="Close"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,7 +164,7 @@ export function Chat() {
         />
       </div>
 
-      <div className="p-4 bg-zinc-50 dark:bg-zinc-950">
+      <div className="p-4 bg-white dark:bg-black border-t-2 border-black dark:border-white">
         <form className="flex mx-auto gap-2 w-full md:max-w-3xl">
           <MultimodalInput
             chatId={chatId}

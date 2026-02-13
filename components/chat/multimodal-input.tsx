@@ -106,9 +106,9 @@ export function MultimodalInput({
       {/* Suggested Questions */}
       {messages.length === 0 && (
         <div className="flex flex-col gap-3">
-          <div className="glass-card py-3 px-4">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 text-center">
-              Ask me directly, or click a suggested question below
+          <div className="border-2 border-black dark:border-white p-3 bg-white dark:bg-black">
+            <p className="font-display text-sm text-black dark:text-white text-center uppercase tracking-wider">
+              ASK ME DIRECTLY OR CLICK A SUGGESTION
             </p>
           </div>
 
@@ -130,12 +130,12 @@ export function MultimodalInput({
                         content: suggestedAction.action,
                       });
                     }}
-                    className="group text-left bento-card hover:bg-transparent hover:border-accent hover:shadow-bento-hover px-4 py-3 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start transition-all cursor-pointer"
+                    className="group text-left border-2 border-black dark:border-white bg-white dark:bg-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black px-4 py-3 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start transition-all cursor-pointer rounded-none"
                   >
-                    <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm leading-snug">
+                    <span className="font-display text-sm uppercase tracking-wider">
                       {suggestedAction.title}
                     </span>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 leading-snug transition-colors">
+                    <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-current leading-snug transition-colors normal-case">
                       {suggestedAction.label}
                     </span>
                   </Button>
@@ -150,14 +150,14 @@ export function MultimodalInput({
       <div className="relative">
         <Textarea
           ref={textareaRef}
-          placeholder="Enter your question..."
+          placeholder="ENTER YOUR QUESTION..."
           value={input}
           onChange={handleInput}
           className={cn(
-            "min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base",
-            "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800",
+            "min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none !text-base",
+            "bg-white dark:bg-black border-2 border-black dark:border-white rounded-none",
             "focus:border-accent focus:ring-accent focus:ring-2",
-            "text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
+            "text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 placeholder:uppercase placeholder:tracking-wider",
             "pr-12",
             className,
           )}
@@ -178,25 +178,25 @@ export function MultimodalInput({
 
         {isLoading ? (
           <Button
-            className="rounded-xl p-2 h-fit absolute bottom-2 right-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 cursor-pointer"
+            className="p-2 h-fit absolute bottom-2 right-2 bg-white dark:bg-black border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black cursor-pointer rounded-none"
             onClick={(event) => {
               event.preventDefault();
               stop();
               setMessages((messages) => sanitizeUIMessages(messages));
             }}
           >
-            <StopIcon size={16} className="text-zinc-600 dark:text-zinc-400" />
+            <StopIcon size={16} />
           </Button>
         ) : (
           <Button
-            className="rounded-xl p-2 h-fit absolute bottom-2 right-2 bg-accent hover:bg-accent-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+            className="p-2 h-fit absolute bottom-2 right-2 bg-accent border-2 border-accent hover:bg-black hover:border-black text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer rounded-none"
             onClick={(event) => {
               event.preventDefault();
               submitForm();
             }}
             disabled={input.length === 0}
           >
-            <ArrowUpIcon size={16} className="text-white" />
+            <ArrowUpIcon size={16} />
           </Button>
         )}
       </div>
