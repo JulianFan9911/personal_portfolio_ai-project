@@ -1,293 +1,310 @@
-# Config Management: 让代码为扩展做好准备
+# Personal Branding: 让你的作品集与众不同
 
-> 功能已经跑通了，但在加新功能之前，我们先"回头整理"一下。
+> 功能都有了，但看起来和别人的一模一样。是时候让它变成"你的"了。
 
-## 概述
+## Overview
 
-上节课我们完成了部署，AI chat 在 Vercel 上跑得很好。功能完成了，任务结束了吗？
+在前面的课程里，我们完成了一个完整的 AI 个人作品集网站：有静态的 Landing Page，有能和 HR 聊天的 AI Chatbot。功能上没问题。
 
-对于业余开发者来说，是的。但对于专业开发者来说，这只是开始。
+但是，打开市面上任何一个 portfolio template，你会发现它们长得都差不多——同样的布局、同样的配色、同样的"千篇一律"。
 
-这节课我们做两件"看起来多余但很重要"的事：
+这节课，我们要做一件事：**让这个网站真正变成"你的"**。
 
-1. **Config Management** — 把配置值集中管理，为未来 scale 做准备
-2. **代码重构** — 让主函数逻辑清晰，把可复用的代码抽离到独立模块
+这不只是换个颜色那么简单。Personal branding 是你职业形象的一部分。当 HR 打开你的作品集时，第一眼的印象就决定了他们会不会继续往下看。
 
-## 学习目标
+## Learning Objectives
 
-这节课的重点不是"怎么写代码"，而是**为什么要这样组织代码**。这是设计哲学的传授。
+为什么要学这个？
 
-完成本课后，你将能够：
+想象一下：你花了很多时间学技术、做项目、准备面试。但当你把作品集链接发给 HR 时，他们每天要看几十份简历，你的页面和别人的长得一样，凭什么让他们多停留几秒？
 
-1. **理解 Single Source of Truth 原则** — 明白为什么"一个值只在一个地方定义"是好的设计
-2. **理解代码复用思想** — 把通用逻辑抽离到独立模块，供多处调用
-3. **阅读清晰的主函数** — 读 `index.py` 应该像读英语，一步步做什么一目了然
+**Personal branding 不是可选项，而是必修课。**
 
-## 前提条件
+在这节课里，你不只是学"怎么改 UI"，更重要的是学一种**解决开放式问题的思维模式**：
 
-- 完成了上节课（部署成功，AI chat 在 Vercel 上工作）
-- 理解 runtime detection 的概念
+1. **先想（Think）** — 面对"让它更好看"这种模糊需求，先让 AI 帮你想方案，给你选项
+2. **再做（Do）** — 选定方向后，让 AI 执行
+3. **调试（Debug）** — 发现小问题，用自然语言描述，让 AI 修复
 
----
+这个"想 → 做 → 调"的循环，适用于任何开放式问题。无论是设计 UI、写文案、还是规划架构，这都是一种非常强大的思维模式。
 
-## 核心概念
+## Prerequisites
 
-### 1. 为什么要做 Config Management？
-
-假设你的代码里有这样的情况：
-
-```python
-# boto_ses.py
-boto_ses = boto3.Session(region_name="us-east-1", ...)
-
-# some_other_file.py
-client = boto3.client("s3", region_name="us-east-1")
-
-# yet_another_file.py
-REGION = "us-east-1"
-```
-
-现在老板说："我们要把服务迁移到东京，改成 `ap-northeast-1`。"
-
-你需要：
-1. 找到所有出现 `us-east-1` 的地方
-2. 一个一个改
-3. 祈祷你没有漏改任何一个
-
-这就是 **配置散落** 带来的痛苦。
-
-**核心原则：Single Source of Truth**
-
-> **如果一个值可能被改动，它应该只在一个地方被定义。其他所有地方都是对它的引用。**
-
-判断标准很简单：**如果你改一个字符串/数值，需要去多个文件改——那这个值就应该被抽象到 config。**
-
-### 2. Config Pattern：dataclass + factory method
-
-看看我们的解决方案 [config.py](./learn_personal_portfolio_ai/config.py)：
-
-```python
-@dataclasses.dataclass
-class Config:
-    aws_region: str | None = dataclasses.field(default=None)
-    aws_access_key_id: str | None = dataclasses.field(default=None)
-    aws_secret_access_key: str | None = dataclasses.field(default=None)
-    max_message_length: int = dataclasses.field(default=1000)
-
-    @classmethod
-    def new(cls):
-        if runtime.is_local():
-            return cls.new_in_local_runtime()
-        elif runtime.is_vercel():
-            return cls.new_in_vercel_runtime()
-
-config = Config.new()
-```
-
-**使用时只需要一行：**
-
-```python
-from learn_personal_portfolio_ai.config import config
-
-region = config.aws_region
-max_len = config.max_message_length
-```
-
-### 3. 代码重构：让主函数像读英语
-
-看看重构后的 [api/index.py](./api/index.py)：
-
-```python
-@app.post("/api/chat")
-async def handle_chat_data(request: Request):
-    # Step 1: Log incoming request
-    request_body_data = await debug_ai_sdk_request(request=request)
-
-    # Step 2: Parse request
-    request_body = RequestBody(**request_body_data)
-
-    # Step 3: Check message length (commented out, you'll enable it!)
-    # last_user_message = get_last_user_message_text(request_body)
-    # if last_user_message and len(last_user_message) > config.max_message_length:
-    #     ...
-
-    # Step 4: Initialize chat session
-    chat_session = ChatSession(...)
-
-    # Step 5: Call Bedrock
-    response = chat_session.send_message([])
-
-    # Step 6: Return streaming response
-    return StreamingResponse(ai_sdk_message_generator(output_text=output_text), ...)
-```
-
-**这就是好代码的样子：** 读主函数就像读英语，Step 1、Step 2、Step 3... 每一步做什么一目了然。
-
-**核心思想：**
-
-- **主函数只有流程控制** — 每一步都是一个 function call
-- **具体逻辑放到独立模块** — 供复用，供测试
-
-### 4. 复用的威力
-
-看看 [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) 里的函数：
-
-```python
-# 这个函数被复用了两次！
-def ai_sdk_message_generator(output_text: str):
-    """生成 AI SDK v5 格式的 SSE 流"""
-    message_id = str(uuid.uuid4())
-    yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
-    yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
-    yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
-    yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
-    yield "data: [DONE]\n\n"
-```
-
-这个函数在 `index.py` 里被用了两次：
-1. 正常返回 AI 回复时
-2. 返回 "Message too long" 错误时
-
-如果这段逻辑写在 `index.py` 里两次，将来 AI SDK 协议变了，你要改两个地方。抽成函数后，只改一个地方。
-
-**这就是复用的威力：改一处，处处生效。**
-
-### 5. 模块职责划分
-
-| 模块 | 职责 |
-|------|------|
-| [api/index.py](./api/index.py) | 主函数，只有流程控制 |
-| [config.py](./learn_personal_portfolio_ai/config.py) | 配置管理 |
-| [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) | AI SDK 格式转换、调试、SSE 生成 |
-| [boto_ses.py](./learn_personal_portfolio_ai/boto_ses.py) | AWS 客户端初始化 |
-| [utils.py](./learn_personal_portfolio_ai/utils.py) | 通用工具函数 |
-
-每个模块做一件事，做好一件事。
+- 完成前面的课程（网站已部署，AI 聊天功能正常）
+- 有基本的 Claude Code 使用经验
 
 ---
 
-## 练习
+## Key Concepts
 
-### 练习 1：阅读重构后的代码
+### 1. 什么是 Agent Skill？
 
-**目标：** 理解代码组织方式。
+在 Claude Code 里，我们可以给 AI 加载额外的"技能"。就像给 AI 装了一个专业插件。
 
-1. 打开 [api/index.py](./api/index.py)，通读 `handle_chat_data` 函数
-   - 注意它读起来是不是像英语？每一步在做什么？
-   - 找到被注释掉的 "Check message length" 部分
+当你输入 `/ui-ux-pro-max` 这样的 slash command 时，AI 会加载一套专门针对 UI/UX 设计的知识和流程。它不再是一个"什么都知道一点"的通才，而是变成了一个专精 UI 设计的专家。
 
-2. 打开 [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py)，找到这两个函数：
-   - `get_last_user_message_text()` — 提取最后一条用户消息
-   - `ai_sdk_message_generator()` — 生成 SSE 流
+**为什么这很重要？**
 
-3. 思考：为什么这两个函数放在 `ai_sdk_adapter.py` 而不是 `index.py`？
+普通的 AI 可能会给你一些泛泛的建议。但加载了 UI/UX skill 之后，它会用专业设计师的思维来分析你的需求——考虑配色理论、排版原则、用户体验细节。
 
-### 练习 2：启用消息长度限制
+这就是 Agent Skill 的价值：**让 AI 在特定领域变得更专业**。
 
-**目标：** 动手启用一个 config 功能，体验复用的威力。
+### 2. 先想再做：开放式问题的解决之道
 
-我们在 config 里添加了 `max_message_length = 1000`，用于限制用户消息长度。检查逻辑已经写好，但被注释掉了。
+"让这个网站更好看"——这是一个非常开放的需求。你可以有无数种方向：
 
-**你的任务：**
+- 换成暗色主题？
+- 加入动画效果？
+- 改成极简风格？
+- 用更大胆的配色？
 
-1. 打开 [config.py](./learn_personal_portfolio_ai/config.py)，找到 `max_message_length` 字段
+如果直接让 AI "帮我改好看一点"，结果可能完全不是你想要的。
 
-2. 打开 [api/index.py](./api/index.py)，找到这段被注释的代码：
-   ```python
-   # --- Check message length ---
-   # Uncomment below to enable max message length check
-   # last_user_message = get_last_user_message_text(request_body)
-   # if last_user_message and len(last_user_message) > config.max_message_length:
-   #     error_msg = f"Message too long..."
-   #     response = StreamingResponse(
-   #         ai_sdk_message_generator(output_text=error_msg),  # 复用！
-   #         ...
-   #     )
-   #     return response
-   ```
+**正确的做法是：先让 AI 想，给你选项，你来选。**
 
-3. 取消注释（uncomment）那段代码
+这个流程是：
 
-4. 启动开发服务器测试：
-   ```bash
-   mise run dev
-   ```
-   - 发送正常消息 → 应该正常工作
-   - 发送超过 1000 字符的消息 → 应该返回 "Message too long" 错误
+1. 把你的需求和上下文告诉 AI
+2. 明确说"先不要动手，给我几个方案"
+3. AI 分析后给出几个方向
+4. 你选一个，然后让 AI 执行
 
-**注意观察：** 错误响应用的是 `ai_sdk_message_generator()`——和正常响应用的是同一个函数！这就是复用。
+这样你始终掌控着方向，AI 负责执行。
 
-### 练习 3：运行测试
+### 3. 用自然语言调试
+
+执行完后，你打开页面，可能会发现一些小问题。比如某个按钮 hover 时颜色不对，某段文字看不清楚。
+
+这时候不需要你去翻代码、查 CSS。**直接用自然语言描述问题**：
+
+> "这个按钮 hover 的时候整个变蓝了，灰色的副标题看不清楚。我觉得只要边框变蓝就好了。"
+
+AI 会理解你的意图，找到对应的代码，然后修复它。
+
+这就是 AI 时代的调试方式：**用人话说问题，让 AI 去改代码**。
+
+### 4. 为什么是"现在"做 Personalization？
+
+这是一个值得思考的问题：为什么不在一开始就做个性化设计？
+
+**权衡的艺术：**
+
+如果一开始就做个性化：
+- 好处：后面所有功能都会按照这个风格来
+- 坏处：网站框架还没出来，你很难想象最终效果。做出来后可能要返工。
+
+如果等到现在做：
+- 好处：基础功能已经完成，你能清楚看到网站长什么样，改起来更有针对性
+- 坏处：可能需要调整一些已经写好的代码
+
+**我们选择"现在"做，因为：**
+
+1. 网站的核心功能已经完成，你能看到全貌
+2. 但我们还会继续添加新功能，现在定下风格，后面的开发就有章可循
+3. 这是一个"刚刚好"的时机——不太早（避免返工），不太晚（风格能贯穿后续开发）
+
+这就是软件开发中的权衡——没有完美的时机，只有"当下最合适"的选择。
+
+---
+
+## Exercises
+
+### Exercise 1: 让 AI 先想
+
+**目标：** 学会用 Agent Skill 分析需求，获取设计方案。
+
+**做法：**
+
+1. 在 Claude Code 里输入以下 prompt：
+
+```
+/ui-ux-pro-max based on the page of this document, it is a personal portfolio website with a static landing page and a interactive chatbot app that can introduce my experience and skill to HR, hiring manager, help me brain storm what would be a very unique, personalized good design for this website
+```
+
+2. **关键点：** 你没有让它直接改代码，而是让它 "brain storm"、"help me think"。这会让 AI 进入"分析模式"，给你几个方案选择。
+
+3. AI 会给出几个设计方向。仔细阅读每个方案，想想哪个更符合你想表达的个人风格。
+
+**你会注意到：**
+
+AI 不是随便给建议，而是基于你的具体情况（personal portfolio、给 HR 看、有 chatbot）来分析。这就是加载 UI/UX skill 的效果——它会像专业设计师一样思考。
+
+### Exercise 2: 选定方案并执行
+
+**目标：** 让 AI 执行你选定的设计方案。
+
+**做法：**
+
+1. 从上一步的方案中选一个你喜欢的
+
+2. 告诉 AI 执行：
+
+```
+please execute it
+```
+
+3. AI 会开始修改代码。等它完成后，运行开发服务器查看效果：
 
 ```bash
-mise run test-python
+mise run dev
 ```
 
-测试代码在 [tests_python/test_config.py](./tests_python/test_config.py)，它验证 `Config.new()` 能成功创建实例。
+4. 打开浏览器，看看变化。
 
----
+**你会注意到：**
 
-## 反思
+AI 会修改多个文件——可能是 CSS、可能是组件代码、可能是配置文件。你不需要知道每个文件的细节，只需要看最终效果是否符合预期。
 
-这节课我们做了两件事：
+### Exercise 3: 发现问题并修复
 
-1. **Config Management** — 把配置值集中到一个地方
-2. **代码重构** — 把可复用的逻辑抽离到独立模块
+**目标：** 用自然语言描述问题，让 AI 修复。
 
-这些改动看起来很小，但它们让代码 **ready to scale**：
+**做法：**
 
-- 新加一个配置？改 `config.py` 一个文件
-- AI SDK 协议变了？改 `ai_sdk_adapter.py` 一个文件
-- 新同事要理解代码？读 `index.py` 主函数就够了
+假设你发现了一个问题：在 chat 页面，那些快捷按钮（"About Me"、"Work Experience" 等）hover 时整个按钮变蓝，导致灰色的副标题看不清楚。
 
-当你的项目从 3 个文件变成 30 个文件，从 1 个开发者变成 10 个开发者，你会感谢今天做的这些"看起来多余"的事。
+1. 用自然语言描述问题：
 
----
-
-## 导师寄语
-
-**为什么这个练习重要：**
-
-今天的改动看起来很小，但我想让你理解两个设计哲学：
-
-**1. Single Source of Truth**
-
-一个值只在一个地方定义。其他地方都是引用。
-
-**2. 主函数像读英语**
-
-好的代码，主函数应该能让人一眼看懂流程：
-- Step 1: 解析请求
-- Step 2: 检查长度
-- Step 3: 调用 AI
-- Step 4: 返回响应
-
-具体怎么"解析请求"？怎么"调用 AI"？这些细节放到独立模块里。主函数只负责"指挥"，不负责"干活"。
-
-**判断代码质量的标准：**
-
-> "如果需求变了，我需要改多少个文件？"
-
-如果答案是"一个"，你的设计是好的。
-
----
-
-## 快速参考
-
-**核心文件：**
-- [config.py](./learn_personal_portfolio_ai/config.py) — 配置管理
-- [ai_sdk_adapter.py](./learn_personal_portfolio_ai/ai_sdk_adapter.py) — AI SDK 适配器
-- [api/index.py](./api/index.py) — 主函数入口
-
-**使用 Config：**
-```python
-from learn_personal_portfolio_ai.config import config
-
-region = config.aws_region
-max_len = config.max_message_length
+```
+one minor problem, on the chat page there are some shortcut button like "About Me", "Work Experience" when I move mouse to it, button becomes blue and gray subtitle is very hard to see, how me improve it
 ```
 
-**运行测试：**
+2. AI 可能会给你几个解决方案。如果你有更具体的想法，直接告诉它：
+
+```
+我觉得 hover 的时候, 边框变蓝就可以了, 不要整个 button 变蓝
+```
+
+3. AI 会修改对应的代码。刷新页面，确认问题已修复。
+
+**你会注意到：**
+
+你完全没有碰代码，只是用人话描述了问题和期望。AI 自己找到了 `multimodal-input.tsx` 文件，理解了 Tailwind CSS 的类名，然后做了精确的修改。
+
+**这就是"想 → 做 → 调"的完整循环。**
+
+### Exercise 4: 让 AI 教你它做了什么
+
+**目标：** 不只是让 AI 改代码，还要理解它改了什么、为什么这么改。
+
+**做法：**
+
+改完之后，你应该问 AI 一个问题：
+
+```
+I'm satisfied with the result. Now tell me what you changed and why. Please explain each file you modified, one by one, so I can learn how to do this myself next time.
+```
+
+**为什么这一步很重要：**
+
+如果你只是让 AI 改完就走，下次遇到类似问题，你还是不会。但如果你让 AI 解释：
+- 改了哪些文件
+- 每个文件里改了什么
+- 为什么要这么改
+
+你就能学到真正的知识。下次你甚至可以自己动手改。
+
+**这才是 AI 辅助学习的正确姿势：让 AI 帮你做，然后让 AI 教你怎么做。**
+
+---
+
+## Reflection
+
+在这节课里，我们做了一件看似简单的事：改了改 UI。
+
+但真正重要的是背后的方法论：
+
+1. **Agent Skill** — 让 AI 在特定领域更专业
+2. **先想再做** — 面对开放式问题，先让 AI 给方案，你来选
+3. **自然语言调试** — 用人话描述问题，让 AI 改代码
+
+这个"想 → 做 → 调"的循环，不只适用于 UI 设计。任何开放式问题——写文案、设计架构、规划功能——都可以用这个模式。
+
+**核心思想：你负责方向，AI 负责执行。**
+
+---
+
+## Mentor's Note
+
+**为什么这节课很重要：**
+
+很多同学觉得 personal branding 是"花哨的东西"，不如多学点技术实在。
+
+但我想告诉你：在真实的求职市场里，第一印象非常重要。HR 每天要看几十份简历，你的作品集如果和别人长得一样，很可能连被打开的机会都没有。
+
+**Personal branding 不是虚荣，而是竞争力的一部分。**
+
+但这节课真正想教你的，不只是"怎么让网站好看"，而是一种**解决开放式问题的思维模式**：
+
+1. 面对模糊需求，先让 AI 分析、给方案
+2. 你来做选择、定方向
+3. 让 AI 执行
+4. 发现问题，用自然语言描述，让 AI 修复
+
+这个模式，我在工作中每天都在用。无论是设计系统架构、写技术方案、还是做产品决策，"想 → 做 → 调"都是最高效的方式。
+
+**关于时机的思考：**
+
+你可能会问：为什么不一开始就做 personalization？
+
+答案是：软件开发是一门权衡的艺术。
+
+太早做，你不知道网站最终长什么样，改了可能要返工。太晚做，风格就很难统一了。我们选择"现在"——基础功能完成、但还会继续扩展的这个节点——是一个经过思考的决定。
+
+记住：没有完美的时机，只有"当下最合适"的选择。学会做这种权衡，是成为资深工程师的必经之路。
+
+---
+
+## Quick Reference
+
+**启动开发服务器：**
 ```bash
-mise run test-python
+mise run dev
 ```
+
+**"想 → 做 → 调 → 学"循环：**
+1. 用 `/ui-ux-pro-max` 让 AI 分析需求，给出方案
+2. 选定方案，让 AI 执行
+3. 发现问题，用自然语言描述，让 AI 修复
+4. 让 AI 解释它改了什么，学会自己做
+
+---
+
+### 文件变更总结
+
+这次 UI 改造涉及以下文件，了解它们的作用能帮你理解整个网站的结构：
+
+**全局样式与配置：**
+- `app/globals.css` — 全局 CSS 变量、颜色系统、字体定义、工具类（bento-card、glass-card）、暗色模式、自定义滚动条
+- `app/layout.tsx` — 根布局，引入字体（Outfit、Work Sans）
+- `tailwind.config.ts` — Tailwind 配置，定义颜色 tokens、字体、动画
+
+**Landing Page 组件：**
+- `app/(marketing)/HomePageContent.tsx` — 首页主体内容的组织
+- `app/(marketing)/_components/Hero.tsx` — 首页英雄区（大标题、CTA 按钮、背景效果）
+- `app/(marketing)/_components/StatsSection.tsx` — 数据统计展示区（bento grid 布局）
+- `app/(marketing)/_components/ContactSection.tsx` — 联系信息区
+
+**导航：**
+- `app/_components/layouts/Navigation.tsx` — 顶部导航栏（glass navbar 效果、移动端适配、Chat 入口）
+
+**Chat 页面：**
+- `app/chat/layout.tsx` — 聊天页面的布局结构、内边距
+- `components/chat/chat.tsx` — 聊天主组件（消息列表、滚动行为）
+- `components/chat/message.tsx` — 单条消息的样式（头像、气泡、glass-card 效果）
+- `components/chat/multimodal-input.tsx` — 输入框和快捷按钮（你在 Exercise 3 里修复的就是这个）
+- `components/chat/overview.tsx` — 聊天页的欢迎界面
+
+---
+
+## Homework
+
+**截图你的成果：**
+
+完成上面的练习后，截一张你网站的截图，放在这里。
+
+这是你的 personal brand 的一部分。每次回顾这个项目，你都能看到自己亲手打造的独特设计。
+
+---
+
+*既然是个人品牌，就一定要非常非常 personalize。这节课教你的是方法，真正的 personalization 需要你自己去探索、去尝试、去打磨。*
