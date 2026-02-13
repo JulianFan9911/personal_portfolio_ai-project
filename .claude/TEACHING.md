@@ -1,157 +1,138 @@
-# Teaching Guide: Personal Branding with AI-Assisted UI Design
+# Teaching Guide: Milestone Review & Documentation
 
 ## Learning Outcomes
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand the "Think → Do → Debug → Learn" methodology for solving open-ended design problems
-2. **Skill outcome** - Use AI Agent Skills to personalize a website, fix issues with natural language descriptions, and learn from AI explanations
-3. **Mindset outcome** - Adopt the habit of staying in control of direction while letting AI handle execution; understand that open-ended problems need structured approaches
+1. **Cognitive outcome** - Understand the difference between "decisions" (why) and "dev-guide" (how) documentation, and when each is useful
+2. **Skill outcome** - Read existing documentation to review codebase structure; write a technical document capturing learned knowledge
+3. **Mindset outcome** - Adopt the habit of documenting at milestones; see documentation as "saving future time" rather than "wasting current time"
 
 ## Concept Sequence
 
 Teach concepts in this order:
 
-### Phase 1: The Problem with Open-Ended Requirements (5 minutes)
+### Phase 1: Why Document Now? (5 minutes)
 
-1. **"Make it look better"** - This is too vague. AI could go countless directions.
-2. **The Trap** - If you just ask AI to code, results might not match expectations
-3. **The Solution** - Structured approach: Think → Do → Debug → Learn
+1. **The 30% Rule callback** - At milestones, you can see the full picture but details are still fresh
+2. **The forgetting problem** - In 3 months, you won't remember how you set things up
+3. **Documentation as investment** - Time spent now saves more time later
 
-This phase establishes why we need a methodology instead of just asking AI to "do it."
+This phase establishes motivation. Students often skip documentation — show them why it matters.
 
-### Phase 2: Agent Skills Concept (5 minutes)
+### Phase 2: Two Types of Documentation (10 minutes)
 
-4. **What is an Agent Skill?** - A specialized plugin that makes AI expert in a domain
-5. **Why it matters** - General AI gives generic advice; specialized AI thinks like a professional
-6. **The /ui-ux-pro-max skill** - Makes AI think like a designer (color theory, typography, UX)
+4. **Decisions (Why)** - Records reasoning behind choices; useful when revisiting decisions
+5. **Dev Guide (How)** - Records how to work with the codebase; useful for onboarding and resuming work
+6. **When to use which** - "Why did we do this?" → Decisions. "How do I do this?" → Dev Guide.
 
-Students should understand that loading a skill transforms AI from generalist to specialist.
+Students should understand that different questions need different documentation.
 
-### Phase 3: The "Think → Do → Debug → Learn" Cycle (15 minutes)
+### Phase 3: Reading Documentation (15 minutes)
 
-7. **Think First** - Ask AI to brainstorm options, not code immediately
-8. **You Stay in Control** - AI gives options, you choose direction
-9. **Then Do** - Once direction is set, have AI execute
-10. **Debug with Natural Language** - Find issues, describe in plain language, AI fixes
-11. **Learn from AI** - Ask AI to explain what it changed and why
+7. **Exercise 1: Read Dev Guide** - 4 documents covering architecture, backend, frontend, FAQ
+8. **Exercise 2: Read Decisions** - 4 documents covering Vercel deployment decisions
+9. **Active reading** - Ask: "Did I know this? Have I forgotten this? Is this enough for future me?"
 
-This is the core methodology. Emphasize that this applies to ANY open-ended problem.
+Reading others' docs teaches structure and completeness.
 
-### Phase 4: The Trade-off of Timing (5 minutes)
+### Phase 4: Writing Documentation (20 minutes)
 
-12. **Why not at the start?** - Can't visualize final result, might need rework
-13. **Why not too late?** - Style becomes hard to unify
-14. **Why now?** - Core features done, still adding more, this is the "just right" moment
-15. **The Art of Trade-offs** - No perfect timing, only best choice for now
+10. **Exercise 3: Write your own** - Pick any topic from the project
+11. **Use AI to help** - Describe what you want to document, let AI draft
+12. **Standard structure** - Background → Solution → Key Points → References
 
-This is a meta-lesson about software development decision-making.
+The assignment is intentionally open-ended to encourage ownership.
 
-### Phase 5: Hands-on Exercises (25-30 minutes)
+### Phase 5: Wrap-up (5 minutes)
 
-16. **Exercise 1** - Use /ui-ux-pro-max to brainstorm design options (10 min)
-17. **Exercise 2** - Pick and execute a design (15 min)
-18. **Exercise 3** - Find and fix an issue with natural language (10 min)
-19. **Exercise 4** - Ask AI to explain what it changed (10 min)
-
-### Phase 6: Wrap-up (5 minutes)
-
-20. **Reinforce the cycle** - Think → Do → Debug → Learn
-21. **Core principle** - You control direction, AI handles execution
-22. **Broader application** - This works for any open-ended problem
+13. **Reinforce the habit** - Document at milestones, not at the end
+14. **Core principle** - Documentation is a gift to future self and teammates
+15. **Submission** - Share written document with mentor
 
 ## Common Struggles
 
-**Struggle:** Student jumps straight to asking AI to "make it better"
-- **Signs:** Skips brainstorming step, immediately asks for code changes
-- **Intervention:** Stop them. Ask: "What direction do you want? Dark theme? Minimalist? Bold colors? If you don't know, how would AI know what you want?"
+**Struggle:** Student thinks "there's nothing to write"
+- **Signs:** Stares at blank screen, says "I don't know what to document"
+- **Intervention:** "What was confusing when you started? What would help someone new? What bug did you hit and fix?"
 
-**Struggle:** Student doesn't know how to describe UI problems
-- **Signs:** Tries to find code themselves instead of describing the issue
-- **Intervention:** "Just tell me what's wrong in plain English. 'The button looks weird when I hover' is enough. AI will find the code."
+**Struggle:** Student writes too much or too little
+- **Signs:** Either a one-liner or a 10-page essay
+- **Intervention:** "Imagine you in 3 months. What's the minimum they need to know? That's your scope."
 
-**Struggle:** Student thinks personalization is about skills, not methodology
-- **Signs:** Focuses on learning CSS/Tailwind instead of the workflow
-- **Intervention:** "This lesson isn't about CSS. It's about how to solve problems you don't know how to solve. The method works whether it's UI, writing, or architecture."
+**Struggle:** Student copies documentation without reading
+- **Signs:** Can't answer questions about what they read
+- **Intervention:** "Tell me one thing you learned from reading. What surprised you?"
 
-**Struggle:** Student skips the "Learn" step
-- **Signs:** Task done, moves on without understanding what changed
-- **Intervention:** "Wait. You used AI, but did you learn anything? Ask AI to explain. Next time you'll know how to do it yourself."
+**Struggle:** Student sees documentation as busywork
+- **Signs:** Rushes through, minimal effort
+- **Intervention:** "Have you ever returned to old code and been confused? That's what documentation prevents."
 
-**Struggle:** Student doesn't understand timing trade-off
-- **Signs:** Asks "Why didn't we do this first?"
-- **Intervention:** "Could you have visualized this design on day one? Without seeing the site structure, how would you know what to personalize? That's the trade-off."
+**Struggle:** Student doesn't know standard doc structure
+- **Signs:** Writes stream-of-consciousness paragraphs
+- **Intervention:** Point to the suggested structure: Background → Solution → Key Points → References
 
 ## Teaching Tips
 
-- **Start with the failure case** - Ask: "What happens if you just tell AI 'make my site look better'?" Let them realize the problem.
+- **Start with a story** - "I once spent 3 days figuring out why a deployment failed. The answer was in a decision doc I forgot to write."
 
-- **Demonstrate brainstorming** - Show the actual /ui-ux-pro-max prompt. Let them see how AI gives structured options instead of random suggestions.
+- **Show, don't tell** - Open one of the dev-guide docs together. Point out its structure. "See how it starts with overview, then details, then quick reference?"
 
-- **Model natural language debugging** - Describe a problem out loud: "The gray text is hard to read on the blue background." Show that AI understands intent, not just code.
+- **Make it personal** - "What would YOU want to know if you came back in 3 months? That's what to write."
 
-- **Make the "Learn" step visible** - After fixing something, ask AI to explain. Read the explanation together. Point out: "Now you know this file controls this part of the UI."
+- **Celebrate any output** - Even a short doc is better than no doc. Praise the act of writing, not just the quality.
 
-- **Connect to real work** - "This is how senior engineers work. They don't memorize everything. They know how to solve problems they've never seen before."
-
-- **Emphasize direction vs execution** - Repeatedly say: "You're the director. AI is the crew. Directors don't hold cameras, but they decide what gets filmed."
+- **Connect to real work** - "In companies, documentation review is part of code review. No docs = incomplete work."
 
 ## Assessment Ideas
 
-- **Methodology check:** "Explain the Think → Do → Debug → Learn cycle."
-  - Good answer: Can describe all four steps and why each matters
+- **Understanding check:** "What's the difference between decisions and dev-guide docs?"
+  - Good answer: "Decisions explain why we made a choice. Dev-guide explains how to work with the code."
 
-- **Control vs execution:** "Who decides the design direction?"
-  - Good answer: "I do. AI gives options, I choose."
+- **Reading verification:** "What did you learn from reading the docs that you didn't know before?"
+  - Good answer: Can name specific details (file locations, config options, etc.)
 
-- **Natural language debugging:** "How do you fix a UI issue you notice?"
-  - Good answer: "Describe it in plain language. AI finds and fixes the code."
+- **Writing submission:** Student produces a markdown document in `docs/`
+  - Pass criteria: Has clear structure, covers one topic, would be useful to future reader
 
-- **Trade-off understanding:** "Why do personalization now?"
-  - Good answer: "Trade-off. Too early = can't visualize. Too late = hard to unify. Now = just right."
-
-- **Hands-on verification:** Student can:
-  - Show screenshots of personalized landing page and chat page
-  - Explain what files were changed and why
-  - Demonstrate fixing an issue with natural language
+- **Mindset check:** "When should you write documentation?"
+  - Good answer: "At milestones, while memory is fresh" (not "at the end of the project")
 
 ## Pacing Guide
 
-- **Phase 1 (Open-ended problem):** 5 minutes
-  - Establish why "make it better" doesn't work
+- **Phase 1 (Why document now):** 5 minutes
+  - Quick motivation, connect to 30% Rule
 
-- **Phase 2 (Agent Skills):** 5 minutes
-  - Explain what skills are and why they matter
+- **Phase 2 (Two types):** 10 minutes
+  - Explain decisions vs dev-guide
+  - Show examples from actual docs
 
-- **Phase 3 (Methodology):** 15 minutes
-  - Core teaching: Think → Do → Debug → Learn
-  - Most important phase, spend time here
+- **Phase 3 (Reading):** 15 minutes
+  - Exercise 1: Skim dev-guide docs
+  - Exercise 2: Skim decision docs
+  - Discuss what they noticed
 
-- **Phase 4 (Timing trade-off):** 5 minutes
-  - Meta-lesson on software decision-making
+- **Phase 4 (Writing):** 20 minutes
+  - Exercise 3: Student writes their own doc
+  - Can use AI to help draft
+  - Mentor available for questions
 
-- **Phase 5 (Hands-on):** 25-30 minutes
-  - Exercise 1: Brainstorm (10 min)
-  - Exercise 2: Execute (15 min)
-  - Exercise 3: Debug (10 min)
-  - Exercise 4: Learn (10 min)
+- **Phase 5 (Wrap-up):** 5 minutes
+  - Collect submissions
+  - Reinforce key messages
 
-- **Phase 6 (Wrap-up):** 5 minutes
-  - Reinforce methodology
-  - Connect to broader applications
-
-**Total expected time:** 60-65 minutes
+**Total expected time:** 55-60 minutes
 
 ## Key Messages to Reinforce
 
-1. **Think → Do → Debug → Learn** - This is the methodology for open-ended problems. Don't skip steps.
+1. **Document at milestones, not at the end** - Memory fades. Capture knowledge while it's fresh.
 
-2. **You control direction, AI handles execution** - AI gives options, you choose. Never let AI make decisions for you on open-ended requirements.
+2. **Two types: Why (decisions) and How (dev-guide)** - Different questions need different docs.
 
-3. **Describe problems, don't dig for code** - Natural language is enough. AI finds the relevant code.
+3. **Documentation is a gift to future self** - The time you spend now saves more time later.
 
-4. **Always ask AI to explain** - The "Learn" step transforms this from "AI did it for me" to "I learned how to do it."
+4. **Start with structure** - Background → Solution → Key Points → References
 
-5. **Trade-offs are everywhere** - No perfect timing, no perfect solution. Learn to make the best choice for now.
+5. **Any doc is better than no doc** - Don't aim for perfect. Aim for useful.
 
-6. **This isn't about UI** - The methodology applies to any open-ended problem: writing, architecture, product decisions. UI is just the example.
+6. **Use AI to help write** - Describe what you want, let AI draft, then review and edit.

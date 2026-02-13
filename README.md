@@ -1,321 +1,211 @@
-# Personal Branding: Make Your Portfolio Stand Out
+# Milestone Review: Document Your Codebase
 
-> The features are done, but it looks like everyone else's. Time to make it truly "yours."
+> The project is stable. While the memory is fresh, write down what you learned.
 
 ## Overview
 
-In the previous lessons, we built a complete AI portfolio website: a static landing page and an AI chatbot that can introduce your experience to HR and hiring managers. Functionally, it works great.
+Through the previous lessons, you've built a complete AI portfolio website: Landing Page, AI Chatbot, Vercel deployment. Everything works.
 
-But open any portfolio template on the market, and you'll notice they all look the same — same layouts, same color schemes, same generic feel.
+Now is a good time — **stop, review, and turn your knowledge into documentation**.
 
-In this lesson, we're doing one thing: **making this website truly yours**.
+Why now? Remember the 30% Rule: at 30% completion, you can see the full picture and still have energy to organize. Push further, and details start fading. Come back three months later to modify the code, and you might not even remember how you set things up.
 
-This isn't just about changing colors. Personal branding is part of your professional identity. When an HR person opens your portfolio, their first impression determines whether they'll keep scrolling.
+This lesson's goal is simple: **read the documentation your mentor wrote, then write one yourself**.
 
-**See the transformation:**
-
-| Landing Page | Chat Page |
-|--------------|-----------|
-| ![Landing Page](./img/15-UI-Personization/new-design-01.png) | ![Chat Page](./img/15-UI-Personization/new-design-02.png) |
-
-This is what we created with AI — bold black & white color scheme, striking typography, unique layout. Your result after completing this lesson will look completely different based on your personal style.
+---
 
 ## Learning Objectives
 
-Why does this matter?
+In this lesson, you will:
 
-Imagine: you've spent months learning tech, building projects, preparing for interviews. But when you send your portfolio link to HR, they're reviewing dozens of resumes daily. If your page looks like everyone else's, why would they spend extra seconds on yours?
+1. **Understand two types of documentation** — What decisions and dev-guide documents are for
+2. **Review the codebase structure** — Quickly recap project architecture by reading docs
+3. **Practice writing technical docs** — Write one yourself, building the skill of "writing knowledge down"
 
-**Personal branding isn't optional — it's essential.**
-
-In this lesson, you're not just learning "how to change UI." More importantly, you're learning a **problem-solving mindset for open-ended challenges**:
-
-1. **Think First** — Face vague requirements like "make it look better" by having AI brainstorm options for you
-2. **Then Do** — Pick a direction, let AI execute
-3. **Debug** — Find small issues, describe them in plain language, let AI fix them
-4. **Learn** — Ask AI to explain what it changed, so you understand how it works
-
-This "Think → Do → Debug → Learn" cycle applies to any open-ended problem. Whether it's designing UI, writing copy, or planning architecture — this is a powerful mental model.
+---
 
 ## Prerequisites
 
-- Completed previous lessons (website deployed, AI chat working)
-- Basic experience with Claude Code
+- Completed previous lessons (website deployed, AI Chat working)
+- Basic familiarity with the codebase
 
 ---
 
 ## Key Concepts
 
-### 1. What is an Agent Skill?
+### Two Types of Documentation
 
-In Claude Code, you can load additional "skills" for the AI. It's like installing a specialized plugin.
+Your mentor has organized two types of documentation with different purposes:
 
-When you type `/ui-ux-pro-max` as a slash command, AI loads a specialized set of knowledge and workflows for UI/UX design. It transforms from a generalist who "knows a bit of everything" into a specialist expert in UI design.
+| Type | Location | Purpose |
+|------|----------|---------|
+| **Decisions** | `docs/decisions/` | Records "why we made this decision" |
+| **Dev Guide** | `docs/dev-guide/` | Records "how to work with this codebase" |
 
-**Why does this matter?**
+**Decisions** answer "Why":
+- Why use pnpm instead of npm?
+- Why generate requirements.txt?
+- How does Vercel billing work?
 
-A general AI might give you generic advice. But with the UI/UX skill loaded, it thinks like a professional designer — considering color theory, typography principles, and user experience details.
+**Dev Guide** answers "How":
+- What's the directory structure?
+- What are the key files in frontend/backend?
+- Where should I look to modify a feature?
 
-This is the value of Agent Skills: **making AI more expert in specific domains**.
+### Why Write Documentation?
 
-### 2. Think Before You Do: Solving Open-Ended Problems
+These documents are practical — they're meant to be useful later:
 
-"Make this website look better" — this is a very open requirement. You could go countless directions:
+- **You come back three months later** to modify code, forgot how it was configured → Read Dev Guide
+- **Want to know why** a decision was made → Read Decisions
+- **New teammate joins** the project → Send them the doc links
 
-- Switch to a dark theme?
-- Add animations?
-- Go minimalist?
-- Use bolder colors?
-
-If you just ask AI to "make it look better," the result might not match what you want at all.
-
-**The right approach: have AI think first, give you options, then you choose.**
-
-The flow is:
-
-1. Tell AI your requirements and context
-2. Explicitly say "don't code yet, give me options"
-3. AI analyzes and presents several directions
-4. You pick one, then have AI execute
-
-This way, you stay in control of direction while AI handles execution.
-
-### 3. Debug with Natural Language
-
-After execution, you open the page and might find small issues. Maybe a button's hover color is wrong, or some text is hard to read.
-
-You don't need to dig through code or search CSS. **Just describe the problem in plain language**:
-
-> "When I hover over this button, the whole thing turns blue and the gray subtitle becomes hard to see. I think just the border should turn blue."
-
-AI understands your intent, finds the relevant code, and fixes it.
-
-This is debugging in the AI era: **describe problems in plain language, let AI change the code**.
-
-### 4. Why Do Personalization "Now"?
-
-This is worth thinking about: why not do personalization at the very beginning?
-
-**The Art of Trade-offs:**
-
-If you personalize at the start:
-- Pro: All subsequent features follow this style
-- Con: Without seeing the framework, it's hard to imagine the final result. You might have to redo work.
-
-If you wait until now:
-- Pro: Core features are complete, you can clearly see what the site looks like, changes are more targeted
-- Con: Might need to adjust some existing code
-
-**We choose "now" because:**
-
-1. The website's core functionality is complete — you can see the full picture
-2. We'll keep adding features, so defining the style now guides future development
-3. This is the "just right" moment — not too early (avoiding rework), not too late (style can be consistent going forward)
-
-This is the trade-off in software development — there's no perfect timing, only "the best choice for now."
+Writing documentation isn't wasting time — it's **saving time for your future self and teammates**.
 
 ---
 
 ## Exercises
 
-### Exercise 1: Have AI Think First
+### Exercise 1: Read the Dev Guide
 
-**Goal:** Learn to use Agent Skills for requirements analysis and design options.
-
-**What to do:**
-
-1. In Claude Code, enter this prompt:
-
-```
-/ui-ux-pro-max help me redesign my personal portfolio website - I need both layout AND visual design recommendations for the landing page (currently has hero, stats grid, contact sections arranged top-to-bottom), suggest 2-3 complete design directions where each option includes: a unique layout structure (like bento grid, asymmetric cards, sidebar profile, split-screen, or other modern patterns), color palette, typography pairing, and overall visual style - I want something that stands out from typical portfolio templates and makes a strong first impression on HR and hiring managers, brainstorm options first and don't code yet
-```
-
-2. **Key point:** This prompt asks AI to consider both **layout** and **visual design**. You explicitly say "brainstorm options first and don't code yet" — this puts AI in "analysis mode" to give you complete design options.
-
-3. AI will present several design directions. Read each option carefully and consider which best matches the personal style you want to express.
-
-**What you'll notice:**
-
-AI doesn't give random advice — it analyzes based on your specific situation (personal portfolio, for HR viewing, has a chatbot). This is the effect of loading the UI/UX skill — it thinks like a professional designer.
-
-### Exercise 2: Pick a Direction and Execute
-
-**Goal:** Have AI execute your chosen design.
+**Goal:** Review codebase structure by reading documentation.
 
 **What to do:**
 
-1. From the previous step's options, pick one you like (say you like Option B)
+1. Open and read these four dev guide documents:
+   - [01-overview.md](./docs/dev-guide/01-overview.md) — Project architecture overview
+   - [02-backend-walkthrough.md](./docs/dev-guide/02-backend-walkthrough.md) — Backend code walkthrough
+   - [03-frontend-walkthrough.md](./docs/dev-guide/03-frontend-walkthrough.md) — Frontend code walkthrough
+   - [04-faq.md](./docs/dev-guide/04-faq.md) — FAQ & Cookbook
 
-2. Tell AI to execute:
+2. While reading, ask yourself:
+   - Did I learn this before?
+   - Are there details I've already forgotten?
+   - If I come back in three months, will this document be enough?
 
-```
-I like Option B, please execute it.
-```
+**Why this matters:**
 
-3. AI will start modifying code. When done, run the dev server to see the results:
+Reading others' documentation is the first step to learning "how to write good docs." Notice the structure: overview first, then details, finally a quick reference.
 
-```bash
-mise run dev
-```
+---
 
-4. Open your browser and check the changes.
+### Exercise 2: Read the Decisions
 
-**What you'll notice:**
-
-AI modifies multiple files — CSS, component code, config files. You don't need to know every file's details — just check if the final result matches expectations.
-
-### Exercise 3: Find Issues and Fix Them
-
-**Goal:** Describe problems in natural language, have AI fix them.
+**Goal:** Understand key project decisions and the reasoning behind them.
 
 **What to do:**
 
-Say you find an issue: on the chat page, the shortcut buttons ("About Me", "Work Experience", etc.) turn completely blue on hover, making the gray subtitle hard to read.
+1. Open and read these four decision records:
+   - [vercel-active-cpu-billing.md](./docs/decisions/vercel-active-cpu-billing.md) — Vercel billing model
+   - [vercel-framework-detection.md](./docs/decisions/vercel-framework-detection.md) — Framework detection issue
+   - [vercel-pnpm-package-manager.md](./docs/decisions/vercel-pnpm-package-manager.md) — Why pnpm
+   - [vercel-python-uv-requirements.md](./docs/decisions/vercel-python-uv-requirements.md) — Python dependency management
 
-1. Describe the problem in natural language:
+2. Notice each document's structure:
+   - **Background** — What problem did we encounter?
+   - **Why** — Why solve it this way?
+   - **How** — Specific steps
 
-```
-one minor problem, on the chat page there are some shortcut button like "About Me", "Work Experience" when I move mouse to it, button becomes blue and gray subtitle is very hard to see, how me improve it
-```
+**Why this matters:**
 
-2. AI might suggest several solutions. If you have a specific preference, tell it:
+Decision documents aren't tutorials — they're "archaeological records." They help you understand: **what was the context when this decision was made**. This is especially useful when you need to change a decision — knowing why it was originally made helps you judge whether it needs changing now.
 
-```
-I think just the border should turn blue on hover, not the whole button
-```
+---
 
-3. AI modifies the relevant code. Refresh the page to confirm the fix.
+### Exercise 3: Write Your Own Document
 
-**What you'll notice:**
-
-You didn't touch any code — you just described the problem and your expectation in plain language. AI found `multimodal-input.tsx` on its own, understood the Tailwind CSS classes, and made precise changes.
-
-**This is the complete "Think → Do → Debug" cycle.**
-
-### Exercise 4: Have AI Teach You What It Did
-
-**Goal:** Don't just let AI change code — understand what it changed and why.
+**Goal:** Write a technical document yourself, practicing "writing knowledge down."
 
 **What to do:**
 
-After the changes are done, ask AI this question:
+1. Pick something you learned in this project, such as:
+   - A bug you encountered (how you found it, how you fixed it)
+   - A concept that impressed you
+   - An operation you want to record for future reference
 
+2. Create a new markdown file in the `docs/` directory
+
+3. You can use AI to help you write:
+   ```
+   Help me write a technical document about [xxx], recording [background, problem, solution]
+   ```
+
+4. After writing, share it with your mentor as this lesson's assignment
+
+**Suggested document structure:**
+
+```markdown
+# Title
+
+## Background
+What problem did you encounter? What's the context?
+
+## Solution
+How did you solve it?
+
+## Key Points
+What should you pay attention to?
+
+## References
+Related links or commands
 ```
-I'm satisfied with the result. Now tell me what you changed and why. Please explain each file you modified, one by one, so I can learn how to do this myself next time.
-```
-
-**Why this step matters:**
-
-If you just let AI finish and walk away, you won't know how to handle similar problems next time. But if you have AI explain:
-- Which files were changed
-- What was changed in each file
-- Why those changes were made
-
-You learn real knowledge. Next time, you might even do it yourself.
-
-**This is the right way to learn with AI: let AI do it for you, then have AI teach you how it's done.**
 
 ---
 
 ## Reflection
 
-In this lesson, we did something seemingly simple: changed some UI.
+This lesson is simple: **read docs, write docs**.
 
-But what really matters is the methodology behind it:
+But behind this is an important habit: **at milestones, stop and organize**.
 
-1. **Agent Skills** — Make AI more expert in specific domains
-2. **Think Before Doing** — Face open-ended problems by having AI give options, you choose
-3. **Natural Language Debugging** — Describe problems in plain language, let AI change code
-4. **Learn from AI** — After AI does the work, have it explain so you learn
+Many people think writing docs wastes time, rushing to the next feature. Three months later, they stare at their own code confused.
 
-This "Think → Do → Debug → Learn" cycle doesn't just apply to UI design. Any open-ended problem — writing copy, designing architecture, planning features — can use this pattern.
-
-**Core idea: You control direction, AI handles execution.**
+**Good engineers don't just write code — they write documentation**. Documentation is a gift to your future self and teammates.
 
 ---
 
 ## Mentor's Note
 
-**Why this lesson matters:**
+**Why this lesson exists:**
 
-Many students think personal branding is "fancy stuff" — better to learn more technical skills.
+Students often think "the feature is done, I'm done." But in real work, code is only half — **documentation, reviews, knowledge capture** is the other half.
 
-But I want to tell you: in the real job market, first impressions are crucial. HR reviews dozens of resumes daily. If your portfolio looks like everyone else's, it might not even get opened.
+I've seen too many projects with great code but no documentation. When someone new takes over, they spend a week just understanding the architecture. That week could have been saved.
 
-**Personal branding isn't vanity — it's part of your competitive edge.**
+**The real purpose of this lesson:**
 
-But what this lesson really wants to teach isn't "how to make a website look good" — it's a **problem-solving mindset for open-ended challenges**:
+1. **Build the habit of writing docs** — Not at the end, but as you go
+2. **Know what to document** — Not everything, but "information that will be useful later"
+3. **Review through reading** — After reading, the project structure becomes clearer
 
-1. Face vague requirements by having AI analyze and give options
-2. You make choices and set direction
-3. Let AI execute
-4. Find problems, describe in natural language, let AI fix
-5. Have AI explain what it did, so you learn
+**About "write one yourself":**
 
-I use this pattern every day at work. Whether designing system architecture, writing technical specs, or making product decisions — "Think → Do → Debug → Learn" is the most efficient approach.
+This assignment is intentionally open-ended. Students can write anything — bugs they hit, concepts they learned, operation guides.
 
-**On Timing:**
+The point isn't writing well — it's **starting to write**.
 
-You might ask: why not do personalization at the very beginning?
+Many students feel "there's nothing to write" at first. But once they start, they discover "I learned so much."
 
-The answer is: software development is an art of trade-offs.
-
-Do it too early, you don't know what the website will look like, and changes might need rework. Do it too late, and style becomes hard to unify. We chose "now" — core features complete but still adding more — as a deliberate decision.
-
-Remember: there's no perfect timing, only "the best choice for now." Learning to make these trade-offs is part of becoming a senior engineer.
+**That's the power of review.**
 
 ---
 
 ## Quick Reference
 
-**Start dev server:**
+**Documentation locations:**
+- Dev Guide: `docs/dev-guide/`
+- Decisions: `docs/decisions/`
+
+**Writing documentation:**
 ```bash
-mise run dev
+# Let AI help you write docs
+# Just describe what you want to record in Claude Code
 ```
 
-**"Think → Do → Debug → Learn" cycle:**
-1. Use `/ui-ux-pro-max` to have AI analyze requirements and give options
-2. Pick an option, have AI execute
-3. Find problems, describe in natural language, have AI fix
-4. Have AI explain what it changed, learn how it works
+**Submitting your assignment:**
+
+After writing a document, tell your mentor what you wrote and share your thoughts.
 
 ---
 
-### Files Changed Summary
-
-This UI makeover involves the following files. Understanding their roles helps you understand the website's structure:
-
-**Global Styles & Config:**
-- `app/globals.css` — Global CSS variables, color system (black & white theme + electric blue accent), font definitions, utility classes (bold-card, bold-button, bold-nav), dark mode
-- `app/layout.tsx` — Root layout, imports fonts (Bebas Neue for headings, Source Sans 3 for body)
-- `tailwind.config.ts` — Tailwind config, defines color tokens, fonts, border radius, animations
-
-**Landing Page Components:**
-- `app/(marketing)/HomePageContent.tsx` — Homepage main content organization, added Footer
-- `app/(marketing)/_components/Hero.tsx` — Hero section (split-screen layout, large typography, bold-bordered buttons)
-- `app/(marketing)/_components/StatsSection.tsx` — Stats display area (full-width bordered sections)
-- `app/(marketing)/_components/ContactSection.tsx` — Contact info section (full-width bordered layout)
-
-**Navigation:**
-- `app/_components/layouts/Navigation.tsx` — Top navbar (simplified design, bold borders, Chat entry)
-
-**Chat Page:**
-- `app/chat/layout.tsx` — Chat page layout structure, padding adjustments
-- `components/chat/chat.tsx` — Main chat component (message list, border styles)
-- `components/chat/message.tsx` — Single message styling (avatar, bubble, border effect)
-- `components/chat/multimodal-input.tsx` — Input box and shortcut buttons (bold borders, hover invert effect)
-- `components/chat/overview.tsx` — Chat page welcome screen (context banner)
-
----
-
-## Homework
-
-**Screenshot your result:**
-
-After completing the exercises above, take screenshots of your website (both landing page and chat page).
-
-This is part of your personal brand. Every time you revisit this project, you'll see the unique design you created yourself.
-
----
-
-*Since it's personal branding, it must be very, very personalized. This lesson teaches you the method — real personalization requires you to explore, experiment, and refine on your own.*
+*Writing documentation seems like "extra work," but it's one of the core skills of effective engineers. Build the habit now — you'll thank yourself later.*
