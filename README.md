@@ -1,211 +1,384 @@
-# Milestone Review: Document Your Codebase
+# Ship Your Story: Make Others See Your Value
 
-> The project is stable. While the memory is fresh, write down what you learned.
+> Code becomes outdated, but the thinking you document doesn't.
 
 ## Overview
 
-Through the previous lessons, you've built a complete AI portfolio website: Landing Page, AI Chatbot, Vercel deployment. Everything works.
+Congratulations on making it here.
 
-Now is a good time — **stop, review, and turn your knowledge into documentation**.
+Let's look back at this project's journey: starting from an empty repo, we built a complete AI portfolio website. Next.js + FastAPI + AWS Bedrock, frontend-backend separation, streaming responses, Vercel deployment, testing framework, documentation system — this isn't a "toy project," it's an **enterprise-grade, production-quality** AI application.
 
-Why now? Remember the 30% Rule: at 30% completion, you can see the full picture and still have energy to organize. Push further, and details start fading. Come back three months later to modify the code, and you might not even remember how you set things up.
+More importantly, this architecture is an **extensible foundation**. Any AI application you want to build in the future — RAG systems, AI Agents, multimodal assistants — can be built on top of this skeleton.
 
-This lesson's goal is simple: **read the documentation your mentor wrote, then write one yourself**.
+**But here's the problem: how does anyone else know you did all this?**
+
+Your code sits on GitHub — thousands of lines, dozens of files. HR won't read it. Interviewers don't have time to go through it line by line. They'll spend 30 seconds scanning your resume, then decide whether to give you a chance.
+
+If you want this project to truly become your **career asset**, you need to learn one thing: **tell your story in words**.
+
+That's what this final lesson is about.
 
 ---
 
 ## Learning Objectives
 
-In this lesson, you will:
+In this lesson, you'll learn:
 
-1. **Understand two types of documentation** — What decisions and dev-guide documents are for
-2. **Review the codebase structure** — Quickly recap project architecture by reading docs
-3. **Practice writing technical docs** — Write one yourself, building the skill of "writing knowledge down"
+1. **Internal docs vs external docs** — Last lesson's dev-guide/decisions are for yourself and team; blogs are for the outside world
+2. **Understand Ship Your Story** — Publicly documenting your learning isn't showing off, it's a career strategy
+3. **Connect blogs to Leadership Principles** — Each blog reflects a professional competency
+4. **Write your own blog** — Practice turning learning into output
 
 ---
 
 ## Prerequisites
 
-- Completed previous lessons (website deployed, AI Chat working)
-- Basic familiarity with the codebase
+- Completed all previous lessons
+- Read last lesson's documentation (dev-guide and decisions)
 
 ---
 
 ## Key Concepts
 
-### Two Types of Documentation
+### Internal Docs vs External Docs
 
-Your mentor has organized two types of documentation with different purposes:
+Last lesson we wrote two types of documentation:
 
-| Type | Location | Purpose |
-|------|----------|---------|
-| **Decisions** | `docs/decisions/` | Records "why we made this decision" |
-| **Dev Guide** | `docs/dev-guide/` | Records "how to work with this codebase" |
+| Type | Location | Audience | Purpose |
+|------|----------|----------|---------|
+| Dev Guide | `docs/dev-guide/` | Self, team | How to run it, how to modify code |
+| Decisions | `docs/decisions/` | Self, team | Why we made certain choices |
 
-**Decisions** answer "Why":
-- Why use pnpm instead of npm?
-- Why generate requirements.txt?
-- How does Vercel billing work?
+These are **internal docs** — for yourself and your team, helping understand and maintain the code.
 
-**Dev Guide** answers "How":
-- What's the directory structure?
-- What are the key files in frontend/backend?
-- Where should I look to modify a feature?
+But there's another type: **external docs** — for the outside world.
 
-### Why Write Documentation?
+| Type | Location | Audience | Purpose |
+|------|----------|----------|---------|
+| Blogs | `blogs/` | HR, interviewers, peers, yourself | Showcase thinking process and professionalism |
 
-These documents are practical — they're meant to be useful later:
+Blogs aren't technical documentation — they're **your learning diary**. They record: what problem you encountered, how you thought about it, how you solved it.
 
-- **You come back three months later** to modify code, forgot how it was configured → Read Dev Guide
-- **Want to know why** a decision was made → Read Decisions
-- **New teammate joins** the project → Send them the doc links
+### Why Ship Your Story?
 
-Writing documentation isn't wasting time — it's **saving time for your future self and teammates**.
+"Ship Your Story" is a career development strategy:
+
+1. **Interview material** — When interviewers ask "what projects have you done," you have not just code, but complete records of your thinking
+2. **Reflection tool** — Writing blogs forces you to organize your thoughts, deepening understanding
+3. **Career credibility** — Public learning records are more convincing than a few lines on a resume
+4. **Future assets** — Years later, these records can become talks, tutorials, even books
+
+The key is: **don't wait until you've "learned it" to write — write as you learn**.
+
+### The Leadership Principle Behind Each Blog
+
+Look at this project's 16 blogs. Each one isn't just a "tech note" — it demonstrates a professional competency:
+
+| Blog | Title | Competency Demonstrated |
+|------|-------|------------------------|
+| 00 | The Beginning of Everything | **Bias for Action** — Act first, don't wait for everything to be perfect |
+| 01 | If You're Going to Learn, Learn the Best | **Learn and Be Curious** — Learn the best, research top solutions |
+| 02 | Before You Run, Learn How to Not Fall | **Insist on High Standards** — Set up testing framework from day one |
+| 03 | Same Idea, Different Skin | **Learn and Be Curious** — Understand underlying principles, apply across domains |
+| 04 | Cut It Down, Make It Run | **Deliver Results** — Cut to minimum viable, get results first |
+| 05 | From Localhost to the World | **Deliver Results** — Running locally isn't done, deployment is |
+| 06 | Learn From The Giants | **Learn and Be Curious** — Learn from the masters |
+| 07 | Steal Like an Artist | **Invent and Simplify** — Imitate first, then innovate |
+| 08 | The Fake Teaches You The Real | **Invent and Simplify** — Validate architecture with fake data |
+| 09 | The Power of Protocol | **Think Big** — Understand protocols, design scalable systems |
+| 10 | Always Have a Plan B | **Think Big** — Redundancy design, professional thinking |
+| 11 | The First Rule of Business | **Frugality** — Understand costs, save where it matters |
+| 12 | The Toolmaker's Mindset | **Dive Deep** — Understand what tools do, not just how to use them |
+| 13 | The First Milestone | **Deliver Results** — Zero tech debt milestone |
+| 14 | The Art of Going Back | **Ownership** — Go back and organize, own your code to the end |
+| 15 | The 30% Rule | **Have Backbone** — Know when to make global decisions |
+
+These weren't forced connections after the fact — **the process of writing blogs itself cultivates these competencies**.
+
+### Blog Structure
+
+Each blog doesn't need to be long, but needs structure:
+
+```markdown
+# Title (compelling, not "Study Notes #1")
+
+## What Happened
+Describe the scenario and problem
+
+## How I Thought About It
+Your thinking process
+
+## What I Did
+The specific solution
+
+## What I Learned
+Distilled principles or insights
+```
+
+The key is: **don't just record "what you did," record "why you did it"**.
 
 ---
 
 ## Exercises
 
-### Exercise 1: Read the Dev Guide
+### Exercise 1: Read the Blog Catalog
 
-**Goal:** Review codebase structure by reading documentation.
+**Goal:** Understand the entire project's learning journey.
 
 **What to do:**
 
-1. Open and read these four dev guide documents:
-   - [01-overview.md](./docs/dev-guide/01-overview.md) — Project architecture overview
-   - [02-backend-walkthrough.md](./docs/dev-guide/02-backend-walkthrough.md) — Backend code walkthrough
-   - [03-frontend-walkthrough.md](./docs/dev-guide/03-frontend-walkthrough.md) — Frontend code walkthrough
-   - [04-faq.md](./docs/dev-guide/04-faq.md) — FAQ & Cookbook
-
-2. While reading, ask yourself:
-   - Did I learn this before?
-   - Are there details I've already forgotten?
-   - If I come back in three months, will this document be enough?
+1. Open the blog catalog: [00-Blog-Catalog-CN.md](./blogs/00-Blog-Catalog-CN.md)
+2. Quickly browse the titles and summaries of 16 blogs
+3. Ask yourself:
+   - Which titles attract you most?
+   - Can you guess what each is about from the title?
+   - Are these blogs technical tutorials, or thinking records?
 
 **Why this matters:**
 
-Reading others' documentation is the first step to learning "how to write good docs." Notice the structure: overview first, then details, finally a quick reference.
+Good blog titles aren't "React Study Notes 01" — they're curiosity-provoking questions or viewpoints. Notice how these blogs are named.
 
 ---
 
-### Exercise 2: Read the Decisions
+### Exercise 2: Deep Read 2-3 Blogs
 
-**Goal:** Understand key project decisions and the reasoning behind them.
+**Goal:** Learn blog writing style.
 
 **What to do:**
 
-1. Open and read these four decision records:
-   - [vercel-active-cpu-billing.md](./docs/decisions/vercel-active-cpu-billing.md) — Vercel billing model
-   - [vercel-framework-detection.md](./docs/decisions/vercel-framework-detection.md) — Framework detection issue
-   - [vercel-pnpm-package-manager.md](./docs/decisions/vercel-pnpm-package-manager.md) — Why pnpm
-   - [vercel-python-uv-requirements.md](./docs/decisions/vercel-python-uv-requirements.md) — Python dependency management
-
-2. Notice each document's structure:
-   - **Background** — What problem did we encounter?
-   - **Why** — Why solve it this way?
-   - **How** — Specific steps
+1. Pick 2-3 blogs you're interested in, read them completely
+2. Recommended starting points:
+   - [00-The-Beginning-of-Everything-CN.md](./blogs/00-The-Beginning-of-Everything-CN.md) — The beginning
+   - [04-Cut-It-Down-Make-It-Run-CN.md](./blogs/04-Cut-It-Down-Make-It-Run-CN.md) — Deliver Results
+   - [13-The-First-Milestone-From-Zero-to-Live-CN.md](./blogs/13-The-First-Milestone-From-Zero-to-Live-CN.md) — Milestone
+3. While reading, ask yourself:
+   - What problem does this blog address?
+   - How did the author think?
+   - What would I do if I faced a similar problem?
 
 **Why this matters:**
 
-Decision documents aren't tutorials — they're "archaeological records." They help you understand: **what was the context when this decision was made**. This is especially useful when you need to change a decision — knowing why it was originally made helps you judge whether it needs changing now.
+Reading others' blogs is the fastest way to learn blog writing. Notice: these blogs aren't teaching technology — they're sharing thinking processes.
 
 ---
 
-### Exercise 3: Write Your Own Document
+### Exercise 3: Write Your Own Blog
 
-**Goal:** Write a technical document yourself, practicing "writing knowledge down."
+**Goal:** Turn what you learned in this project into a blog post.
 
 **What to do:**
 
-1. Pick something you learned in this project, such as:
-   - A bug you encountered (how you found it, how you fixed it)
-   - A concept that impressed you
-   - An operation you want to record for future reference
+1. Recall the most memorable thing from this project:
+   - A bug that stuck you for a long time?
+   - A concept that gave you an "aha" moment?
+   - A moment that changed how you think?
 
-2. Create a new markdown file in the `docs/` directory
-
-3. You can use AI to help you write:
-   ```
-   Help me write a technical document about [xxx], recording [background, problem, solution]
-   ```
-
-4. After writing, share it with your mentor as this lesson's assignment
-
-**Suggested document structure:**
+2. Write a blog using this structure:
 
 ```markdown
-# Title
+# [A compelling title]
 
-## Background
-What problem did you encounter? What's the context?
+## What Happened
+Describe the scenario
 
-## Solution
-How did you solve it?
+## How I Thought About It
+Your thinking process
 
-## Key Points
-What should you pay attention to?
+## What I Did
+Specific approach
 
-## References
-Related links or commands
+## What I Learned
+Distilled wisdom
 ```
+
+3. Save the blog to `blogs/` directory, name it `my-first-blog.md`
+
+4. You can use AI to help polish:
+```
+Help me make this blog read more smoothly, but keep my thinking process
+```
+
+**Why this matters:**
+
+Writing blogs isn't for others first — it's for yourself. The writing process forces you to organize thoughts, turning vague "feels like I learned" into clear "actually understand."
 
 ---
 
-## Reflection
+### Exercise 4: Identify the Leadership Principle in Your Blog
 
-This lesson is simple: **read docs, write docs**.
+**Goal:** Connect blogs to professional competencies.
 
-But behind this is an important habit: **at milestones, stop and organize**.
+**What to do:**
 
-Many people think writing docs wastes time, rushing to the next feature. Three months later, they stare at their own code confused.
+1. Re-read the blog you wrote
+2. Ask yourself: what Leadership Principle does this blog demonstrate?
+   - Bias for Action?
+   - Learn and Be Curious?
+   - Deliver Results?
+   - Ownership?
+   - Others?
 
-**Good engineers don't just write code — they write documentation**. Documentation is a gift to your future self and teammates.
+3. Add a line at the end of your blog:
+```markdown
+---
+*This blog demonstrates [XXX] — [one sentence explaining why]*
+```
+
+**Why this matters:**
+
+In interviews, interviewers won't ask "tell me about your blog." They'll ask "tell me about a challenge you faced." If you've already connected your blogs to Leadership Principles, answering these questions becomes natural.
+
+---
+
+## Summary
+
+This project concludes here.
+
+Let's review what you accomplished:
+
+**Technical level:**
+- Built a full-stack Next.js + FastAPI application from scratch
+- Implemented AI Chat functionality, integrated with AWS Bedrock
+- Used Vercel AI SDK for streaming responses
+- Deployed to Vercel, globally accessible
+- Set up testing framework and documentation system
+
+**Mindset level:**
+- Learned "get it running first, optimize later" Bias for Action
+- Understood the 30% Rule — when to make global decisions
+- Mastered the Think → Do → Debug → Learn cycle
+- Developed habits of writing documentation and blogs
+
+**Career level:**
+- Have a portfolio project to showcase
+- Have a complete set of learning records (blogs)
+- Can confidently talk about your thinking process in interviews
+
+This isn't the end — it's the beginning.
+
+This architecture can continue to expand — add RAG, add Agents, add multimodal — any AI feature can be built on this skeleton.
+
+And the thinking you've documented will become long-term assets in your career.
+
+**Ship Your Story isn't showing off — it's investing in your future self.**
 
 ---
 
 ## Mentor's Note
 
-**Why this lesson exists:**
+**Why end with "Ship Your Story":**
 
-Students often think "the feature is done, I'm done." But in real work, code is only half — **documentation, reviews, knowledge capture** is the other half.
+Many students think "writing blogs" is extra burden — better to learn another technology.
 
-I've seen too many projects with great code but no documentation. When someone new takes over, they spend a week just understanding the architecture. That week could have been saved.
+But here's what I want to say: technology becomes outdated, tools get updated, but **your thinking ability and expression ability** don't become outdated.
 
-**The real purpose of this lesson:**
+I've seen too many candidates with good technical skills who can't clearly explain what they did or why during interviews. Meanwhile, other candidates with perhaps weaker technical skills can clearly articulate their thinking process — the latter are often preferred.
 
-1. **Build the habit of writing docs** — Not at the end, but as you go
-2. **Know what to document** — Not everything, but "information that will be useful later"
-3. **Review through reading** — After reading, the project structure becomes clearer
+**Blogs are your "thinking records."**
 
-**About "write one yourself":**
+- Before interviews, you can re-read your blogs, recall your journey
+- Years later, these records can become talks, tutorials, even books
+- Most importantly, the writing process itself deepens your understanding
 
-This assignment is intentionally open-ended. Students can write anything — bugs they hit, concepts they learned, operation guides.
+**About Leadership Principles:**
 
-The point isn't writing well — it's **starting to write**.
+I deliberately embedded these connections throughout the course. Not to teach you "how to interview," but to make you realize:
 
-Many students feel "there's nothing to write" at first. But once they start, they discover "I learned so much."
+**True professional competencies aren't memorized before interviews — they're naturally formed through practice.**
 
-**That's the power of review.**
+Every step of this project — act first, cut to minimum, deploy promptly, go back to organize — cultivates these competencies. Blogs just make them explicit.
+
+**Final advice for students:**
+
+1. **Keep writing blogs** — Don't need to write daily, but write one after each milestone
+2. **Publish publicly** — Post to Medium, Dev.to, or your own blog site
+3. **Put blog links on your resume** — This is more convincing than "familiar with XXX tech stack"
+4. **Re-read periodically** — You'll be amazed how "ignorant" you were three months ago — that's evidence of growth
+
+**The true value of this project:**
+
+It's not these thousands of lines of code — it's that you learned **how to build a complete AI application from scratch**, and **documented the process**.
+
+Code becomes outdated, but thinking doesn't.
 
 ---
 
 ## Quick Reference
 
-**Documentation locations:**
-- Dev Guide: `docs/dev-guide/`
-- Decisions: `docs/decisions/`
-
-**Writing documentation:**
-```bash
-# Let AI help you write docs
-# Just describe what you want to record in Claude Code
+**Blog location:**
+```
+blogs/
+├── 00-Blog-Catalog-CN.md          # Catalog
+├── 00-The-Beginning-of-Everything-CN.md
+├── 01-If-You-re-Going-to-Learn-Learn-the-Best-CN.md
+├── ...
+└── 15-The-30-Percent-Rule-CN.md
 ```
 
-**Submitting your assignment:**
+**Blog structure:**
+```markdown
+# Compelling title
 
-After writing a document, tell your mentor what you wrote and share your thoughts.
+## What Happened
+## How I Thought About It
+## What I Did
+## What I Learned
+```
+
+**Leadership Principles quick reference:**
+- Bias for Action — Act first
+- Learn and Be Curious — Curiosity
+- Deliver Results — Deliver outcomes
+- Ownership — Own it
+- Insist on High Standards — High standards
+- Think Big — Big picture
+- Dive Deep — Go deep
+- Frugality — Be frugal
+
+**Writing blogs:**
+```bash
+# Let AI help polish
+# Describe what you want to write in Claude Code
+```
 
 ---
 
-*Writing documentation seems like "extra work," but it's one of the core skills of effective engineers. Build the habit now — you'll thank yourself later.*
+## Assignment
+
+**Write your own blog:**
+
+1. Pick something from this project that impressed you most
+2. Write it using: What Happened → How I Thought → What I Did → What I Learned
+3. Save to `blogs/my-first-blog.md`
+4. Identify which Leadership Principle it demonstrates
+
+This is your first Ship Your Story record.
+
+Your future self will thank the you who started writing today.
+
+---
+
+## Important Reminder: These Blogs Aren't Yours
+
+**Note: The 16 blogs in the `blogs/` directory are examples written by the mentor, not your own work.**
+
+The purpose of these blogs is to:
+- Help you understand **how to connect scattered learning experiences into a complete story**
+- Show you that **every small story can become interview talking points**
+- Give you a **reference for blog structure and writing style**
+
+**If you want to use blogs for job hunting or personal branding, you must:**
+
+1. **Rewrite them yourself in English** — Don't ask AI to "translate this for me" — that's not your voice
+2. **Use your own experiences** — Your pitfalls, your thinking, your aha moments
+3. **Use your own language** — Interviewers will ask about your blog content, you need to speak naturally about it
+
+AI can help polish your grammar, but **the content must be yours**.
+
+Because in interviews, interviewers might ask: "You mentioned XXX in your blog, can you elaborate?" If that's not something you actually experienced, you'll freeze.
+
+**The value of these example blogs is showing you "what to write" and "how to write." The real asset — you have to create it yourself.**
+
+---
+
+*Code is what you did. Blogs are how you thought. Together, they're the complete you.*

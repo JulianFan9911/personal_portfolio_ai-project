@@ -1,138 +1,150 @@
-# Teaching Guide: Milestone Review & Documentation
+# Teaching Guide: Ship Your Story
 
 ## Learning Outcomes
 
 By the end of this lesson, learners should be able to:
 
-1. **Cognitive outcome** - Understand the difference between "decisions" (why) and "dev-guide" (how) documentation, and when each is useful
-2. **Skill outcome** - Read existing documentation to review codebase structure; write a technical document capturing learned knowledge
-3. **Mindset outcome** - Adopt the habit of documenting at milestones; see documentation as "saving future time" rather than "wasting current time"
+1. **Cognitive outcome** - Understand the difference between internal docs (dev-guide/decisions) and external docs (blogs), and why blogs matter for career development
+2. **Skill outcome** - Read example blogs to understand structure and style; write their own blog documenting a learning experience
+3. **Mindset outcome** - See blog writing not as "extra work" but as investing in their future self; understand that every learning experience can become interview material
 
 ## Concept Sequence
 
 Teach concepts in this order:
 
-### Phase 1: Why Document Now? (5 minutes)
+### Phase 1: Why Ship Your Story? (5 minutes)
 
-1. **The 30% Rule callback** - At milestones, you can see the full picture but details are still fresh
-2. **The forgetting problem** - In 3 months, you won't remember how you set things up
-3. **Documentation as investment** - Time spent now saves more time later
+1. **The visibility problem** - Code on GitHub doesn't speak for itself; HR/interviewers don't have time to read it
+2. **Internal vs external docs** - Dev-guide/decisions are for team; blogs are for the world
+3. **Blogs as career assets** - Interview material, reflection tool, professional credibility
 
-This phase establishes motivation. Students often skip documentation — show them why it matters.
+This phase establishes motivation. Students often think "I'll write blogs later when I'm better." Show them why writing now matters.
 
-### Phase 2: Two Types of Documentation (10 minutes)
+### Phase 2: Blog Structure & Leadership Principles (10 minutes)
 
-4. **Decisions (Why)** - Records reasoning behind choices; useful when revisiting decisions
-5. **Dev Guide (How)** - Records how to work with the codebase; useful for onboarding and resuming work
-6. **When to use which** - "Why did we do this?" → Decisions. "How do I do this?" → Dev Guide.
+4. **The 16 example blogs** - Each demonstrates a professional competency (Leadership Principle)
+5. **Blog structure** - What Happened → How I Thought → What I Did → What I Learned
+6. **Connecting to interviews** - Every small story can answer "Tell me about a challenge you faced"
 
-Students should understand that different questions need different documentation.
+Students should understand that blogs aren't tech tutorials — they're thinking records.
 
-### Phase 3: Reading Documentation (15 minutes)
+### Phase 3: Reading Example Blogs (15 minutes)
 
-7. **Exercise 1: Read Dev Guide** - 4 documents covering architecture, backend, frontend, FAQ
-8. **Exercise 2: Read Decisions** - 4 documents covering Vercel deployment decisions
-9. **Active reading** - Ask: "Did I know this? Have I forgotten this? Is this enough for future me?"
+7. **Exercise 1: Read catalog** - Scan 16 blog titles and summaries
+8. **Exercise 2: Deep read 2-3 blogs** - Study structure, notice how thinking is recorded
+9. **Active reading** - Ask: "What problem? How did they think? What would I do?"
 
-Reading others' docs teaches structure and completeness.
+Reading others' blogs teaches structure and completeness.
 
-### Phase 4: Writing Documentation (20 minutes)
+### Phase 4: Writing Your Own Blog (20 minutes)
 
-10. **Exercise 3: Write your own** - Pick any topic from the project
-11. **Use AI to help** - Describe what you want to document, let AI draft
-12. **Standard structure** - Background → Solution → Key Points → References
+10. **Exercise 3: Write your blog** - Pick a memorable moment from the project
+11. **Use the structure** - What Happened → How I Thought → What I Did → What I Learned
+12. **Exercise 4: Identify Leadership Principle** - Connect your blog to a professional competency
 
 The assignment is intentionally open-ended to encourage ownership.
 
-### Phase 5: Wrap-up (5 minutes)
+### Phase 5: Important Reminder & Wrap-up (5 minutes)
 
-13. **Reinforce the habit** - Document at milestones, not at the end
-14. **Core principle** - Documentation is a gift to future self and teammates
-15. **Submission** - Share written document with mentor
+13. **These blogs aren't yours** - The examples are for learning structure, not copying
+14. **Must rewrite in your own voice** - If using for job hunting, write your own experiences in English
+15. **Submission** - Share written blog with mentor
 
 ## Common Struggles
 
-**Struggle:** Student thinks "there's nothing to write"
-- **Signs:** Stares at blank screen, says "I don't know what to document"
-- **Intervention:** "What was confusing when you started? What would help someone new? What bug did you hit and fix?"
+**Struggle:** Student thinks "I have nothing interesting to write"
+- **Signs:** Stares at blank screen, says "I didn't do anything special"
+- **Intervention:** "What confused you at first? What bug took you longest? What 'aha' moment did you have?"
 
-**Struggle:** Student writes too much or too little
-- **Signs:** Either a one-liner or a 10-page essay
-- **Intervention:** "Imagine you in 3 months. What's the minimum they need to know? That's your scope."
+**Struggle:** Student copies example blog structure too literally
+- **Signs:** Blog feels generic, no personal voice
+- **Intervention:** "Forget the structure for now. Just tell me what happened like you're talking to a friend."
 
-**Struggle:** Student copies documentation without reading
-- **Signs:** Can't answer questions about what they read
-- **Intervention:** "Tell me one thing you learned from reading. What surprised you?"
+**Struggle:** Student writes pure technical tutorial instead of thinking record
+- **Signs:** Blog is all "how to" with no "why" or "what I learned"
+- **Intervention:** "I can see the steps. But what did YOU think when you hit this problem? What surprised you?"
 
-**Struggle:** Student sees documentation as busywork
-- **Signs:** Rushes through, minimal effort
-- **Intervention:** "Have you ever returned to old code and been confused? That's what documentation prevents."
+**Struggle:** Student wants to translate example blogs directly
+- **Signs:** Asks "Can I just translate blog 04 for my portfolio?"
+- **Intervention:** Firmly explain: "Interviewers will ask about your blog. If you didn't experience it, you'll freeze. The examples show structure — the content must be yours."
 
-**Struggle:** Student doesn't know standard doc structure
-- **Signs:** Writes stream-of-consciousness paragraphs
-- **Intervention:** Point to the suggested structure: Background → Solution → Key Points → References
+**Struggle:** Student rushes through reading exercises
+- **Signs:** Finishes reading in 2 minutes, can't answer questions about content
+- **Intervention:** "Tell me one specific thing from the blog you just read. What surprised you about how they thought?"
 
 ## Teaching Tips
 
-- **Start with a story** - "I once spent 3 days figuring out why a deployment failed. The answer was in a decision doc I forgot to write."
+- **Start with the visibility problem** - "Your code is on GitHub. But who's going to read thousands of lines? The blog is how you make your work visible."
 
-- **Show, don't tell** - Open one of the dev-guide docs together. Point out its structure. "See how it starts with overview, then details, then quick reference?"
+- **Use interview framing** - "When they ask 'Tell me about a challenge,' your blog IS the answer. You just need to remember it."
 
-- **Make it personal** - "What would YOU want to know if you came back in 3 months? That's what to write."
+- **Show the Leadership Principles connection** - Point out how each blog naturally demonstrates a competency. "You're not learning these for interviews — you're developing them through practice."
 
-- **Celebrate any output** - Even a short doc is better than no doc. Praise the act of writing, not just the quality.
+- **Be firm about originality** - Students may want to shortcut by translating examples. Be clear: "These blogs are templates for structure, not content to copy."
 
-- **Connect to real work** - "In companies, documentation review is part of code review. No docs = incomplete work."
+- **Celebrate the first attempt** - Even a rough first blog is valuable. "You started. That's the hardest part. You can refine it later."
+
+- **Connect to course journey** - "Look how far you've come. From empty repo to production AI app. That's YOUR story to tell."
 
 ## Assessment Ideas
 
-- **Understanding check:** "What's the difference between decisions and dev-guide docs?"
-  - Good answer: "Decisions explain why we made a choice. Dev-guide explains how to work with the code."
+- **Understanding check:** "What's the difference between internal docs and blogs?"
+  - Good answer: "Internal docs explain how to work with code. Blogs tell my story to the outside world."
 
-- **Reading verification:** "What did you learn from reading the docs that you didn't know before?"
-  - Good answer: Can name specific details (file locations, config options, etc.)
+- **Reading verification:** "What Leadership Principle did blog 04 demonstrate? Why?"
+  - Good answer: Can name specific principle and explain the connection
 
-- **Writing submission:** Student produces a markdown document in `docs/`
-  - Pass criteria: Has clear structure, covers one topic, would be useful to future reader
+- **Writing submission:** Student produces a markdown blog in `blogs/`
+  - Pass criteria: Has clear structure, tells a personal experience, would be useful in an interview
 
-- **Mindset check:** "When should you write documentation?"
-  - Good answer: "At milestones, while memory is fresh" (not "at the end of the project")
+- **Originality check:** "Is this your own experience? Can you elaborate on [specific detail]?"
+  - Good answer: Can naturally expand on any part of their blog
+  - Red flag: Hesitates, gives generic answers
+
+- **Career mindset check:** "Why write blogs instead of just building more projects?"
+  - Good answer: "Code doesn't speak for itself. Blogs make my thinking visible."
 
 ## Pacing Guide
 
-- **Phase 1 (Why document now):** 5 minutes
-  - Quick motivation, connect to 30% Rule
+- **Phase 1 (Why Ship Your Story):** 5 minutes
+  - The visibility problem
+  - Internal vs external docs
+  - Quick motivation
 
-- **Phase 2 (Two types):** 10 minutes
-  - Explain decisions vs dev-guide
-  - Show examples from actual docs
+- **Phase 2 (Structure & Principles):** 10 minutes
+  - Show the 16 blogs and their LP connections
+  - Explain blog structure
+  - Interview connection
 
 - **Phase 3 (Reading):** 15 minutes
-  - Exercise 1: Skim dev-guide docs
-  - Exercise 2: Skim decision docs
-  - Discuss what they noticed
+  - Exercise 1: Scan blog catalog
+  - Exercise 2: Deep read 2-3 blogs
+  - Discuss observations
 
 - **Phase 4 (Writing):** 20 minutes
-  - Exercise 3: Student writes their own doc
-  - Can use AI to help draft
+  - Exercise 3: Write own blog
+  - Exercise 4: Identify Leadership Principle
   - Mentor available for questions
 
 - **Phase 5 (Wrap-up):** 5 minutes
+  - Important reminder about originality
   - Collect submissions
-  - Reinforce key messages
+  - Course completion celebration
 
 **Total expected time:** 55-60 minutes
 
 ## Key Messages to Reinforce
 
-1. **Document at milestones, not at the end** - Memory fades. Capture knowledge while it's fresh.
+1. **Code doesn't speak for itself** - HR and interviewers won't read your GitHub. Blogs make your work visible.
 
-2. **Two types: Why (decisions) and How (dev-guide)** - Different questions need different docs.
+2. **Internal docs vs external docs** - Dev-guide/decisions for team; blogs for the world.
 
-3. **Documentation is a gift to future self** - The time you spend now saves more time later.
+3. **Every experience is interview material** - Structure it right, and any learning moment becomes a "Tell me about..." answer.
 
-4. **Start with structure** - Background → Solution → Key Points → References
+4. **Write as you learn, not after** - Memory fades. Capture thinking while it's fresh.
 
-5. **Any doc is better than no doc** - Don't aim for perfect. Aim for useful.
+5. **These examples are templates, not content** - Learn the structure, but write your own experiences.
 
-6. **Use AI to help write** - Describe what you want, let AI draft, then review and edit.
+6. **Your voice matters** - Don't let AI write it for you. Polish grammar, yes. Generate content, no.
+
+7. **This is investing in your future** - Ship Your Story isn't showing off — it's building career assets.
