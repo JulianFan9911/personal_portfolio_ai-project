@@ -12,6 +12,14 @@ In this lesson, we're doing one thing: **making this website truly yours**.
 
 This isn't just about changing colors. Personal branding is part of your professional identity. When an HR person opens your portfolio, their first impression determines whether they'll keep scrolling.
 
+**See the transformation:**
+
+| Landing Page | Chat Page |
+|--------------|-----------|
+| ![Landing Page](./img/15-UI-Personization/new-design-01.png) | ![Chat Page](./img/15-UI-Personization/new-design-02.png) |
+
+This is what we created with AI — bold black & white color scheme, striking typography, unique layout. Your result after completing this lesson will look completely different based on your personal style.
+
 ## Learning Objectives
 
 Why does this matter?
@@ -119,10 +127,10 @@ This is the trade-off in software development — there's no perfect timing, onl
 1. In Claude Code, enter this prompt:
 
 ```
-/ui-ux-pro-max based on the page of this document, it is a personal portfolio website with a static landing page and a interactive chatbot app that can introduce my experience and skill to HR, hiring manager, help me brain storm what would be a very unique, personalized good design for this website
+/ui-ux-pro-max help me redesign my personal portfolio website - I need both layout AND visual design recommendations for the landing page (currently has hero, stats grid, contact sections arranged top-to-bottom), suggest 2-3 complete design directions where each option includes: a unique layout structure (like bento grid, asymmetric cards, sidebar profile, split-screen, or other modern patterns), color palette, typography pairing, and overall visual style - I want something that stands out from typical portfolio templates and makes a strong first impression on HR and hiring managers, brainstorm options first and don't code yet
 ```
 
-2. **Key point:** You're not asking it to code directly — you're asking it to "brain storm" and "help me think." This puts AI in "analysis mode" to give you options.
+2. **Key point:** This prompt asks AI to consider both **layout** and **visual design**. You explicitly say "brainstorm options first and don't code yet" — this puts AI in "analysis mode" to give you complete design options.
 
 3. AI will present several design directions. Read each option carefully and consider which best matches the personal style you want to express.
 
@@ -136,12 +144,12 @@ AI doesn't give random advice — it analyzes based on your specific situation (
 
 **What to do:**
 
-1. From the previous step's options, pick one you like
+1. From the previous step's options, pick one you like (say you like Option B)
 
 2. Tell AI to execute:
 
 ```
-please execute it
+I like Option B, please execute it.
 ```
 
 3. AI will start modifying code. When done, run the dev server to see the results:
@@ -278,25 +286,25 @@ mise run dev
 This UI makeover involves the following files. Understanding their roles helps you understand the website's structure:
 
 **Global Styles & Config:**
-- `app/globals.css` — Global CSS variables, color system, font definitions, utility classes (bento-card, glass-card), dark mode, custom scrollbars
-- `app/layout.tsx` — Root layout, imports fonts (Outfit, Work Sans)
-- `tailwind.config.ts` — Tailwind config, defines color tokens, fonts, animations
+- `app/globals.css` — Global CSS variables, color system (black & white theme + electric blue accent), font definitions, utility classes (bold-card, bold-button, bold-nav), dark mode
+- `app/layout.tsx` — Root layout, imports fonts (Bebas Neue for headings, Source Sans 3 for body)
+- `tailwind.config.ts` — Tailwind config, defines color tokens, fonts, border radius, animations
 
 **Landing Page Components:**
-- `app/(marketing)/HomePageContent.tsx` — Homepage main content organization
-- `app/(marketing)/_components/Hero.tsx` — Hero section (headline, CTA buttons, background effects)
-- `app/(marketing)/_components/StatsSection.tsx` — Stats display area (bento grid layout)
-- `app/(marketing)/_components/ContactSection.tsx` — Contact info section
+- `app/(marketing)/HomePageContent.tsx` — Homepage main content organization, added Footer
+- `app/(marketing)/_components/Hero.tsx` — Hero section (split-screen layout, large typography, bold-bordered buttons)
+- `app/(marketing)/_components/StatsSection.tsx` — Stats display area (full-width bordered sections)
+- `app/(marketing)/_components/ContactSection.tsx` — Contact info section (full-width bordered layout)
 
 **Navigation:**
-- `app/_components/layouts/Navigation.tsx` — Top navbar (glass navbar effect, mobile adaptation, Chat entry)
+- `app/_components/layouts/Navigation.tsx` — Top navbar (simplified design, bold borders, Chat entry)
 
 **Chat Page:**
-- `app/chat/layout.tsx` — Chat page layout structure, padding
-- `components/chat/chat.tsx` — Main chat component (message list, scroll behavior)
-- `components/chat/message.tsx` — Single message styling (avatar, bubble, glass-card effect)
-- `components/chat/multimodal-input.tsx` — Input box and shortcut buttons (this is what you fixed in Exercise 3)
-- `components/chat/overview.tsx` — Chat page welcome screen
+- `app/chat/layout.tsx` — Chat page layout structure, padding adjustments
+- `components/chat/chat.tsx` — Main chat component (message list, border styles)
+- `components/chat/message.tsx` — Single message styling (avatar, bubble, border effect)
+- `components/chat/multimodal-input.tsx` — Input box and shortcut buttons (bold borders, hover invert effect)
+- `components/chat/overview.tsx` — Chat page welcome screen (context banner)
 
 ---
 

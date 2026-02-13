@@ -12,6 +12,14 @@
 
 这不只是换个颜色那么简单。Personal branding 是你职业形象的一部分。当 HR 打开你的作品集时，第一眼的印象就决定了他们会不会继续往下看。
 
+**看看改造后的效果：**
+
+| Landing Page | Chat Page |
+|--------------|-----------|
+| ![Landing Page](./img/15-UI-Personization/new-design-01.png) | ![Chat Page](./img/15-UI-Personization/new-design-02.png) |
+
+这是我们用 AI 改造后的效果——大胆的黑白配色、醒目的排版、独特的布局。你自己改完后，应该会有完全不一样的风格。
+
 ## Learning Objectives
 
 为什么要学这个？
@@ -118,10 +126,10 @@ AI 会理解你的意图，找到对应的代码，然后修复它。
 1. 在 Claude Code 里输入以下 prompt：
 
 ```
-/ui-ux-pro-max based on the page of this document, it is a personal portfolio website with a static landing page and a interactive chatbot app that can introduce my experience and skill to HR, hiring manager, help me brain storm what would be a very unique, personalized good design for this website
+/ui-ux-pro-max help me redesign my personal portfolio website - I need both layout AND visual design recommendations for the landing page (currently has hero, stats grid, contact sections arranged top-to-bottom), suggest 2-3 complete design directions where each option includes: a unique layout structure (like bento grid, asymmetric cards, sidebar profile, split-screen, or other modern patterns), color palette, typography pairing, and overall visual style - I want something that stands out from typical portfolio templates and makes a strong first impression on HR and hiring managers, brainstorm options first and don't code yet
 ```
 
-2. **关键点：** 你没有让它直接改代码，而是让它 "brain storm"、"help me think"。这会让 AI 进入"分析模式"，给你几个方案选择。
+2. **关键点：** 这个 prompt 要求 AI 同时考虑 **布局（layout）** 和 **视觉设计（visual design）**。你明确说了 "brainstorm options first and don't code yet"，这会让 AI 进入"分析模式"，给你几个完整的方案选择。
 
 3. AI 会给出几个设计方向。仔细阅读每个方案，想想哪个更符合你想表达的个人风格。
 
@@ -135,12 +143,12 @@ AI 不是随便给建议，而是基于你的具体情况（personal portfolio�
 
 **做法：**
 
-1. 从上一步的方案中选一个你喜欢的
+1. 从上一步的方案中选一个你喜欢的（假设你喜欢 Option B）
 
 2. 告诉 AI 执行：
 
 ```
-please execute it
+I like Option B, please execute it.
 ```
 
 3. AI 会开始修改代码。等它完成后，运行开发服务器查看效果：
@@ -275,25 +283,25 @@ mise run dev
 这次 UI 改造涉及以下文件，了解它们的作用能帮你理解整个网站的结构：
 
 **全局样式与配置：**
-- `app/globals.css` — 全局 CSS 变量、颜色系统、字体定义、工具类（bento-card、glass-card）、暗色模式、自定义滚动条
-- `app/layout.tsx` — 根布局，引入字体（Outfit、Work Sans）
-- `tailwind.config.ts` — Tailwind 配置，定义颜色 tokens、字体、动画
+- `app/globals.css` — 全局 CSS 变量、颜色系统（黑白主题 + 电光蓝强调色）、字体定义、工具类（bold-card、bold-button、bold-nav）、暗色模式
+- `app/layout.tsx` — 根布局，引入字体（Bebas Neue 用于标题、Source Sans 3 用于正文）
+- `tailwind.config.ts` — Tailwind 配置，定义颜色 tokens、字体、圆角、动画
 
 **Landing Page 组件：**
-- `app/(marketing)/HomePageContent.tsx` — 首页主体内容的组织
-- `app/(marketing)/_components/Hero.tsx` — 首页英雄区（大标题、CTA 按钮、背景效果）
-- `app/(marketing)/_components/StatsSection.tsx` — 数据统计展示区（bento grid 布局）
-- `app/(marketing)/_components/ContactSection.tsx` — 联系信息区
+- `app/(marketing)/HomePageContent.tsx` — 首页主体内容的组织，添加 Footer
+- `app/(marketing)/_components/Hero.tsx` — 首页英雄区（split-screen 布局、大字排版、粗边框按钮）
+- `app/(marketing)/_components/StatsSection.tsx` — 数据统计展示区（全宽边框分割布局）
+- `app/(marketing)/_components/ContactSection.tsx` — 联系信息区（全宽边框分割布局）
 
 **导航：**
-- `app/_components/layouts/Navigation.tsx` — 顶部导航栏（glass navbar 效果、移动端适配、Chat 入口）
+- `app/_components/layouts/Navigation.tsx` — 顶部导航栏（简化设计、粗边框、Chat 入口）
 
 **Chat 页面：**
-- `app/chat/layout.tsx` — 聊天页面的布局结构、内边距
-- `components/chat/chat.tsx` — 聊天主组件（消息列表、滚动行为）
-- `components/chat/message.tsx` — 单条消息的样式（头像、气泡、glass-card 效果）
-- `components/chat/multimodal-input.tsx` — 输入框和快捷按钮（你在 Exercise 3 里修复的就是这个）
-- `components/chat/overview.tsx` — 聊天页的欢迎界面
+- `app/chat/layout.tsx` — 聊天页面的布局结构、内边距调整
+- `components/chat/chat.tsx` — 聊天主组件（消息列表、边框样式）
+- `components/chat/message.tsx` — 单条消息的样式（头像、气泡、边框效果）
+- `components/chat/multimodal-input.tsx` — 输入框和快捷按钮（粗边框、hover 反色效果）
+- `components/chat/overview.tsx` — 聊天页的欢迎界面（上下文提示横幅）
 
 ---
 
