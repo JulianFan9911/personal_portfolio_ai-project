@@ -1,31 +1,32 @@
 "use client"
 
-import ScreenName from "./_components/ScreenName"
-import ScreenTitle from "./_components/ScreenTitle"
-import ScreenStats from "./_components/ScreenStats"
-import ScreenCTA from "./_components/ScreenCTA"
+import Hero from "./_components/Hero"
+import StatsSection from "./_components/StatsSection"
+import ContactSection from "./_components/ContactSection"
 
 export default function HomePageContent() {
   return (
-    <div className="bg-white dark:bg-black text-black dark:text-white font-body">
-      {/* Screen 1: Name Reveal */}
-      <ScreenName />
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white font-body">
+      {/* Main Content */}
+      <div className="relative">
+        {/* Hero Section - Split Screen */}
+        <Hero />
 
-      {/* Screen 2: Title & Description */}
-      <ScreenTitle />
+        {/* Achievement Stats */}
+        <StatsSection />
 
-      {/* Screen 3: Stats Horizontal Scroll */}
-      <ScreenStats />
+        {/* Contact Section */}
+        <ContactSection />
 
-      {/* Screen 4: Full-Screen Chat CTA */}
-      <ScreenCTA />
-
-      {/* Minimal Footer */}
-      <footer className="py-6 px-4 border-t-4 border-black dark:border-white">
-        <p className="text-center font-display text-sm text-gray-600 dark:text-gray-400 uppercase tracking-widest">
-          &copy; {new Date().getFullYear()} JOHN DOE
-        </p>
-      </footer>
+        {/* Footer */}
+        <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t-4 border-black dark:border-white">
+          <div className="max-w-7xl mx-auto text-center">
+            <p className="font-display text-sm text-gray-600 dark:text-gray-400 uppercase tracking-widest">
+              &copy; {new Date().getFullYear()} JOHN DOE. ALL RIGHTS RESERVED.
+            </p>
+          </div>
+        </footer>
+      </div>
     </div>
   )
 }
