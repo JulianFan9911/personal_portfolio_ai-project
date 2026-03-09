@@ -1,4 +1,4 @@
-# Task Card: Config Management and Code Refactoring
+# Learn Personal Portfolio AI 14 - Task Card: Config Management and Code Refactoring
 
 ## Objective
 
