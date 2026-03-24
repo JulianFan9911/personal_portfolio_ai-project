@@ -45,3 +45,20 @@ run = "node --test tests_node/*.test.js"
 [tasks.test]
 description = "🧪 Run all tests (Python + Node.js)"
 depends = ["test-python", "test-node"]
+
+[tasks.next-dev]
+description = "🌐 Start Next.js development server"
+run = "next dev"
+
+[tasks.fastapi-dev]
+description = "⚙️ Start FastAPI development server"
+run = "uv run -- python -m uvicorn api.index:app --reload --host 127.0.0.1 --port 8000"
+
+[tasks.dev]
+description = "🚀 Start all development servers (Next.js + FastAPI)"
+depends = ["kill"]
+run = "pnpm exec concurrently 'mise run next-dev' 'mise run fastapi-dev'"
+
+[tasks.kill]
+description = "🛑 Kill all development servers (Next.js + FastAPI)"
+run = "uv run -- python kill-dev-servers.py"
