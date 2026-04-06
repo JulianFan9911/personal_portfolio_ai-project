@@ -4,7 +4,7 @@ import HomePageContent from "./HomePageContent"
 
 export async function generateMetadata(): Promise<Metadata> {
   return generateSEOMetadata({
-    title: "John Doe - Solution Architect & Builder",
+    title: "Tianwei Fan - Solution Architect & Builder",
     description: "Solution Architect and Open Source Developer with 150+ Python libraries, 10M+ monthly downloads, and 600+ repositories. Specialized in cloud architecture, AI, and enterprise solutions.",
     keywords: [
       "Open Source Developer",
@@ -16,10 +16,10 @@ export async function generateMetadata(): Promise<Metadata> {
       "Tech Leadership",
     ],
     url: "https://johndoe.me",
-    ogTitle: "John Doe - Solution Architect & Open Source Builder",
+    ogTitle: "Tianwei Fan - Solution Architect & Open Source Builder",
     ogDescription: "Experienced Solution Architect and prolific Open Source Developer. Creator of 160+ Python libraries with 10M+ monthly downloads. Specialized in cloud architecture, automation, and enterprise solutions.",
-    imageAlt: "John Doe Profile Photo - Solution Architect & Builder",
-    twitterTitle: "John Doe - Solution Architect & Builder",
+    imageAlt: "Tianwei Fan Profile Photo - Solution Architect & Builder",
+    twitterTitle: "Tianwei Fan - Solution Architect & Builder",
     twitterDescription: "Solution Architect and Open Source Developer with 160+ Python libraries, 10M+ monthly downloads, and 600+ repositories. Specialized in cloud architecture, AI, and enterprise solutions.",
   })
 }
