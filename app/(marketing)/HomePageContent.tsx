@@ -2,6 +2,8 @@
 
 import { Spotlight } from "@/components/ui/spotlight"
 import Hero from "./_components/Hero"
+import StatsSection from "./_components/StatsSection"
+import SkillsSection from "./_components/SkillsSection"
 
 export default function HomePageContent() {
   return (
@@ -15,6 +17,12 @@ export default function HomePageContent() {
 
       {/* Hero Section */}
       <Hero />
+
+      {/* Stats Section */}
+      <StatsSection />
+
+      {/* Skills Section */}
+      <SkillsSection />
 
       {/* Footer Spacing */}
       <div className="h-16"></div>
