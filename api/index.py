@@ -79,6 +79,10 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
 
     sys.stderr.flush()
 
+    # --- Extract user message from request ---
+    messages = request_body_data.get('messages', [])
+    user_message = messages[-1]['parts'][0]['text'] if messages else "no message"
+
     # --- Stream response using AI SDK v5 Data Stream Protocol ---
     # SSE format: each line starts with "data: " followed by JSON payload.
     # Text streaming uses a three-phase pattern: start -> delta(s) -> end
@@ -89,7 +93,8 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
         yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
 
         # Phase 2: Send the actual text content (can be split into multiple deltas)
-        yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": "Hello Alice"})}\n\n'
+        reply = f'I received: "{user_message}"'
+        yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": reply})}\n\n'
 
         # Phase 3: Signal that the text block is complete
         yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
