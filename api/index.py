@@ -21,6 +21,12 @@ from fastapi import FastAPI, Request, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 # fmt: on
 
+from vercel_ai_sdk_mate.api import RequestBody
+from learn_personal_portfolio_ai.paths import path_enum                                                                                                                                                                                                  
+from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client                                                                                                                                                                                
+from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages                                                                                                                                                         
+from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession     
+
 # Add project root to sys.path for module imports
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
@@ -79,6 +85,57 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
 
     sys.stderr.flush()
 
+    request_body = RequestBody(**request_body_data)
+
+    # --- Initialize Bedrock chat session ---                                                                                                                                                                                                          
+    chat_session = ChatSession(                                                                                                                                                                                                                          
+        client=bedrock_runtime_client,                                                                                                                                                                                                                 
+        model_id="us.amazon.nova-micro-v1:0",                                                                                                                                                                                                            
+        system=[                                                                                                                                                                                                                                         
+            {"text": "You are a helpful AI assistant integrated into a personal portfolio application. Respond concisely and helpfully."},                                                                                                               
+            {"cachePoint": {"type": "default"}},                                                                                                                                                                                                         
+        ],                                                                                                                                                                                                                                               
+    )                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                           
+    # Restore session ID from frontend to maintain conversation continuity                                                                                                                                                                               
+    chat_session._session_id = request_body.id
+
+    # --- Seed the conversation with knowledge base context ---                                                                                                                                                                                        
+    chat_session._messages = [                                                                                                                                                                                                                           
+        {                                                                                                                                                                                                                                                
+            "role": "user",
+            "content": [                                                                                                                                                                                                                                 
+                {                                                                                                                                                                                                                                      
+                    "text": "You are an expert AI assistant. Here is important context:\n\n[Knowledge Base Content]\n\nUse this context to help answer user questions."
+                },                                                                                                                                                                                                                                       
+                {"cachePoint": {"type": "default"}},
+            ],                                                                                                                                                                                                                                           
+        },                                                                                                                                                                                                                                             
+        {                                                                                                                                                                                                                                                
+            "role": "assistant",                                                                                                                                                                                                                       
+            "content": [
+                {
+                    "text": "I've reviewed the knowledge base and I'm ready to answer questions based on it."
+                },                                                                                                                                                                                                                                       
+            ],
+        },                                                                                                                                                                                                                                               
+    ]
+
+    # --- Append conversation history from the frontend ---                                                                                                                                                                                              
+    messages = request_body_to_bedrock_converse_messages(request_body)                                                                                                                                                                                   
+    chat_session._messages.extend(messages)
+
+    # --- Call AWS Bedrock to generate AI response ---
+    response = chat_session.send_message([])                                                                                                                                                                                                             
+                                                                                                                                                                                                                                                         
+    # Log response for debugging                                                                                                                                                                                                                         
+    debug("------ Chat response")                                                                                                                                                                                                                      
+    output_text = response.output.message.content[0].text                                                                                                                                                                                                
+    debug(output_text)                                                                                                                                                                                                                                 
+    debug("------ Token Usage")                                                                                                                                                                                                                          
+    debug(str(response.usage))                                                                                                                                                                                                                           
+    sys.stderr.flush()
+
     # --- Stream response using AI SDK v5 Data Stream Protocol ---
     # SSE format: each line starts with "data: " followed by JSON payload.
     # Text streaming uses a three-phase pattern: start -> delta(s) -> end
@@ -89,7 +146,7 @@ async def handle_chat_data(request: Request, protocol: str = Query("data")):
         yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
 
         # Phase 2: Send the actual text content (can be split into multiple deltas)
-        yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": "Hello Alice"})}\n\n'
+        yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
 
         # Phase 3: Signal that the text block is complete
         yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
